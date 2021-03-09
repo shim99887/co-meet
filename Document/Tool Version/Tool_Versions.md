@@ -16,11 +16,11 @@
 
 ## Backend_Version
 
-- Django : 3.0
+- Django : 3.1.7
 
 - VSCode : 
 
-- Python : 3.6이상
+- Python : 3.6.8
 
 
 ## Database_Version
