@@ -23,6 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'h@us1+p%s(rv@+cs^%rpx(r686)sdy47%atshhd76$&0_$(ur3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# 개발 시 로그를 무조건 남긴다.
+# 운영시에는 False로 변경을 해준다.
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -75,8 +77,12 @@ WSGI_APPLICATION = 'comeet.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': '',
+        'NAME': 'comeet',
+        'username': 'epubDB',
+        'password' : 'epubDB',
+        'PORT' : '27017',
+        'HOST': 'localhost',
     }
 }
 
