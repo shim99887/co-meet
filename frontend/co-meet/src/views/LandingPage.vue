@@ -12,7 +12,7 @@
         </div>
       </div>
 
-      <div id="box3">
+      <!-- <div id="box3">
         <div id="container">
           <div id="logo">
             <img src="../assets/logo.png" alt="" />
@@ -27,7 +27,7 @@
             </ul>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
