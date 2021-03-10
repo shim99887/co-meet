@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg', # Swagger 
 ]
 
 MIDDLEWARE = [
@@ -77,10 +78,10 @@ WSGI_APPLICATION = 'comeet.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': '',
+        'ENGINE': 'djongo',
         'NAME': 'comeet',
-        'username': 'epubDB',
-        'password' : 'epubDB',
+        'username': 'comeet',
+        'password' : 'comeet',
         'PORT' : '27017',
         'HOST': 'localhost',
     }
