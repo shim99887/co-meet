@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'comeet.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'Comeet',
+        'NAME': 'comeet',
         'username': 'comeet',
         'password': 'comeet',
         'PORT': '27017',
