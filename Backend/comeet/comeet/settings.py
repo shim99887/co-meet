@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'drf_yasg', # Swagger 
+    'api.apps.ApiConfig',
+    'corsheaders',
+    'drf_yasg',  # Swagger
 ]
 
 MIDDLEWARE = [
@@ -50,7 +52,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:8000',
+)
 
 ROOT_URLCONF = 'comeet.urls'
 
@@ -79,10 +88,10 @@ WSGI_APPLICATION = 'comeet.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'comeet',
+        'NAME': 'Comeet',
         'username': 'comeet',
-        'password' : 'comeet',
-        'PORT' : '27017',
+        'password': 'comeet',
+        'PORT': '27017',
         'HOST': 'localhost',
     }
 }
