@@ -7,11 +7,9 @@
       <a href="#">Co-Meet</a>
     </div>
     <ul class="navbar__menus">
-      <a href="" class="navbar__community__button">
-        <li>
-          지역 추천
-        </li>
-      </a>
+      <router-link to="/recommendation" class="navbar__community__button">
+        <li>지역 추천</li>
+      </router-link>
     </ul>
     <ul class="navbar__community">
       <a class="navbar__community__button" href="#"><li>로그인</li></a>
@@ -46,22 +44,35 @@ export default {
 
 <style scoped>
   :root {
-    --navbar--text-color: #1b1b1b;
+    --navbar--text-color: #ffb6c1;
   }
   #navbar {
     z-index: 1;
-    position: relative;
-    top: 0.5rem;
+    position: absolute;
+    top: -100%;
+    left: 2%;
     width: 95vw;
-    height: 70px;
     display: flex;
     justify-content: space-between;
     padding: 0.6rem;
-    margin-right: 0;
+    margin-right: auto;
+    margin-left: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    animation: anim4 2s forwards 2.0s;
   }
+  @keyframes anim4 {
+  from {
+    top: -100%;
+  }
+  to {
+    top: 2%;
+  }
+}
   .navbar__logo {
     display: flex;
     align-items: center;
+
   }
   .navbar__logo img {
     display: inline-block;
@@ -71,12 +82,11 @@ export default {
     display: inline-block;
     text-decoration: none;
     font-size: 30px;
-    color: var(--navbar--text-color);
+    color: #ffb6c1;
   }
   .navbar__menus {
     list-style: none;
     padding-left: 0;
-    /* font-size: 24px; */
     display: flex;
     align-items: center;
   }
@@ -89,25 +99,28 @@ export default {
   .navbar__community__button {
     text-decoration: none;
     padding: 8px 12px;
-    color: var(--navbar--text-color);
-
-    
+    font-weight: 700;
+    opacity: 1;
+    color: #ffb6c1;
   }
   .navbar__community__button:hover{
     background-color: rgb(241, 223, 239);
     border-radius: 5px;
+    color: #1b1b1b;
   }
   .navbar__community__button:nth-child(2) {
     margin-left: 2em;
   }
   .navbar__toggle {
-    color: var(--navbar--text-color);
+    /* color: var(--navbar--text-color); */
     text-decoration: none;
     position: fixed;
-    right: 3.5rem;
-    top: 1.95rem;
+    right: 2rem;
+    top: 2rem;
     z-index: 1;
     display: none;
+    font-size: 1.6rem;
+    color: #ffb6c1;
   }
   @media screen and (max-width: 48rem) {
     #navbar {
@@ -128,6 +141,7 @@ export default {
       display: none;
     }
     .navbar__community {
+      margin-top: 1vh;
       display: none;
     }
     .navbar__menus.active,
