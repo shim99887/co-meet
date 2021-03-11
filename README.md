@@ -31,8 +31,20 @@
     </ul>
 </details>
 <details>
-    <summary> Commit </summary>
+    <summary> Commit Rule</summary>
     <ul>
         <a href="Document/Commit Rule/Git Commit Rule.md"><li> Git Commit Rule</li></a>
+    </ul>
+</details>
+<details>
+    <summary> Data Modeling</summary>
+    <ul>
+        <a href="Document/Data Modeling/Data Modeling.md"><li> Data Modeling</li></a>
+    </ul>
+</details>
+<details>
+    <summary> Wireframe</summary>
+    <ul>
+        <a href="Document/Wireframe/Wireframe.md"><li> Wireframe</li></a>
     </ul>
 </details>
