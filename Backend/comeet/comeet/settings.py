@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,13 +87,31 @@ WSGI_APPLICATION = 'comeet.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': str(os.path.join(BASE_DIR, "db.sqlite3"))
+    # },
     'default': {
         'ENGINE': 'djongo',
         'NAME': 'comeet',
-        'username': 'comeet',
-        'password': 'comeet',
-        'PORT': '27017',
-        'HOST': 'localhost',
+        'ENFORCE_SCHEMA': False,
+        'CLIENT': {
+                'host': 'j4a203.p.ssafy.io',
+                'port': 8888,
+                'username': 'comeet',
+                'password': 'yb)&.2Ewyy+C?5&~T=,{<D,S!w',
+                'authSource': 'admin',
+                'authMechanism': 'SCRAM-SHA-1'
+        },
+        'LOGGING': {
+            'version': 1,
+            'loggers': {
+                'djongo': {
+                    'level': 'DEBUG',
+                    'propagate': False,
+                }
+            },
+        },
     }
 }
 
@@ -119,9 +138,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-kr'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
