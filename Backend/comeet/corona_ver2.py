@@ -3,7 +3,11 @@ import time
 # tqdm : 진행상태를 표시하기 위해
 from tqdm import trange
 
+import os
+from urllib.parse import urlparse
+
 import requests
+from bs4 import BeautifulSoup
 import pandas as pd
 
 # 여러 페이지를 가져오기 위한 1단계 - 함수 처리
@@ -37,6 +41,14 @@ def get_multi_page_list(start_page, end_page = 80):
             return page_list
     return page_list
 
+def save_db(page_list):
+    # 모든 컬럼을 db에 저장한다. 
+    for page in page_list:
+        for line in page:
+            print(line)
+        break;    
+
+
 # 첫번째 페이지를 통해 전체 페이지 수를 계산 
 data_json = get_seoul_covid19_100(1)
 
@@ -47,14 +59,5 @@ end_page = round(records_total / 100) + 1
 
 page_list = get_multi_page_list(start_page, end_page)
 
-print(page_list[:1])
-
-# df_all = pd.concat(page_list)
-# df_all.shape
-
-# cols = df.columns.tolist()
-# print(cols)
-
-# df_all.columns = cols
-# df_all.head()
-# print(df_all.shape)
+# print(page_list[:1])
+save_db(page_list)

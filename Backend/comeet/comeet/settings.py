@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'corsheaders',
     'drf_yasg',  # Swagger
+    'parsed_data', # Parsing Data
 ]
 
 MIDDLEWARE = [
