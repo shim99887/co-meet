@@ -3,56 +3,67 @@
     <video autoplay muted loop id="myVideo">
       <source src="../assets/sub2.mp4" type="video/mp4" />
     </video>
-    <div style="position:absolute;z-index:1">{{wid}}</div>
-    <v-row no-gutters style="margin-top:150px">
+    <v-row no-gutters style="margin-top:60px">
       <v-col cols="5" class="ml-10">
         <div>
-          <div style="position:absolute;font-size:100px; z-index:1; margin-top:100px;">
+          <div v-if="wid>1000" class="titles">
+            <p>CO-MEET</p>
+          </div>
+          <div v-else style="position:absolute;font-size:80px; z-index:1;">
             <p>CO-MEET</p>
           </div>
         </div>
       </v-col>
       <v-col v-if="wid>1000" cols="4">
-        <user-form style="position:absolute;z-index:1;" class="form" />
+        <user-form style="position:absolute;z-index:1; margin-top:250px;left:60%;" class="form" />
       </v-col>
     </v-row>
     <v-row style="margin-top:300px" v-if="wid<=1000">
       <user-form/>
     </v-row>
-    <v-btn @click="temp">asd</v-btn>
   </v-container>
 </template>
 <script>
 import UserForm from "../components/UserForm.vue";
-import $ from 'jquery';
 
-export default {
+export default ({
   components: {
     UserForm,
   },
   data(){
     return{
-      wid:0,
+      wid:window.innerWidth,
     };
   },
+  created(){
+    window.addEventListener("resize", this.resizeEventHandler);
+  },
+  destroyed(){
+    window.removeEventListener("resize", this.resizeEventHandler);
+  },
   methods:{
-    temp(){
-      console.log(this.wid);
-
-    }
-  },
-  mounted() {
-    $(window).resize(function(event){
+    resizeEventHandler(event){
+      // console.log(event);
       this.wid = event.target.innerWidth;
-    })
+    },
   },
-};
+});
 </script>
 <style scoped>
 body {
   margin: 0px;
 }
-
+.titles{
+  position:absolute;
+  font-size:10rem;
+  color:#22223b;
+  opacity:0.75;
+  text-shadow: 4px 4px 4px gray;
+  z-index:1; 
+  font-family: "Bahnschrift Condensed";
+  margin-left:50px; 
+  margin-top:150px;
+}
 #myVideo {
   object-fit: cover;
   width: 100%;
