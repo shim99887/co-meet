@@ -11,24 +11,27 @@ from bs4 import BeautifulSoup
 import pandas as pd
 
 # 여러 페이지를 가져오기 위한 1단계 - 함수 처리
+
+
 def get_seoul_covid19_100(page_no):
     """
     page_no : 입력값으로 페이지 번호를 입력하면 해당 페이지 번호의 데이터를 가져옴
     start_no : 입력받은 page_no
     """
     start_no = (page_no - 1) * 100
-    url = f"https://news.seoul.go.kr/api/27/getCorona19Status/get_status_ajax_pre.php?draw={page_no}" 
-    # 최신 데이터 
-    # url = f"https://news.seoul.go.kr/api/27/getCorona19Status/get_status_ajax.php?draw={page_no}" 
+    url = f"https://news.seoul.go.kr/api/27/getCorona19Status/get_status_ajax_pre.php?draw={page_no}"
+    # 최신 데이터
+    # url = f"https://news.seoul.go.kr/api/27/getCorona19Status/get_status_ajax.php?draw={page_no}"
     url = f"{url}&order%5B0%5D%5Bdir%5D=desc&start={start_no}&length=100"
-    
+
     response = requests.get(url)
     data_json = response.json()
     return data_json
 
-def get_multi_page_list(start_page, end_page = 80):
+
+def get_multi_page_list(start_page, end_page=80):
     # 데이터가 제대로 로드 되는지 앞부분 3페이지 정도만 확인하고 전체페이지를 가져오록 합니다.
-    
+
     page_list = []
     for page_no in trange(start_page, end_page + 1):
         one_page = get_seoul_covid19_100(page_no)
@@ -49,23 +52,24 @@ def get_multi_page_list(start_page, end_page = 80):
             return page_list
     return page_list
 
+
 def save_db(page_list):
-    # 모든 컬럼을 db에 저장한다. 
+    # 모든 컬럼을 db에 저장한다.
     # 하나의 데이터 프레임으로 통합
     df_all = pd.concat(page_list)
-    df_all.sort_values(by=["patient_number"])
+    df_all = df_all.sort_values(by=['serial_number'])
     file_name = "seoul-covid19.csv"
-    df_all.to_csv(file_name, index = False, encoding="utf-8")
+    df_all.to_csv(file_name, index=False, encoding="utf-8")
 
 
-# 첫번째 페이지를 통해 전체 페이지 수를 계산 
+# 첫번째 페이지를 통해 전체 페이지 수를 계산
 data_json = get_seoul_covid19_100(1)
 
 records_total = data_json['recordsTotal']
 
 start_page = 1
 # end_page = round(records_total / 100) + 1
-end_page = 2    
+end_page = 2
 
 page_list = get_multi_page_list(start_page, end_page)
 save_db(page_list)
