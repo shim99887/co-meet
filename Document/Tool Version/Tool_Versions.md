@@ -16,7 +16,7 @@
 
 ## Backend_Version
 
-- Django : 3.1.7
+- Django : 3.0.5
 
 - VSCode : 
 
