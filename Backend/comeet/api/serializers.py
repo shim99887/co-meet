@@ -16,13 +16,13 @@ class FpoplSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Fpopl
-        fields = ('일자',
-                  '시간(1시간단위)',
-                  '연령대(10세단위)',
-                  '성별',
-                  '시',
-                  '군구',
-                  '유동인구수')
+        fields = ('date',
+                  'per_time',
+                  'age_range',
+                  'sex',
+                  'city',
+                  'gugun',
+                  'popl')
 
 
 class CardSerializer(serializers.ModelSerializer):
