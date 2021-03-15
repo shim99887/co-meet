@@ -21,17 +21,26 @@
 
 ## 📄 **활용 데이터 및 API**
 
-   > 유동 인구 데이터
-      - [데이터 기본 설명](https://www.bigdatahub.co.kr/product/view.do?pid=1002348)
-   >  코로나 지역관리본부 크롤링
-      - [코로나 실시간 서울시 구별 확진자 동향 데이터](https://www.seoul.go.kr/coronaV/coronaStatus.do)
-   > 카드 사용 데이터
-      - [카드 사용 데이터](https://dacon.io/competitions/official/235618/data/)
-   > 현 사용자 위치 정보 (크롬 기반)
-      - [Geolocation API](https://www.zerocho.com/category/HTML&DOM/post/59155228a22a5d001827ea5d)
+> 유동 인구 데이터
+   
+[데이터 기본 설명](https://www.bigdatahub.co.kr/product/view.do?pid=1002348)
+      
+>  코로나 지역관리본부 크롤링
+   
+[코로나 실시간 서울시 구별 확진자 동향 데이터](https://www.seoul.go.kr/coronaV/coronaStatus.do)
+      
+> 카드 사용 데이터
+   
+[카드 사용 데이터](https://dacon.io/competitions/official/235618/data/)
+      
+> 현 사용자 위치 정보 (크롬 기반)
+   
+[Geolocation API](https://www.zerocho.com/category/HTML&DOM/post/59155228a22a5d001827ea5d)
 
    - 유동인구 & 카드 사용량 분석 ⇒ 사람 ⬇ 밀집도 ⬇
+   
      지역별 코로나 상승률 분석 ⇒ 코로나 발생률 ⬇ 안정성 ⬆
+
      현재 위치 & 검색 위치 기반 ⇒ 편의성 ⬆
 
 ## Document
