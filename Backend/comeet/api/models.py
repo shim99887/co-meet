@@ -10,13 +10,24 @@ class Code(models.Model):
     brtc_nm = models.CharField(max_length=20)
     signgu_nm = models.CharField(max_length=20)
 
-    # @property
-    # def code_list(self):
-    #     return self.category.split("|") if self.category else []
-    # class Meta:
-    #     # abstract = True  # sqlite3 사용 시 어째선지 이게 있으면 마이그레이션이 안 됨.
-    #     managed = True
-    #     db_table = 'adstrd_master'
-    #     app_label = 'api'
-    #     ordering = ['_id', ]
-    #     verbose_name_plural = '행정동코드'
+
+class Fpopl(models.Model):
+    _id = models.IntegerField(primary_key=True)
+    date = models.CharField(max_length=20)
+    per_time = models.IntegerField()
+    age_range = models.IntegerField()
+    sex = models.CharField(max_length=10)
+    city = models.CharField(max_length=10)
+    gugun = models.CharField(max_length=10)
+    popl = models.IntegerField()
+
+
+class Card(models.Model):
+    _id = models.IntegerField(primary_key=True)
+    receipt_dttm = models.CharField(max_length=20)
+    adstrd_code = models.CharField(max_length=20)
+    adstrd_nm = models.CharField(max_length=20)
+    mrhst_induty_cl_code = models.CharField(max_length=20)
+    mrhst_induty_cl_nm = models.CharField(max_length=20)
+    selng_cascnt = models.CharField(max_length=20)
+    salamt = models.IntegerField()
