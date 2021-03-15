@@ -1,107 +1,73 @@
 <template>
-  <div>
-    <Navbar/>
-    <div id="main">
-      <video autoplay muted loop id="myVideo">
-        <source src="../assets/sub2.mp4" type="video/mp4" />
-      </video>
-      <div id="box1"></div>
-
-      <div id="box2">
-        <div id="text">
-          CO-MEET
+  <v-container fluid>
+    <video autoplay muted loop id="myVideo">
+      <source src="../assets/sub2.mp4" type="video/mp4" />
+    </video>
+    <v-row no-gutters style="margin-top:60px">
+      <v-col cols="5" class="ml-10">
+        <div>
+          <div v-if="wid>1000" class="titles">
+            <p>CO-MEET</p>
+          </div>
+          <div v-else style="position:absolute;font-size:80px; z-index:1;">
+            <p>CO-MEET</p>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
+      </v-col>
+      <v-col v-if="wid>1000" cols="4">
+        <user-form style="position:absolute;z-index:1; margin-top:250px;left:60%;" class="form" />
+      </v-col>
+    </v-row>
+    <v-row style="margin-top:300px" v-if="wid<=1000">
+      <user-form/>
+    </v-row>
+  </v-container>
 </template>
-
 <script>
-import Navbar from "@/components/navbar.vue"
+import UserForm from "../components/UserForm.vue";
 
-export default {
-  name: 'LandingPage',
+export default ({
   components: {
-    Navbar,
+    UserForm,
   },
-}
+  data(){
+    return{
+      wid:window.innerWidth,
+    };
+  },
+  created(){
+    window.addEventListener("resize", this.resizeEventHandler);
+  },
+  destroyed(){
+    window.removeEventListener("resize", this.resizeEventHandler);
+  },
+  methods:{
+    resizeEventHandler(event){
+      // console.log(event);
+      this.wid = event.target.innerWidth;
+    },
+  },
+});
 </script>
-
 <style scoped>
 body {
   margin: 0px;
 }
-#main {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  overflow: hidden;
-}
-#box1 {
-  width: 530px;
-  height: 625px;
-  background-repeat: no-repeat;
-  position: absolute;
-  bottom: -100%;
-  left: 30%;
-  animation: anim 2s forwards, anim2 3s forwards 3s;
-}
-#box1::after {
-  content: "";
-  position: absolute;
-  background-repeat: no-repeat;
-  width: 530px;
-  height: 625px;
-  left: 0px;
-  z-index: -1;
-}
-@keyframes anim {
-  from {
-    bottom: -100%;
-  }
-  to {
-    bottom: 0%;
-  }
-}
-@keyframes anim2 {
-  from {
-    left: 30%;
-    width: 530px;
-  }
-  to {
-    width: 0px;
-    left: 50%;
-  }
-}
-#box2 {
-  width: auto;
-  height: auto;
+.titles{
+  position:absolute;
+  font-size:10rem;
+  color:#22223b;
+  opacity:0.75;
+  text-shadow: 4px 4px 4px gray;
+  z-index:1; 
   font-family: "Bahnschrift Condensed";
-  color: #1b1b1b;
-  font-size: 10em;
-  line-height: 130px;
-  position: absolute;
-  top: 250px;
-  left: 100px;
-  overflow: hidden;
-}
-#text {
-  position: relative;
-  left: -100%;
-  animation: anim3 2s forwards 3s;
-}
-@keyframes anim3 {
-  from {
-    left: -100%;
-  }
-  to {
-    left: 0%;
-  }
+  margin-left:50px; 
+  margin-top:150px;
 }
 #myVideo {
   object-fit: cover;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   position: fixed;
   top: 0;
   left: 0;
