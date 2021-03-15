@@ -14,7 +14,7 @@ class Code(models.Model):
 class Fpopl(models.Model):
     _id = models.IntegerField(primary_key=True)
     date = models.CharField(max_length=20)
-    per_time = models.IntegerField()
+    per_time = models.CharField(max_length=20)
     age_range = models.IntegerField()
     sex = models.CharField(max_length=10)
     city = models.CharField(max_length=10)
