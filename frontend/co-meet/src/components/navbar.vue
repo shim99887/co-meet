@@ -57,7 +57,7 @@ export default {
     padding: 0.6rem;
     margin-right: auto;
     margin-left: auto;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6);
     border-radius: 5px;
     animation: anim4 2s forwards 2.0s;
   }
@@ -114,13 +114,14 @@ export default {
   .navbar__toggle {
     /* color: var(--navbar--text-color); */
     text-decoration: none;
-    position: fixed;
-    right: 2rem;
-    top: 2rem;
+    position: relative;
+    right: -88%;
+    top: 1.35em;
     z-index: 1;
     display: none;
     font-size: 1.6rem;
     color: #ffb6c1;
+    width: fit-content;
   }
   @media screen and (max-width: 48rem) {
     #navbar {
@@ -128,6 +129,7 @@ export default {
     }
     .navbar__toggle {
       display: block;
+
     }
     .navbar__community__button {
       width: 100%;

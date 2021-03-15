@@ -1,6 +1,5 @@
 <template>
   <v-container fluid>
-  <Navbar />
     <video autoplay muted loop id="myVideo">
       <source src="../assets/sub2.mp4" type="video/mp4" />
     </video>
@@ -26,12 +25,10 @@
 </template>
 <script>
 import UserForm from "../components/UserForm.vue";
-import Navbar from "../components/navbar.vue"
 
 export default ({
   components: {
     UserForm,
-    Navbar,
   },
   data(){
     return{
