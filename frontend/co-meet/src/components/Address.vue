@@ -14,7 +14,7 @@
         <div class="terms">
           <button class="location__terms btn text-bold">개인 정보 이용 동의서</button>
           <input id="agree" type="checkbox" class="terms-checkbox">
-          <label for="agree text-bold">동의</label>
+          <label for="agree">동의</label>
         </div>
           <button href="#" class="btn terms__recom text-bold">약속 장소 추천 받기 !</button>
       </section>
@@ -62,13 +62,13 @@
   .location__my-location {
     display: block;
     width: 60%;
-    border: 1px solid #c94f7c;
+    border: 1px solid #41b6e6;
     border-radius: 5px;
     margin: 10px auto;
     padding: 10px 0;
   }
   .location__my-location:hover {
-    background-color: #c94f7c;
+    background-color: #41b6e6;
     color: #eeeeee;
   }
   .search-location {
@@ -81,12 +81,12 @@
     width: 65%;
   }
   .btn {
-    border: 1px solid #2694ab;
+    border: 1px solid #001871;
     border-radius: 5px;
     padding: 8px 16px;
   }
   .btn:hover {
-    background-color: #2694ab;
+    background-color: #001871;
     color: #eeeeee;
   }
   .terms {
@@ -123,20 +123,7 @@
   .contents__description {
     font-size: 0.9em;
   }
-  @media screen and (max-width: 48rem) {
-    .address {
-      margin-top: 100px;
-      display: flex;
-      flex-direction: column;
-    }
-    .location {
-      width: 100%;
-      margin-bottom: 5%;
-    }
-    .location-list {
-      width: 100%;
-    }
-  }
+
 </style>
 
 <script>
