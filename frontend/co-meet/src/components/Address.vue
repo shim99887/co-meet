@@ -6,10 +6,13 @@
           <h4 class="explain__description">현재 위치 또는<br>직접 현재 위치를 입력하실 수 있습니다.</h4>
         </div>
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
-        <button href="#" class="location__my-location text-bold" >내 현재 위치</button>
+        <button href="#" class="location__my-location text-bold"   >내 현재 위치</button>
         <div class="search-location">
-          <input type="text" class="location-text">
-          <button class="btn text-bold">위치 입력</button>
+          <!-- <input type="text" class="location-text" v-text="location"> -->
+          {{location}}
+          <!-- {{this.location}} -->
+          <input type="button" class="btn text-bold"  @click="sample4_execDaumPostcode" value="우편번호 찾기">
+          <!-- <button  @click="sample4_execDaumPostcode">위치 입력</button> -->
         </div>
         <div class="terms">
           <button class="location__terms btn text-bold">개인 정보 이용 동의서</button>
@@ -34,7 +37,7 @@
       </section>
   </div>
 </template>
-
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <style>
   .explain__title, .explain__description,
   .search-location, .terms {
@@ -128,6 +131,21 @@
 
 <script>
 export default {
+    data(){
+      return{
+        location: 'asd',
+      }
+    },
+ methods:{
+    sample4_execDaumPostcode() {
+      this.location = new daum.Postcode({
+          oncomplete(data) {
+            console.log(data);
+            return data.jibunAddress;
+          }
+      }).open();
 
+    },
+  }
 }
 </script>
