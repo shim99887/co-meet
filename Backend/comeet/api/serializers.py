@@ -45,7 +45,7 @@ class CoronaDataSerializer(serializers.ModelSerializer):
         fields = ('serial_number',
                   'patient_number',
                   'date',
-                  'dong',
+                  'gugun',
                   'overseas',
                   'route',
                   'discharge')

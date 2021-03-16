@@ -29,7 +29,7 @@ def Code_list(request):
 def CoronaData_list(request):
     # GET list of api, POST a new api, DELETE all api
     if request.method == 'GET':
-        api = CoronaData.objects.filter(dong="강서구", overseas="-")
+        api = CoronaData.objects.filter(gugun="강서구", overseas="-")
 
         #title = request.GET.get('title', None)
         # if title is not None:
