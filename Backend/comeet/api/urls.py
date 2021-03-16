@@ -5,5 +5,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    url(r'^api/api$', views.Api_list),
+    url(r'^code$', views.Code_list),
+    url(r'^fpopl$', views.Fpopl_list),
+    url(r'^coronaData$', views.CoronaData_list),
 ]
