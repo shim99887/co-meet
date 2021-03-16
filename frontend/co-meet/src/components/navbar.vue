@@ -12,8 +12,8 @@
       </router-link>
     </ul>
     <ul class="navbar__community">
-      <a class="navbar__community__button" href="#"><li>로그인</li></a>
-      <a class="navbar__community__button" href="#"><li>회원 가입</li></a>
+      <a class="navbar__community__button" href="#" @click="loginToggle"><li>로그인</li></a>
+      <a class="navbar__community__button" href="#" @click="registToggle"><li>회원 가입</li></a>
     </ul>
   </div>
   <!-- 이것도 라우터 링크 써야됌 -->
@@ -36,6 +36,12 @@ export default {
       const community = document.querySelector(".navbar__community")
       menus.classList.toggle("active")
       community.classList.toggle("active")
+    },
+    loginToggle(){
+      this.$emit("msg", 'login');
+    },
+    registToggle(){
+      this.$emit("msg", 'regist');
     },
   },
 
