@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import Code, Fpopl, Card
+from api.models import Code, Fpopl, Card, CoronaData
 
 
 class CodeSerializer(serializers.ModelSerializer):
@@ -36,3 +36,16 @@ class CardSerializer(serializers.ModelSerializer):
                   'mrhst_induty_cl_nm',
                   'selng_cascnt',
                   'salamt')
+
+
+class CoronaDataSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CoronaData
+        fields = ('serial_number',
+                  'patient_number',
+                  'date',
+                  'dong',
+                  'overseas',
+                  'route',
+                  'discharge')

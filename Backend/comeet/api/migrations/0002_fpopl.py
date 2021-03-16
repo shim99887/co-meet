@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('_id', models.IntegerField(primary_key=True, serialize=False)),
                 ('date', models.CharField(max_length=20)),
-                ('per_time', models.IntegerField()),
+                ('per_time', models.CharField(max_length=20)),
                 ('age_range', models.IntegerField()),
                 ('sex', models.CharField(max_length=10)),
                 ('city', models.CharField(max_length=10)),
