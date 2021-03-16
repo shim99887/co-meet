@@ -36,7 +36,6 @@ import Navbar from "../components/navbar.vue";
 export default {
   components: {
     UserForm,
-    Navbar,
   },
   data() {
     return {
