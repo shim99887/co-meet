@@ -68,3 +68,9 @@
         <a href="Document/Wireframe/Wireframe.md"><li> Wireframe</li></a>
     </ul>
 </details>
+<details>
+    <summary> Implementation Part</summary>
+    <ul>
+        <a href="Document/Implementation part/Implmt.md"><li> Implementation Part</li></a>
+    </ul>
+</details>
