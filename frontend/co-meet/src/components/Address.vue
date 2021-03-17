@@ -123,7 +123,20 @@
   .contents__description {
     font-size: 0.9em;
   }
-
+  @media screen and (max-width: 48rem) {
+    .address {
+      margin-top: 100px;
+      display: flex;
+      flex-direction: column;
+    }
+    .location {
+      width: 100%;
+      margin-bottom: 5%;
+    }
+    .location-list {
+      width: 100%;
+    }
+  }
 </style>
 
 <script>

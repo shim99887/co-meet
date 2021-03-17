@@ -1,5 +1,6 @@
 <template>
   <div class="reccom">
+    <Navbar />
     <Address />
     <Graph />
     <Reason />
@@ -10,9 +11,11 @@
 import Graph from "../components/Graph.vue"
 import Address from "../components/Address.vue"
 import Reason from "../components/Reason.vue"
+import Navbar from "../components/navbar.vue"
 
 export default {
   components: {
+    Navbar,
     Address,
     Graph,
     Reason,
