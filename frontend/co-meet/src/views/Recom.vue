@@ -3,14 +3,14 @@
     <Navbar />
     <Address />
     <Graph />
-    <Reason />
+    <Explain />
   </div>
 </template>
 
 <script>
 import Graph from "../components/Graph.vue"
 import Address from "../components/Address.vue"
-import Reason from "../components/Reason.vue"
+import Explain from "../components/Explain.vue"
 import Navbar from "../components/navbar.vue"
 
 export default {
@@ -18,7 +18,7 @@ export default {
     Navbar,
     Address,
     Graph,
-    Reason,
+    Explain,
   },
 
 }
@@ -26,7 +26,7 @@ export default {
 
 <style>
   .reccom {
-    width: 94vw;
+    width: 93vw;
     margin: 10% auto 0 auto;
   }
 </style>
