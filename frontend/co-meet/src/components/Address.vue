@@ -89,6 +89,7 @@
   .location__my-location:hover {
     background-color: #41b6e6;
     color: #eeeeee;
+    box-shadow: 0.5px 0.5px grey;
   }
   .search-location {
     display: flex;
@@ -107,6 +108,7 @@
   .btn:hover {
     background-color: #001871;
     color: #eeeeee;
+    box-shadow: 0.5px 0.5px grey;
   }
   .terms {
     padding: 12px
@@ -134,6 +136,7 @@
   .list__contents:hover {
     color: #eeeeee;
     background-color: #ec8a8a;
+    box-shadow: 0.5px 0.5px grey;
   }
   .contents__title {
     font-weight: 600;
@@ -142,7 +145,20 @@
   .contents__description {
     font-size: 0.9em;
   }
-
+  @media screen and (max-width: 48rem) {
+    .address {
+      margin-top: 100px;
+      display: flex;
+      flex-direction: column;
+    }
+    .location {
+      width: 100%;
+      margin-bottom: 5%;
+    }
+    .location-list {
+      width: 100%;
+    }
+  }
 </style>
 
 <script>

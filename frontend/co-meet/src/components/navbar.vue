@@ -1,28 +1,33 @@
 <template>
 <div>
   <div id="navbar">
-    <div class="navbar__logo">
-      <img src="@/assets/Logo.png" alt="logo">
-      <!-- 이거 라우트 링크 써야됌 -->
-      <a href="#">Co-Meet</a>
-    </div>
+
+      <div class="navbar__logo">
+        <img src="@/assets/Logo.png" alt="logo">
+        <!-- 이거 라우트 링크 써야됌 -->
+        <a href="#">Co-Meet</a>
+
+      <a href="#" 
+      class="navbar__toggle"
+      @click="onToggle"
+      >
+        <i class="fas fa-bars"></i>
+      </a>
+
+      </div>
+
+
     <ul class="navbar__menus">
       <router-link to="/recommendation" class="navbar__community__button">
         <li>지역 추천</li>
       </router-link>
     </ul>
+  <!-- 이것도 라우터 링크 써야됌 -->
     <ul class="navbar__community">
       <a class="navbar__community__button" href="#" @click="loginToggle"><li>로그인</li></a>
       <a class="navbar__community__button" href="#" @click="registToggle"><li>회원 가입</li></a>
     </ul>
   </div>
-  <!-- 이것도 라우터 링크 써야됌 -->
-  <a href="#" 
-   class="navbar__toggle"
-   @click="onToggle"
-  >
-    <i class="fas fa-bars"></i>
-  </a>
 </div>
 </template>
 
@@ -57,7 +62,7 @@ export default {
     position: absolute;
     top: -100%;
     left: 2%;
-    width: 95vw;
+    width: 93.5vw;
     display: flex;
     justify-content: space-between;
     padding: 0.6rem;
@@ -65,7 +70,7 @@ export default {
     margin-left: auto;
     background-color: rgba(0, 0, 0, 0.6);
     border-radius: 5px;
-    animation: anim4 2s forwards 2.0s;
+    animation: anim4 2.0s forwards 1.0s;
   }
   @keyframes anim4 {
   from {
@@ -120,21 +125,22 @@ export default {
   .navbar__toggle {
     /* color: var(--navbar--text-color); */
     text-decoration: none;
-    position: relative;
-    right: -88%;
-    top: 1.35em;
+    position: absolute;
+    right: 5%;
+    display: none !important;
+    
     z-index: 1;
-    display: none;
     font-size: 1.6rem;
     color: #ffb6c1;
-    width: fit-content;
+    /* width: fit-content; */
   }
   @media screen and (max-width: 48rem) {
     #navbar {
       flex-direction: column;
+      background-color: rgba(0, 0, 0, 0.9);
     }
     .navbar__toggle {
-      display: block;
+      display: block !important;
 
     }
     .navbar__community__button {
@@ -156,7 +162,6 @@ export default {
     .navbar__community.active {
       display: flex;
     }
-
   }
 
 </style>
