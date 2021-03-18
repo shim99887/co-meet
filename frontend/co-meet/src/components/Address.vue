@@ -6,11 +6,30 @@
           <h4 class="explain__description">현재 위치 또는<br>직접 현재 위치를 입력하실 수 있습니다.</h4>
         </div>
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
-        <button href="#" class="location__my-location text-bold" >내 현재 위치</button>
+        <button href="#" class="location__my-location text-bold"   >내 현재 위치</button>
         <div class="search-location">
-          <input type="text" class="location-text">
-          <button class="btn text-bold">위치 입력</button>
+          <input type="text" disabled class="location-text" v-model="location">
+
+    <v-dialog
+      v-model="dialog"
+      width="500"
+    >
+      <template v-slot:activator="{ on, attrs }">
+        <input type="button"
+          class="btn text-bold"
+          v-bind="attrs"
+          v-on="on"
+          value="위치 입력"
+        >
+      </template>
+
+      <v-card>
+        <DaumPostcode :on-complete="handleAddress"/>
+      </v-card>
+    </v-dialog>
+
         </div>
+        <div></div>
         <div class="terms">
           <button class="location__terms btn text-bold">개인 정보 이용 동의서</button>
           <input id="agree" type="checkbox" class="terms-checkbox">
@@ -34,7 +53,7 @@
       </section>
   </div>
 </template>
-
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <style>
   .explain__title, .explain__description,
   .search-location, .terms {
@@ -143,7 +162,26 @@
 </style>
 
 <script>
+import DaumPostcode from "vuejs-daum-postcode";
+
 export default {
+  created(){
+  },
+    data(){
+      return{
+        location: '',
+        dialog: false,
+      }
+    },
+    components:{
+      DaumPostcode,
+    },
+ methods:{
+      handleAddress: function(data) {
+        this.location = data.jibunAddress;
+        this.dialog = false;
+      },
+    },
 
 }
 </script>

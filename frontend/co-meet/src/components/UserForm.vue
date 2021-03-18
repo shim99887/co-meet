@@ -50,6 +50,11 @@
 <script>
 
 export default {
+  props:{
+    msg:{
+      type:String
+    }
+  },
     methods: {
         
         login() {

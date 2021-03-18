@@ -8228,6 +8228,11 @@ vue-cli-plugin-vuetify@~2.2.2:
     semver "^7.1.2"
     shelljs "^0.8.3"
 
+vue-daum-postcode@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.npmjs.org/vue-daum-postcode/-/vue-daum-postcode-0.9.0.tgz"
+  integrity sha512-9nlPp4MlMyMlpmd0tHBQqzvctZldhaN/uEl+W7nWSQIDHcsUvsFF1oCbzFVpz1fexjPeFrn+rmtPyk8/dthexA==
+
 vue-demi@^0.6.0:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/vue-demi/-/vue-demi-0.6.2.tgz"
@@ -8308,6 +8313,11 @@ vue@^2.6.11:
   version "2.6.12"
   resolved "https://registry.npm.taobao.org/vue/download/vue-2.6.12.tgz?cache=0&sync_timestamp=1614614904397&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fvue%2Fdownload%2Fvue-2.6.12.tgz"
   integrity sha1-9evU+mvShpQD4pqJau1JBEVskSM=
+
+vuejs-daum-postcode@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.npmjs.org/vuejs-daum-postcode/-/vuejs-daum-postcode-1.0.4.tgz"
+  integrity sha512-xkKqhehDcZVrLAwA1bzbk1E9wA1v4qYcZnddso6W67snv9CWoQzhmlyvRr6LmaFNS4h53ja4paWpuiLXW9fA3g==
 
 vuetify-loader@^1.7.0:
   version "1.7.2"
