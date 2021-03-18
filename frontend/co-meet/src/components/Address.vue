@@ -8,12 +8,28 @@
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
         <button href="#" class="location__my-location text-bold"   >내 현재 위치</button>
         <div class="search-location">
-          <!-- <input type="text" class="location-text" v-text="location"> -->
-          {{location}}
-          <!-- {{this.location}} -->
-          <input type="button" class="btn text-bold"  @click="sample4_execDaumPostcode" value="우편번호 찾기">
-          <!-- <button  @click="sample4_execDaumPostcode">위치 입력</button> -->
+          <input type="text" disabled class="location-text" v-model="location">
+
+    <v-dialog
+      v-model="dialog"
+      width="500"
+    >
+      <template v-slot:activator="{ on, attrs }">
+        <input type="button"
+          class="btn text-bold"
+          v-bind="attrs"
+          v-on="on"
+          value="위치 입력"
+        >
+      </template>
+
+      <v-card>
+        <DaumPostcode :on-complete="handleAddress"/>
+      </v-card>
+    </v-dialog>
+
         </div>
+        <div></div>
         <div class="terms">
           <button class="location__terms btn text-bold">개인 정보 이용 동의서</button>
           <input id="agree" type="checkbox" class="terms-checkbox">
@@ -130,22 +146,26 @@
 </style>
 
 <script>
+import DaumPostcode from "vuejs-daum-postcode";
+
 export default {
+  created(){
+  },
     data(){
       return{
-        location: 'asd',
+        location: '',
+        dialog: false,
       }
     },
- methods:{
-    sample4_execDaumPostcode() {
-      this.location = new daum.Postcode({
-          oncomplete(data) {
-            console.log(data);
-            return data.jibunAddress;
-          }
-      }).open();
-
+    components:{
+      DaumPostcode,
     },
-  }
+ methods:{
+      handleAddress: function(data) {
+        this.location = data.jibunAddress;
+        this.dialog = false;
+      },
+    },
+
 }
 </script>
