@@ -7,6 +7,9 @@
         </div>
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
         <button href="#" class="location__my-location text-bold"   >내 현재 위치</button>
+        <div class="text-center">
+          혹은
+        </div>
         <div class="search-location">
           <input type="text" disabled class="location-text" v-model="location">
 
