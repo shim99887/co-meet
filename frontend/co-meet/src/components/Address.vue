@@ -3,39 +3,110 @@
       <section class="location">
         <div class="explain">
           <h2 class="explain__title">약속장소에 적합한 장소를 추천해드립니다</h2>
-          <h4 class="explain__description">현재 위치 또는<br>직접 현재 위치를 입력하실 수 있습니다.</h4>
+          <h4 class="explain__description">현재 위치 또는<br>직접 현재 위치를 입력하실 수 있습니다.<br> <b>한 가지의 방법을 선택하시면, 다른 한가지 방법은 사용하실 수 없습니다.</b></h4>
         </div>
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
-        <button href="#" class="location__my-location text-bold"   >내 현재 위치</button>
-        <div class="text-center">
-          혹은
+        <button href="#" class="location__my-location text-bold"
+        @click="findCurrentLocation">
+          내 현재 위치
+        </button>
+        <div class="text-center or-text">
+          <b>혹은</b>
         </div>
         <div class="search-location">
           <input type="text" disabled class="location-text" v-model="location">
-
-    <v-dialog
-      v-model="dialog"
-      width="500"
-    >
-      <template v-slot:activator="{ on, attrs }">
-        <input type="button"
-          class="btn text-bold"
-          v-bind="attrs"
-          v-on="on"
-          value="위치 입력"
-        >
-      </template>
-
-      <v-card>
-        <DaumPostcode :on-complete="handleAddress"/>
-      </v-card>
-    </v-dialog>
+          <v-dialog
+            v-model="dialog"
+            width="500"
+          >
+          <template v-slot:activator="{ on, attrs }">
+            <input type="button"
+              class="btn text-bold"
+              v-bind="attrs"
+              v-on="on"
+              value="위치 입력"
+              @click="findInputLocation"
+            >
+          </template>
+          <v-card>
+            <DaumPostcode :on-complete="handleAddress"/>
+          </v-card>
+        </v-dialog>
 
         </div>
-        <div></div>
+
         <div class="terms">
-          <button class="location__terms btn text-bold">개인 정보 이용 동의서</button>
-          <input id="agree" type="checkbox" class="terms-checkbox">
+          <v-dialog
+            v-model="dialogTerms"
+            fullscreen
+            hide-overlay
+            transition="dialog-bottom-transition"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <button
+                v-bind="attrs"
+                v-on="on"
+                class="location__terms btn text-bold"
+              >
+                개인 정보 이용 동의서
+              </button>
+            </template>
+            <v-card>
+              <v-toolbar
+                dark
+                color="#ffb6c1"
+              >
+              <v-btn
+                icon
+                dark
+                @click="dialogTerms = false"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+              <v-toolbar-title>개인 정보 수집 이용 동의서</v-toolbar-title>
+              <v-spacer></v-spacer>
+              </v-toolbar>
+
+              <v-container class="terms__body">
+                <b>Ⅰ. 개인정보의 수집 및 이용 동의서 </b> <br>
+                - 이용자가 제공한 모든 정보는 다음의 목적을 위해 활용하며, 하기 목적 이외의 용도로는 사용되지 않습니다.<br>
+                ① 개인정보 수집 항목 및 수집·이용 목적<br>
+                가) 수집 항목 (필수항목)<br>
+                - 주소, 전화번호(자택, 휴대전화), 이메일, 신청서에 기재된 정보 또는 신청자가 제공한 정보<br>
+                나) 수집 및 이용 목적<br>
+                - 현재 위치 파악과 안전 지역 추천 진행<br>
+                - 이용자의 위치 및 자격확인<br>
+                - 회원 정보 자원관리<br>
+                ② 개인정보 보유 및 이용기간<br>
+                - 수집·이용 동의일로부터 개인정보의 수집·이용목적을 달성할 때까지<br>
+                ③ 동의거부관리<br>
+                - 귀하께서는 본 안내에 따른 개인정보 수집, 이용에 대하여 동의를 거부하실 권리가 있습니다. 다만,<br>
+                귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 장학생 선발 과정에 있어 불이익이 발생할 수<br>
+                있음을 알려드립니다<br>
+                <br>
+                <b>Ⅱ. 고유식별정보 처리 동의서</b><br>
+                ① 고유식별정보 수집 항목 및 수집·이용 목적<br>
+                가) 수집 항목 (필수항목)<br>
+                - 이메일<br>
+                나) 수집 및 이용 목적<br>
+                - 현재 위치 파악과 안전 지역 추천 진행<br>
+                - 이용자의 위치 및 자격확인<br>
+                - 회원 정보 자원관리<br>
+                ② 개인정보 보유 및 이용기간<br>
+                - 수집·이용 동의일로부터 개인정보의 수집·이용목적을 달성할 때까지<br>
+                ③ 동의거부관리<br>
+                - 귀하께서는 본 안내에 따른 개인정보 수집, 이용에 대하여 동의를 거부하실 권리가 있습니다. 다만,<br>
+                귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 장학생 선발 과정에 있어 불이익이 발생할 수<br>
+                있음을 알려드립니다.<br>
+              </v-container>
+
+            </v-card>
+          </v-dialog>
+
+          <input id="agree" type="checkbox" value="agreed" 
+            class="terms-checkbox" 
+            v-model="agreed"
+          >
           <label for="agree">동의</label>
         </div>
           <button href="#" class="btn terms__recom text-bold">약속 장소 추천 받기 !</button>
@@ -57,6 +128,55 @@
   </div>
 </template>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+import DaumPostcode from "vuejs-daum-postcode";
+
+export default {
+    components:{
+      DaumPostcode,
+    },
+    data(){
+      return{
+        agreed: false,
+        dialogTerms: false,
+        location: '',
+        dialog: false,
+        selectMethod : '',
+      }
+    },
+
+ methods:{
+      handleAddress: function(data) {
+        this.location = data.jibunAddress;
+        console.log(data)
+        this.dialog = false;
+      },
+      findCurrentLocation() {
+        console.log('click cur location')
+        this.selectMethod = 'currentLocation'
+      },
+      findInputLocation() {
+        console.log('click input location')
+        this.selectMethod = 'inputLocation'
+      },
+    },
+  watch: {
+    selectMethod: function () {
+      const inputLocation = document.querySelector('.search-location')
+      const currentLocation = document.querySelector('.location__my-location')
+      const or = document.querySelector('.or-text')
+      if (this.selectMethod === 'currentLocation') {
+        inputLocation.style.display='none'
+        or.style.display = 'none'
+      } else {
+        currentLocation.style.display='none'
+        or.style.display = 'none'
+      }
+    },
+  },
+}
+</script>
+
 <style>
   .explain__title, .explain__description,
   .search-location, .terms {
@@ -73,10 +193,9 @@
   }
   .location {
     padding: 10px 22px;
-    width: 50%;
+    width: 55%;
     border: 3px solid #ffb6c1;
     border-radius: 5px;
-    
   }
   .location__terms {
     margin-right : 3%;
@@ -102,6 +221,7 @@
     background-color: gainsboro;
     border-radius: 5px;
     width: 65%;
+    margin-right: 1em;
   }
   .btn {
     border: 1px solid #001871;
@@ -119,6 +239,9 @@
   .terms__recom {
     display: block;
     margin: 3% auto 0 auto;
+  }
+  .terms__body {
+    padding: 2rem;
   }
   /* 로케이션 리스트 ! */
   .location-list{
@@ -164,27 +287,3 @@
   }
 </style>
 
-<script>
-import DaumPostcode from "vuejs-daum-postcode";
-
-export default {
-  created(){
-  },
-    data(){
-      return{
-        location: '',
-        dialog: false,
-      }
-    },
-    components:{
-      DaumPostcode,
-    },
- methods:{
-      handleAddress: function(data) {
-        this.location = data.jibunAddress;
-        this.dialog = false;
-      },
-    },
-
-}
-</script>
