@@ -5,7 +5,7 @@
       <div class="navbar__logo">
         <img src="@/assets/logo.png" alt="logo">
         <!-- 이거 라우트 링크 써야됌 -->
-        <a href="#">Co-Meet</a>
+        <a href="/">Co-Meet</a>
 
       <a href="#" 
       class="navbar__toggle"

@@ -1,74 +1,110 @@
 <template>
   <v-container style="opacity:0.9;">
     <div class="form-wrap text-center" style="border-radius:10px;">
-        <v-row align="center" justify="center" class="text-center mt-5">
-            <v-btn-toggle>
-                <v-btn outlined color="pink" style="border-top-left-radius:10px;border-bottom-left-radius:10px;" width="100px" @click="login">
-                Login
-                </v-btn>
-                <v-btn outlined color="pink" style="border-top-right-radius:10px;border-bottom-right-radius:10px;" width="100px" @click="register">
-                    REGISTER
-                </v-btn>
-            </v-btn-toggle>
-        </v-row>            
-        
+      <v-row align="center" justify="center" class="text-center mt-5">
+        <v-btn-toggle>
+          <v-btn
+            outlined
+            color="pink"
+            style="border-top-left-radius:10px;border-bottom-left-radius:10px;"
+            width="100px"
+            @click="login"
+          >
+            Login
+          </v-btn>
+          <v-btn
+            outlined
+            color="pink"
+            style="border-top-right-radius:10px;border-bottom-right-radius:10px;"
+            width="100px"
+            @click="register"
+          >
+            REGISTER
+          </v-btn>
+        </v-btn-toggle>
+      </v-row>
 
       <form id="login" action="" class="input-group">
-          <v-text-field label="Email"/>
-          <v-text-field type="password" label="Password"/>
+        <v-text-field label="Email" :rules="emailRules" />
+        <v-text-field type="password" label="Password" />
         <v-row align="center">
-            <v-col cols="1">
-                <v-checkbox/>
-            </v-col>
-            <v-col cols="6" style="font-size:13px;">
-                Remember Password
-            </v-col>
+          <v-col cols="1">
+            <v-checkbox />
+          </v-col>
+          <v-col cols="6" style="font-size:13px;">
+            Remember Password
+          </v-col>
         </v-row>
         <v-row justify="center" align="center">
-                <v-btn outlined color="pink">로그인</v-btn>
+          <v-btn outlined color="pink">로그인</v-btn>
         </v-row>
       </form>
       <form id="register" action="" class="input-group">
-          <v-text-field label="Email"/>
-          <v-text-field type="password" label="Password"/>
-          <v-text-field type="password" label="Password Confirm"/>
-          <v-row align="center">
-              <v-col cols="1">
-                <v-checkbox/>
-            </v-col>
-            <v-col cols="6" style="font-size:13px;">
-                Terms and conditions
-            </v-col>
-          </v-row>
-          <v-row justify="center">
-                <v-btn outlined color="pink">회원가입</v-btn>
-          </v-row>
+        <v-row align="center">
+          <v-col cols="10">
+            <v-text-field label="Email" v-model="user.email" :rules="emailRules" />
+          </v-col>
+          <v-col cols="2">
+            <v-btn width="40px" outlined color="pink">중복체크</v-btn>
+          </v-col>
+        </v-row>
+        <v-text-field type="password" label="Password" v-model="user.pwd" :rules="pwdRules"/>
+        <v-text-field type="password" label="Password Confirm" :rules="pwdChkRules" v-model="user.pwdChk" />
+        <v-row align="center">
+          <v-col cols="1">
+            <v-checkbox />
+          </v-col>
+          <v-col cols="6" style="font-size:13px;">
+            Terms and conditions
+          </v-col>
+        </v-row>
+        <v-row justify="center">
+          <v-btn outlined color="pink">회원가입</v-btn>
+        </v-row>
       </form>
     </div>
   </v-container>
 </template>
 <script>
-
 export default {
-  props:{
-    msg:{
-      type:String
+  data(){
+    return{
+      user:{
+        email:'',
+        pwd:'',
+        pwdChk:'',
+      },
+      emailRules:[
+        v => !!v || 'Email is required',
+        v => /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i.test(v) || 'Email must be valid',
+      ],
+      pwdRules:[
+        v => !!v || 'Password is required',
+        v => v.length >= 8 || 'Password must be over 8',
+      ],
+      pwdChkRules:[
+        v => v == this.user.pwd || 'Password Check must be equal'
+      ],
     }
   },
-    methods: {
-        
-        login() {
-        var x = document.getElementById("login");
-        var y = document.getElementById("register");
-        var z = document.getElementById("btn");
+  props: {
+    msg: {
+      type: String,
+    },
+  },
+  methods: {
+    login() {
+      var x = document.getElementById("login");
+      var y = document.getElementById("register");
+      var z = document.getElementById("btn");
       x.style.left = "50px";
       y.style.left = "450px";
       z.style.left = "0";
     },
     register() {
-        var x = document.getElementById("login");
-        var y = document.getElementById("register");
-        var z = document.getElementById("btn");
+      var x = document.getElementById("login");
+      var y = document.getElementById("register");
+      var z = document.getElementById("btn");
       x.style.left = "-400px";
       y.style.left = "50px";
       z.style.left = "110px";
@@ -82,13 +118,14 @@ export default {
   padding: 0;
   font-family: sans-serif;
 }
+
 .wrap {
-    height: 100%;
-    width: 100%;
-    background-position: center;
-    opacity: 0.8;
-    background-size: cover;
-    /* position: absolute; */
+  height: 100%;
+  width: 100%;
+  background-position: center;
+  opacity: 0.8;
+  background-size: cover;
+  /* position: absolute; */
 }
 .form-wrap {
   width: 380px;
