@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'user.apps.UserConfig',
     'api.apps.ApiConfig',
     'corsheaders',
     'drf_yasg',  # Swagger
