@@ -1,5 +1,6 @@
 from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
 from django.http.response import JsonResponse
@@ -21,18 +22,35 @@ class UserViewSet(viewsets.GenericViewSet,
         if not Users.exists():
             raise Http404()
 
+        print(Users)
+
         return Users
 
     @swagger_auto_schema(request_body=UserBodySerializer)
-    def add(self, request):
-        Users = User.objects.filter(**request.data)
-        if Users.exists():
-            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+    def add_User(self, request):
+        Users = User.objects.filter(**request.data.email)
+        # if Users.exists():
+        #     return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
         User_serializer = UserSerializer(data=request.data, partial=True)
         if not User_serializer.is_valid():
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
-        User = User_serializer.save()
+        Users = User_serializer.save()
 
         return Response(UserSerializer(User).data, status=status.HTTP_201_CREATED)
+
+
+class EmailViewSet(viewsets.GenericViewSet,
+                   mixins.ListModelMixin,
+                   View):
+
+    serializer_class = UserSerializer
+
+    def email_vaild_check(self, request):
+        Users = User.objects.filter(**request.data.email)
+
+        if Users.exists():
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        return Response(True, status=status.HTTP_201_CREATED)
