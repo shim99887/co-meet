@@ -22,8 +22,6 @@ class UserViewSet(viewsets.GenericViewSet,
         if not Users.exists():
             raise Http404()
 
-        print(Users)
-
         return Users
 
     @swagger_auto_schema(request_body=UserBodySerializer)
@@ -48,9 +46,27 @@ class EmailViewSet(viewsets.GenericViewSet,
     serializer_class = UserSerializer
 
     def email_vaild_check(self, request):
-        Users = User.objects.filter(**request.data.email)
+        Emails = User.objects.filter(**request.data.email)
 
-        if Users.exists():
+        User_serializer = UserBodySerializer(
+            data=request.data, partial=True)
+
+        if Emails.exists():
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
-        return Response(True, status=status.HTTP_201_CREATED)
+        return Response(True, status=status.HTTP_200_OK)
+
+
+# class NicknameViewSet(viewsets.GenericViewSet,
+#                       mixins.ListModelMixin,
+#                       View):
+
+#     serializer_class = UserSerializer
+
+#     def Nickname_vaild_check(self, request):
+#         Users = User.objects.filter(**request.data.nickname)
+
+#         if Users.exists():
+#             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+
+#         return Response(True, status=status.HTTP_201_CREATED)
