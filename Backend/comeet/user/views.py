@@ -45,13 +45,18 @@ class EmailViewSet(viewsets.GenericViewSet,
 
     serializer_class = UserSerializer
 
-    def email_vaild_check(self, request):
-        Emails = User.objects.filter(**request.data.email)
+    def email_vaild_check(self, *args, **kwargs):
 
-        User_serializer = UserBodySerializer(
-            data=request.data, partial=True)
+        Emails = User.objects.filter(email=self.kwargs['email'])
+
+        print(Emails)
 
         if Emails.exists():
+            print(1)
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        if not "@" in self.kwargs['email']:
+            print(2)
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
         return Response(True, status=status.HTTP_200_OK)
