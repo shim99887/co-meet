@@ -1,10 +1,13 @@
 
 from django.urls import path, include
 from django.conf.urls import url
-from . import views
+from .views import UserViewSet
+# from . import views
 
 urlpatterns = [
-    # path('', views.index, name='index'),
-    url(r'^user$', views.User_list),
-    url(r'^user/checkemail', views.check_email),
+
+    path('', UserViewSet.as_view(
+        {"get": "list", "post": "add"}), name="User"),
+    # path("''/<string:email>",
+    #      UserViewSet.as_view({"get": "list"}), name="email"),
 ]

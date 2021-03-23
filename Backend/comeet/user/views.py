@@ -1,38 +1,38 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.http.response import JsonResponse
+from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import api_view
+from django.shortcuts import render
+from django.http import HttpResponse, Http404
+from django.http.response import JsonResponse
+from django.views import View
 from user.models import User
-from user.serializers import UserSerializer
-
-# Create your views here.
-
-
-@api_view(['GET'])
-def User_list(request):
-    # GET list of user, POST a new user, DELETE all user
-    if request.method == 'GET':
-        user = User.objects.all()
-
-        #title = request.GET.get('title', None)
-        # if title is not None:
-        #     addrs = addrs.filter(title__icontains=title)
-
-        user.serializers = UserSerializer(user, many=True)
-        return JsonResponse(user.serializers.data, safe=False)
+from .serializers import UserSerializer, UserBodySerializer
+from drf_yasg.utils import swagger_auto_schema
 
 
-@api_view(['GET'])
-def check_email(request):
-    if request.method == 'GET':
-        try:
-            user = User.objects.get(email=request.GET['email'])
-        except Exception as e:
-            user = None
+class UserViewSet(viewsets.GenericViewSet,
+                  mixins.ListModelMixin,
+                  View):
 
-        result = {
-            'result': 'success',
-            'data': "not exist" if user is None else "exist"
-        }
+    serializer_class = UserSerializer   # 이 클래스형 view 에서 사용할 시리얼라이저를 선언
 
-        return JsonResponse(result)
+    def get_queryset(self):
+
+        Users = User.objects.all()
+        if not Users.exists():
+            raise Http404()
+
+        return Users
+
+    @swagger_auto_schema(request_body=UserBodySerializer)
+    def add(self, request):
+        Users = User.objects.filter(**request.data)
+        if Users.exists():
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        User_serializer = UserSerializer(data=request.data, partial=True)
+        if not User_serializer.is_valid():
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        User = User_serializer.save()
+
+        return Response(UserSerializer(User).data, status=status.HTTP_201_CREATED)
