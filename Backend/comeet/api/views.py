@@ -4,6 +4,8 @@ from django.http.response import JsonResponse
 from rest_framework.decorators import api_view
 from api.models import Code, Fpopl, Card, CoronaData
 from api.serializers import CodeSerializer, FpoplSerializer, CardSerializer, CoronaDataSerializer
+
+from django.core.cache import cache
 # Create your views here.
 
 
@@ -22,6 +24,11 @@ def Code_list(request):
         #     addrs = addrs.filter(title__icontains=title)
 
         api.serializers = CodeSerializer(api, many=True)
+
+        # 데이터를 하루동안 저장 
+        cache.set("corona", api.serializers.data, 24 * 60 * 60)
+        print(cache.get("corona"))
+
         return JsonResponse(api.serializers.data, safe=False)
 
 
@@ -36,6 +43,11 @@ def CoronaData_list(request):
         #     addrs = addrs.filter(title__icontains=title)
 
         api.serializers = CoronaDataSerializer(api, many=True)
+
+        # 데이터를 하루동안 저장 
+        cache.set("corona", api.serializers.data, 24 * 60 * 60)
+        print(cache.get("corona"))
+
         return JsonResponse(api.serializers.data, safe=False)
 
 
@@ -50,4 +62,9 @@ def Fpopl_list(request):
         #     addrs = addrs.filter(title__icontains=title)
 
         api.serializers = FpoplSerializer(api, many=True)
+        
+        # 데이터를 하루동안 저장 
+        cache.set("fpopl", api.serializers.data, 24 * 60 * 60)
+        print(cache.get("fpopl"))
+        
         return JsonResponse(api.serializers.data, safe=False)
