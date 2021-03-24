@@ -1,17 +1,15 @@
 
 from django.urls import path, include
 from django.conf.urls import url
-from .views import UserViewSet, EmailViewSet
+from .views import UserViewSet, EmailViewSet, NickNameViewSet
 # from . import views
 
 urlpatterns = [
 
     path('', UserViewSet.as_view(
         {"get": "list", "post": "add_User"}), name="User"),
-    path('<email>', EmailViewSet.as_view(
-        {"get": "email_vaild_check"}), name="Email"),
-    # path('nickname', NicknameViewSet.as_view(
-    #     {"get": "Nickname_vaild_check"}), name="Nickname"),
-    # path("''/<string:email>",
-    #      UserViewSet.as_view({"get": "list"}), name="email"),
+    path('email/<email>', EmailViewSet.as_view(
+        {"get": "email_vaild_check", "delete": "delete_user"}), name="Email"),
+    path('nickname/<nickname>', NickNameViewSet.as_view(
+        {"get": "nickname_vaild_check", "post": "change_nickname"}), name="NickName"),
 ]

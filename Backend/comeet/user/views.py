@@ -24,7 +24,7 @@ class UserViewSet(viewsets.GenericViewSet,
 
         return Users
 
-    @swagger_auto_schema(request_body=UserBodySerializer)
+    @swagger_auto_schema(request_body=UserBodySerializer)   # post에만 붙일 수 있음.
     def add_User(self, request):
         Users = User.objects.filter(**request.data.email)
         # if Users.exists():
@@ -49,29 +49,45 @@ class EmailViewSet(viewsets.GenericViewSet,
 
         Emails = User.objects.filter(email=self.kwargs['email'])
 
-        print(Emails)
-
         if Emails.exists():
-            print(1)
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
         if not "@" in self.kwargs['email']:
-            print(2)
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
         return Response(True, status=status.HTTP_200_OK)
 
+    def delete_user(self, *args, **kwargs):
 
-# class NicknameViewSet(viewsets.GenericViewSet,
-#                       mixins.ListModelMixin,
-#                       View):
+        Emails = User.objects.filter(email=self.kwargs['email'])
 
-#     serializer_class = UserSerializer
+        if not Emails.exists():
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
-#     def Nickname_vaild_check(self, request):
-#         Users = User.objects.filter(**request.data.nickname)
+        if not "@" in self.kwargs['email']:
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
-#         if Users.exists():
-#             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+        User.objects.filter(email=self.kwargs['email']).delete()
 
-#         return Response(True, status=status.HTTP_201_CREATED)
+        return Response(True, status=status.HTTP_200_OK)
+
+
+class NickNameViewSet(viewsets.GenericViewSet,
+                      mixins.ListModelMixin,
+                      View):
+
+    serializer_class = UserSerializer
+
+    def nickname_vaild_check(self, *args, **kwargs):
+
+        NickNames = User.objects.filter(nickname=self.kwargs['nickname'])
+
+        if NickNames.exists():
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        return Response(True, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(request_body=UserBodySerializer)
+    def change_nickname(self, request):
+
+        return Response(True, status=status.HTTP_200_OK)
