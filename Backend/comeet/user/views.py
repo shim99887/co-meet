@@ -14,7 +14,7 @@ from drf_yasg.utils import swagger_auto_schema
 import json
 from .token import user_activation_token
 from .text import message
-from comeet.settings import SECRET_KEY, EMAIL
+from comeet.settings import SECRET_KEY, REDIRECT_PAGE
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.shortcuts import redirect
@@ -60,7 +60,8 @@ class UserViewSet(viewsets.GenericViewSet,
 
         mail_title = "이메일 인증을 완료해주세요"
         mail_to = request.data['email']
-        email = EmailMessage(mail_title, message_data, to=[mail_to])
+        email = EmailMessage(subject=mail_title,
+                             body=message_data, to=[mail_to])
         email.send()
 
         return Response(UserSerializer(User).data, status=status.HTTP_201_CREATED)
@@ -130,7 +131,7 @@ class NickNameViewSet(viewsets.GenericViewSet,
 
 
 def message(domain, uidb64, token):
-    return f"아래 링크를 클릭하면 회원가입 인증이 완료됩니다.\n\n회원가입 링크 : http://{domain}/account/activate/{uidb64}/{token}\n\n감사합니다."
+    return f"아래 링크를 클릭하면 회원가입 인증이 완료됩니다.\n\n회원가입 링크 : http://{domain}/user/activate/{uidb64}/{token}\n\n감사합니다."
 
 
 class Activate(viewsets.GenericViewSet,
@@ -140,14 +141,14 @@ class Activate(viewsets.GenericViewSet,
 
     def get(self, request, uidb64, token):
         try:
-            uid = force_text(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=email)
+            email = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(email=email)
 
             if user_activation_token.check_token(user, token):
                 user.is_auth = True
                 user.save()
 
-                return redirect(EMAIL['REDIRECT_PAGE'])
+                return redirect(REDIRECT_PAGE)
 
             return JsonResponse({"message": "AUTH FAIL"}, status=400)
 

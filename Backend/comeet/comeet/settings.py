@@ -132,16 +132,15 @@ CACHES = {
 # Google Email
 SITE_ID = 1
 
-EMAIL = {
-    'EMAIL_BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
-    'EMAIL_USE_TLS': True,
-    'EMAIL_PORT': 587,
-    'EMAIL_HOST': 'smtp.gmail.com',
-    'EMAIL_HOST_USER': 'comeetmanager@gmail.com',
-    'EMAIL_HOST_PASSWORD': 'comeet1234',
-    'SERVER_EMAIL': 'comeetmanager',
-    'REDIRECT_PAGE': 'https://j4a203.p.ssafy.io'
-}
+DEFAULT_FROM_EMAIL = 'comeetmanager@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'comeetmanager@gmail.com'
+EMAIL_HOST_PASSWORD = 'comeet1234'
+SERVER_EMAIL = 'comeetmanager'
+REDIRECT_PAGE = 'https://j4a203.p.ssafy.io'
 
 
 # Password validation
