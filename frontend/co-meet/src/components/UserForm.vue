@@ -52,6 +52,7 @@
             <v-btn width="40px" outlined color="pink">중복체크</v-btn>
           </v-col>
         </v-row>
+        <v-text-field label="Name" :rules="nameRules" v-model="user.name"/>
         <v-text-field
           type="password"
           label="Password"
@@ -80,11 +81,14 @@
   </v-container>
 </template>
 <script>
+const SERVER_URL = process.env.VUE_APP_SERVER_URL;
+
 export default {
   data() {
     return {
       user: {
         email: "",
+        name:'',
         pwd: "",
       },
       email: "",
@@ -96,6 +100,9 @@ export default {
           /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i.test(
             v
           ) || "Email must be valid",
+      ],
+      nameRules: [
+        v => !!v || "Name is required",
       ],
       pwdRules: [
         (v) => !!v || "Password is required",
@@ -131,6 +138,15 @@ export default {
     loginComp(){
       this.$store.dispatch('LOGIN', this.user);
       
+    },
+    registComp(){
+      axios.post(`${SERVER_URL}/user`, {user})
+      .then(response => {
+        console.log(response);
+      })
+      .catch(error => {
+        alert(error);
+      })
     }
   },
 };
@@ -152,7 +168,7 @@ export default {
 }
 .form-wrap {
   width: 380px;
-  height: 480px;
+  height: 510px;
   position: relative;
   /* margin: 6% auto; */
   background: #fff;
