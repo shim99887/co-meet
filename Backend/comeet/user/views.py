@@ -2,12 +2,26 @@ from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import render
-from django.http import HttpResponse, Http404
-from django.http.response import JsonResponse
+from django.http import HttpResponse, Http404, JsonResponse
+# from django.http.response import JsonResponse
 from django.views import View
 from user.models import User
 from .serializers import UserSerializer, UserBodySerializer
 from drf_yasg.utils import swagger_auto_schema
+
+
+import jwt
+import json
+from .tokens import user_activation_token
+from .text import message
+from my_settings import SECRET_KEY, EMAIL
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.shortcuts import redirect
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.core.mail import EmailMessage
+from django.utils.encoding import force_bytes, force_text
 
 
 class UserViewSet(viewsets.GenericViewSet,
@@ -91,3 +105,12 @@ class NickNameViewSet(viewsets.GenericViewSet,
     def change_nickname(self, request):
 
         return Response(True, status=status.HTTP_200_OK)
+
+
+def send_email(request):
+    subject = "message"
+    to = ["dhpassion@naver.com"]
+    from_email = "comeetmanager@gmail.com"
+    message = "메시지 테스트"
+    EmailMessage(subject=subject, body=message,
+                 to=to, from_email=from_email).send()
