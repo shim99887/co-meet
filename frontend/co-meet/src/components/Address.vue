@@ -4,11 +4,19 @@
         <MglMap id="map" :accessToken="accessToken" :mapStyle.sync='mapStyle' v-if="mapToggle"
           @load="onMapLoaded"
         >
-          <mglMarker :coordinates="coordinates" color="#ffb6c1" >
-            <MglPopup anchor="bottom">
-              <Vcard>
+        <!-- 마커를 반복문을 돌면서 coordinate의 좌표를 넣는다. -->
+          <mglMarker :coordinates="coordinates[0]" color="#ffb6c1" >
+            <MglPopup>
+              <v-card>
                 <div>Hello, This is SSAFY!</div>
-              </Vcard>
+              </v-card>
+            </MglPopup>
+          </mglMarker>
+          <mglMarker :coordinates="coordinates[1]" color="#ffb6c1" >
+            <MglPopup>
+              <v-card>
+                <div>Hello, This is second marker!</div>
+              </v-card>
             </MglPopup>
           </mglMarker>
         </MglMap>
@@ -176,13 +184,15 @@ export default {
         this.mapToggle = true
       },
       async onMapLoaded(event) {
-        this.coordinates = [127.039280, 37.501021]
+        // 순위들 마커 리스트에 넣고
+        this.coordinates.push([127.039280, 37.501021])
+        this.coordinates.push([128, 36])
         const asyncActions = event.component.actions
+        // 순위 보여주는 비동기 함수
         const newParams = await asyncActions.flyTo({
           center: [127.039280, 37.501021],
           zoom: 11,
           speed: 0.5,
-          bearing: 11,
         })
 
         console.log(newParams)
@@ -205,6 +215,7 @@ export default {
     selectMethod: function () {
       const inputLocation = document.querySelector('.search-location')
       const currentLocation = document.querySelector('.location__my-location')
+      const or = document.querySelector('.or-text')
       if (this.selectMethod === 'currentLocation') {
         inputLocation.style.display='none'
         or.style.display = 'none'
