@@ -40,7 +40,8 @@ class UserViewSet(viewsets.GenericViewSet,
 
     @swagger_auto_schema(request_body=UserBodySerializer)   # post에만 붙일 수 있음.
     def add_User(self, request):
-        #Users = User.objects.filter(**request.data.email)
+        # print(request.data['email'])
+        Users = User.objects.filter(email=request.data['email'])
         # if Users.exists():
         #     return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -53,12 +54,12 @@ class UserViewSet(viewsets.GenericViewSet,
 
         current_site = get_current_site(request)
         domain = current_site.domain
-        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-        token = account_activation_token.make_token(user)
+        uidb64 = urlsafe_base64_encode(force_bytes(request.data['email']))
+        token = user_activation_token.make_token(User)
         message_data = message(domain, uidb64, token)
 
         mail_title = "이메일 인증을 완료해주세요"
-        mail_to = request.data.email
+        mail_to = request.data['email']
         email = EmailMessage(mail_title, message_data, to=[mail_to])
         email.send()
 
@@ -135,10 +136,12 @@ def message(domain, uidb64, token):
 class Activate(viewsets.GenericViewSet,
                mixins.ListModelMixin,
                View):
+    serializer_class = UserSerializer
+
     def get(self, request, uidb64, token):
         try:
             uid = force_text(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
+            user = User.objects.get(pk=email)
 
             if user_activation_token.check_token(user, token):
                 user.is_auth = True
