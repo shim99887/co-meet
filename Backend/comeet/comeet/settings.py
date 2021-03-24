@@ -28,7 +28,7 @@ SECRET_KEY = 'h@us1+p%s(rv@+cs^%rpx(r686)sdy47%atshhd76$&0_$(ur3'
 # 운영시에는 False로 변경을 해준다.
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'j4a203.p.ssafy.io']
+ALLOWED_HOSTS = ['localhost', 'j4a203.p.ssafy.io', '127.0.0.1']
 
 # Swagger Setting
 SWAGGER_SETTINGS = {
