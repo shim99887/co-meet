@@ -14,5 +14,5 @@ urlpatterns = [
         {"get": "nickname_vaild_check", "post": "change_nickname"}), name="NickName"),
     #path('send_email/', views.send_email, name='send_email'),
     path('activate/<str:uidb64>/<str:token>',
-         Activate.as_view({"get": "list"})),
+         Activate.as_view({"get": "get"})),
 ]

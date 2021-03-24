@@ -55,7 +55,7 @@ class UserViewSet(viewsets.GenericViewSet,
         current_site = get_current_site(request)
         domain = current_site.domain
         uidb64 = urlsafe_base64_encode(force_bytes(request.data['email']))
-        token = user_activation_token.make_token(User)
+        token = user_activation_token.make_token(Users)
         message_data = message(domain, uidb64, token)
 
         mail_title = "이메일 인증을 완료해주세요"
@@ -143,7 +143,6 @@ class Activate(viewsets.GenericViewSet,
         try:
             email = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(email=email)
-
             if user_activation_token.check_token(user, token):
                 user.is_auth = True
                 user.save()
