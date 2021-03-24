@@ -8,6 +8,12 @@ from django.http.response import JsonResponse
 from api.models import Code, Fpopl, Card, CoronaData
 from .serializers import CodeSerializer, FpoplSerializer, CardSerializer, CoronaDataSerializer
 from django.core.cache import cache
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib import rc
+import io
+import urllib, base64
 # Create your views here.
 
 
@@ -59,13 +65,38 @@ class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = CoronaDataSerializer
 
-    def get_corona_list(self, *args, **kwargs):
+    def get_corona_list(self, request, *args, **kwargs):
         corona_queryset = cache.get("corona_data")
         # 중구 데이터 출력 query가 utf-8 잘되었는지 확인
         # print(corona_queryset.filter(gugun="중구").values())
 
-        corona_json = serializers.serialize(
-            'json', corona_queryset, ensure_ascii=False)
-        print(corona_json)
+        # corona_json = serializers.serialize(
+        #     'json', corona_queryset.filter(gugun="영등포구"), ensure_ascii=False)
+
+        # response = JsonResponse(corona_json, safe= False)
+        df = pd.DataFrame(list(corona_queryset.all().values("serial_number", "date", "gugun")))
+        df = df.groupby(["gugun"], as_index=False).count()
+        # print(df)
+        
+        df = df.drop(index=[8, 26], axis=0) # 기타, 타시도 삭제
+
+        # 그래프 표현
+        rc('font', family='Malgun Gothic')
+        # 별도로, 폰트를 바꿀 경우 마이너스가 표시되지 않는 경우도 있는데 이를 막아주는 코드입니다.
+        rc('axes', unicode_minus=False)
+
+        chart = sns.barplot(x="gugun", y="serial_number", data=df)
+        chart.set_xticklabels(chart.get_xticklabels(), rotation=45)
+        plt.title("서울시 코로나 구/군별 코로나 확진자 수")
+        plt.xlabel("서울시 구/군")
+        plt.ylabel("감염자 수")
+        # plt.show()
+        fig = plt.gcf()
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png')
+        buf.seek(0)
+        string = base64.b64encode(buf.read())
+        uri = urllib.parse.quote(string)
+
+        return render(request, 'home.html', {'data':uri})
         # return JsonResponse(corona_json, safe= False)
-        return None
