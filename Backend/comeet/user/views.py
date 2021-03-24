@@ -10,11 +10,11 @@ from .serializers import UserSerializer, UserBodySerializer
 from drf_yasg.utils import swagger_auto_schema
 
 
-import jwt
+#import jwt
 import json
-from .tokens import user_activation_token
+from .token import user_activation_token
 from .text import message
-from my_settings import SECRET_KEY, EMAIL
+from comeet.settings import SECRET_KEY, EMAIL
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.shortcuts import redirect
@@ -40,15 +40,27 @@ class UserViewSet(viewsets.GenericViewSet,
 
     @swagger_auto_schema(request_body=UserBodySerializer)   # post에만 붙일 수 있음.
     def add_User(self, request):
-        Users = User.objects.filter(**request.data.email)
+        #Users = User.objects.filter(**request.data.email)
         # if Users.exists():
         #     return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
         User_serializer = UserSerializer(data=request.data, partial=True)
+
         if not User_serializer.is_valid():
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
         Users = User_serializer.save()
+
+        current_site = get_current_site(request)
+        domain = current_site.domain
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = account_activation_token.make_token(user)
+        message_data = message(domain, uidb64, token)
+
+        mail_title = "이메일 인증을 완료해주세요"
+        mail_to = request.data.email
+        email = EmailMessage(mail_title, message_data, to=[mail_to])
+        email.send()
 
         return Response(UserSerializer(User).data, status=status.HTTP_201_CREATED)
 
@@ -107,10 +119,36 @@ class NickNameViewSet(viewsets.GenericViewSet,
         return Response(True, status=status.HTTP_200_OK)
 
 
-def send_email(request):
-    subject = "message"
-    to = ["dhpassion@naver.com"]
-    from_email = "comeetmanager@gmail.com"
-    message = "메시지 테스트"
-    EmailMessage(subject=subject, body=message,
-                 to=to, from_email=from_email).send()
+# def send_email(request):
+#     subject = "message"
+#     to = ["dhpassion@naver.com"]
+#     from_email = "comeetmanager@gmail.com"
+#     message = "메시지 테스트"
+#     EmailMessage(subject=subject, body=message,
+#                  to=to, from_email=from_email).send()
+
+
+def message(domain, uidb64, token):
+    return f"아래 링크를 클릭하면 회원가입 인증이 완료됩니다.\n\n회원가입 링크 : http://{domain}/account/activate/{uidb64}/{token}\n\n감사합니다."
+
+
+class Activate(viewsets.GenericViewSet,
+               mixins.ListModelMixin,
+               View):
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+
+            if user_activation_token.check_token(user, token):
+                user.is_auth = True
+                user.save()
+
+                return redirect(EMAIL['REDIRECT_PAGE'])
+
+            return JsonResponse({"message": "AUTH FAIL"}, status=400)
+
+        except ValidationError:
+            return JsonResponse({"message": "TYPE_ERROR"}, status=400)
+        except KeyError:
+            return JsonResponse({"message": "INVALID_KEY"}, status=400)
