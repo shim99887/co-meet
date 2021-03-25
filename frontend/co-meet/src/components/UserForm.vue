@@ -65,7 +65,7 @@
         <v-row align="center">
           <v-col cols="10" style="padding: 0px;">
             <v-text-field
-              label="Name"
+              label="NickName"
               :rules="nameRules"
               v-model="user.nickname"
             />
