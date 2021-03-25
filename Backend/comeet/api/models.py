@@ -10,11 +10,18 @@ class Code(models.Model):
     brtc_nm = models.CharField(max_length=20)
     signgu_nm = models.CharField(max_length=20)
 
-class GugunLoc(models.Model):
-    _id = models.IntegerField(primary_key=True)
+
+class GugunLocate(models.Model):
+    signgu_nm = models.CharField(max_length=20, primary_key=True)
     lat = models.FloatField()
     lng = models.FloatField()
-    signgu_nm = models.CharField(max_length=20)
+
+
+class Gugun(models.Model):
+    signgu_nm = models.CharField(max_length=20, primary_key=True)
+    lat = models.FloatField()
+    lng = models.FloatField()
+
 
 class Fpopl(models.Model):
     _id = models.IntegerField(primary_key=True)
