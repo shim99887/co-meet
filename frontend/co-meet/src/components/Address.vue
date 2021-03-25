@@ -197,7 +197,6 @@ export default {
         async onMapLoaded(event) {
           // 도시 받은거 입력
           const data = this.$store.getters.get_result
-          console.log(data[0].lng, data[0].lat)
           // 순위들 마커 리스트에 넣고
           // this.coordinates.push([data[0].lng, data[0].lat])
           await this.putCoordinate(data)
