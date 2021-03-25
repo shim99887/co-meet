@@ -16,8 +16,6 @@ from matplotlib import rc
 import io
 import urllib
 import base64
-# 임시 함수(오늘 지울 것)
-import random
 # Create your views here.
 
 
@@ -72,8 +70,9 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = CoronaDataSerializer
 
     def get_corona_list(self, request, *args, **kwargs):
-        corona_queryset = cache.get("corona_data")
-        
+        corona_queryset = CoronaData.objects.all()
+        # corona_queryset = cache.get("corona_data")
+
         # 구군마다 전체 분포표
         df = pd.DataFrame(
             list(corona_queryset.all().values("serial_number", "gugun")))
@@ -82,8 +81,9 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         df = df.drop(index=[8, 26], axis=0)  # 기타, 타시도 삭제
 
         corona_json = df.to_dict()
-    
+
         return JsonResponse(corona_json, safe=False)
+
 
 class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = FpoplSerializer
@@ -124,25 +124,49 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         # 중간 지점을 기반으로 가까운 지역 리스트 조회
         nlist = nearbyArea(mid)
         # 로케이션 : lat , lng
-        temp_area = random.choice(nlist)
+        temp_area = nlist[0]
         print(temp_area)
         recomm_loc = Gugun.objects.filter(signgu_nm=temp_area)
         for loc in recomm_loc.iterator():
             lat = loc.lat
             lng = loc.lng
-        # 해당 구의 코로나 정보 뽑아오기 
-        corona_list = cache.get("corona_data")
-        if corona_list is None: 
-            corona_list = CoronaData.objects.all()
-            cache.set("corona_data", corona_list, 24 * 60 * 60)
+        # 첫번째 딕셔너리 완성
+        loc_data = {"recomm_lat": lat, "recomm_lng" : lng, "signgu_nm" : temp_area}
 
-        target_corona_data = corona_list.objects.filter(gugun=temp_area)
+        # 해당 구의 코로나 정보 뽑아오기(해당 구에 사망하였거나 아직 완치되지 않은 데이터 추출)
+        target_corona_data = CoronaData.objects.filter(gugun=temp_area).exclude(discharge="퇴원")
+        # 월별로 정렬
+        df = pd.DataFrame(list(target_corona_data.values("gugun", "date")))
+        # 먼저 일별로 정리
+        df = df.groupby(by=["date"], as_index=False).count()
+        # 월별로 통합 
+        # print(df["date"].str.contains("2021-03")["gugun"])
+        df_2003 = df[df["date"].str.contains("2020-03")]
+        df_2004 = df[df["date"].str.contains("2020-04")]
+        df_2005 = df[df["date"].str.contains("2020-05")]
+        df_2006 = df[df["date"].str.contains("2020-06")]
+        df_2007 = df[df["date"].str.contains("2020-07")]
+        df_2008 = df[df["date"].str.contains("2020-08")]
+        df_2009 = df[df["date"].str.contains("2020-09")]
+        df_2010 = df[df["date"].str.contains("2020-10")]
+        df_2011 = df[df["date"].str.contains("2020-11")]
+        df_2012 = df[df["date"].str.contains("2020-12")]
+        df_2101 = df[df["date"].str.contains("2021-01")]
+        df_2102 = df[df["date"].str.contains("2021-02")]
+        df_2103 = df[df["date"].str.contains("2021-03")]
 
+        corona_data = {'date' : ["2020-03","2020-04","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12","2021-01","2021-02","2021-03"],
+                        'patients' :[int(df_2003["gugun"].sum()),int(df_2004["gugun"].sum()),int(df_2005["gugun"].sum()),int(df_2006["gugun"].sum()),
+                                    int(df_2007["gugun"].sum()),int(df_2008["gugun"].sum()),int(df_2009["gugun"].sum()),int(df_2010["gugun"].sum()),
+                                    int(df_2011["gugun"].sum()),int(df_2012["gugun"].sum()),int(df_2101["gugun"].sum()),int(df_2102["gugun"].sum()),int(df_2103["gugun"].sum())]}
 
-        # 해당 구의 위도 경도, 코로나 제이슨, 유동인구 제이슨
+        total_data = {**loc_data, **corona_data}
+        
+        # 해당 구의 유동인구 데이터 
+        target_fpopl_data = Fpopl.objects.filter(gugun=temp_area)
+        # print(target_fpopl_data)
 
-        # 코로나 제이슨, 유동인구 제이슨
-        return JsonResponse({"recomm_lat": lat, "recomm_lng" : lng, "signgu_nm" : temp_area}, safe=False)
+        return JsonResponse(total_data, safe=False)
 
 
 def midpoint(loc):
@@ -151,9 +175,33 @@ def midpoint(loc):
 
 def nearbyArea(loc):
     area = []
-    code_list = Code.objects.filter(brtc_nm="서울특별시")
-    for code in code_list.iterator():
-        area.append(code.signgu_nm)
-    area = list(set(area))
-    print(area)
-    return area
+
+    target = Gugun.objects.filter(signgu_nm=loc)
+    others = Gugun.objects.all().exclude(signgu_nm=loc)
+
+    for i in target.iterator():
+        target_lat = float(i.lat)
+        target_lng = float(i.lng)
+
+    for i in others.iterator():
+        area.append([i.signgu_nm])
+
+    cnt = 0
+
+    for i in others.iterator():
+
+        dist = (float(i.lat) - target_lat) * (float(i.lat) - target_lat) + (
+            float(i.lng) - target_lng)*(float(i.lng) - target_lng)
+
+        area[cnt].append(dist)
+
+        cnt += 1
+
+    area.sort(key=lambda x: x[1])
+
+    area_list = []
+
+    for i in area:
+        area_list.append(i[0])
+
+    return area_list
