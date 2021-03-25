@@ -136,4 +136,5 @@ export default new Vuex.Store({
       context.commit('LOGOUT');
       // location.href = "/";
     },
+  }
 })
