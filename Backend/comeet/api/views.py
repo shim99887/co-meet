@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.core import serializers
 from django.http.response import JsonResponse
-from api.models import Code, Fpopl, Card, CoronaData, GugunLocate
+from api.models import Code, Fpopl, Card, CoronaData, Gugun
 from .serializers import CodeSerializer, FpoplSerializer, CardSerializer, CoronaDataSerializer, CodeBodySerializer
 from drf_yasg.utils import swagger_auto_schema
 from django.core.cache import cache
@@ -73,7 +73,7 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     def get_corona_list(self, request, *args, **kwargs):
         corona_queryset = cache.get("corona_data")
-
+        
         # 구군마다 전체 분포표
         df = pd.DataFrame(
             list(corona_queryset.all().values("serial_number", "gugun")))
@@ -81,11 +81,9 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         df = df.drop(index=[8, 26], axis=0)  # 기타, 타시도 삭제
 
-        corona_json = df.to_json(orient="index", force_ascii=False)
-        # print(type(corona_json))
-        # return None
+        corona_json = df.to_dict()
+    
         return JsonResponse(corona_json, safe=False)
-
 
 class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = FpoplSerializer
@@ -120,7 +118,6 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     @swagger_auto_schema(request_body=CodeBodySerializer)
     def recomm_loc(self, request, *args, **kwargs):
-        code_data = Code.objects.all()
 
         # 주어지는 주소 기반으로 중간지점을 가져오는 로직
         mid = midpoint(request.data['signgu_nm'])
@@ -128,13 +125,24 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         nlist = nearbyArea(mid)
         # 로케이션 : lat , lng
         temp_area = random.choice(nlist)
-        recomm_loc = GugunLocate.objects.filter(signgu_nm=temp_area)
-        # 이지역의 코로나, 유동인구 제이슨 보내면 되는척가능
+        print(temp_area)
+        recomm_loc = Gugun.objects.filter(signgu_nm=temp_area)
+        for loc in recomm_loc.iterator():
+            lat = loc.lat
+            lng = loc.lng
+        # 해당 구의 코로나 정보 뽑아오기 
+        corona_list = cache.get("corona_data")
+        if corona_list is None: 
+            corona_list = CoronaData.objects.all()
+            cache.set("corona_data", corona_list, 24 * 60 * 60)
+
+        target_corona_data = corona_list.objects.filter(gugun=temp_area)
+
 
         # 해당 구의 위도 경도, 코로나 제이슨, 유동인구 제이슨
 
         # 코로나 제이슨, 유동인구 제이슨
-        return JsonResponse({"recomm_loc": recomm_loc}, safe=False)
+        return JsonResponse({"recomm_lat": lat, "recomm_lng" : lng, "signgu_nm" : temp_area}, safe=False)
 
 
 def midpoint(loc):
