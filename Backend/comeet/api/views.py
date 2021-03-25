@@ -67,36 +67,26 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     def get_corona_list(self, request, *args, **kwargs):
         corona_queryset = cache.get("corona_data")
-        # 중구 데이터 출력 query가 utf-8 잘되었는지 확인
-        # print(corona_queryset.filter(gugun="중구").values())
 
-        # corona_json = serializers.serialize(
-        #     'json', corona_queryset.filter(gugun="영등포구"), ensure_ascii=False)
-
-        # response = JsonResponse(corona_json, safe= False)
-        df = pd.DataFrame(list(corona_queryset.all().values("serial_number", "date", "gugun")))
+        # 구군마다 전체 분포표 
+        df = pd.DataFrame(list(corona_queryset.all().values("serial_number", "gugun")))
         df = df.groupby(["gugun"], as_index=False).count()
-        # print(df)
         
         df = df.drop(index=[8, 26], axis=0) # 기타, 타시도 삭제
 
-        # 그래프 표현
-        rc('font', family='Malgun Gothic')
-        # 별도로, 폰트를 바꿀 경우 마이너스가 표시되지 않는 경우도 있는데 이를 막아주는 코드입니다.
-        rc('axes', unicode_minus=False)
+        corona_json = df.to_json(orient= "index", force_ascii=False)
+        # print(type(corona_json))
+        # return None
+        return JsonResponse(corona_json, safe= False)
 
-        chart = sns.barplot(x="gugun", y="serial_number", data=df)
-        chart.set_xticklabels(chart.get_xticklabels(), rotation=45)
-        plt.title("서울시 코로나 구/군별 코로나 확진자 수")
-        plt.xlabel("서울시 구/군")
-        plt.ylabel("감염자 수")
-        # plt.show()
-        fig = plt.gcf()
-        buf = io.BytesIO()
-        fig.savefig(buf, format='png')
-        buf.seek(0)
-        string = base64.b64encode(buf.read())
-        uri = urllib.parse.quote(string)
+class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    erializer_class = FpoplSerializer
 
-        return render(request, 'home.html', {'data':uri})
-        # return JsonResponse(corona_json, safe= False)
+    def get_fpopl_list(self, request, *args, **kwargs):
+        fpopl_queryset = cache.get("fpopl_data")
+
+        df = pd.DataFrame(list(fpopl_queryset.all().values("date", "gugun", "popl")))
+
+        fpopl_json = df.to_json(orient= "index", force_ascii=False)
+        
+        return JsonResponse(fpopl_json, safe= False)
