@@ -1,39 +1,58 @@
 <template>
   <div class="address">
       <section class="location">
-        <div class="explain">
-          <h2 class="explain__title">약속장소에 적합한 장소를 추천해드립니다</h2>
-          <h4 class="explain__description">현재 위치 또는<br>직접 현재 위치를 입력하실 수 있습니다.<br> <b>한 가지의 방법을 선택하시면, 다른 한가지 방법은 사용하실 수 없습니다.</b></h4>
-        </div>
-        <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
-        <button href="#" class="location__my-location text-bold"
-        @click="findCurrentLocation">
-          내 현재 위치
-        </button>
-        <div class="text-center or-text">
-          <b>혹은</b>
-        </div>
-        <div class="search-location">
-          <input type="text" disabled class="location-text" v-model="location">
-          <v-dialog
-            v-model="dialog"
-            width="500"
-          >
-          <template v-slot:activator="{ on, attrs }">
-            <input type="button"
-              class="btn text-bold"
-              v-bind="attrs"
-              v-on="on"
-              value="위치 입력"
-              @click="findInputLocation"
+        <MglMap id="map" :accessToken="accessToken" :mapStyle.sync='mapStyle' v-if="mapToggle"
+          @load="onMapLoaded"
+        >
+        <!-- 마커를 반복문을 돌면서 coordinate의 좌표를 넣는다. -->
+          <mglMarker :coordinates="coordinates[0]" color="#ffb6c1" >
+            <MglPopup>
+              <v-card>
+                <div>Hello, This is SSAFY!</div>
+              </v-card>
+            </MglPopup>
+          </mglMarker>
+          <mglMarker :coordinates="coordinates[1]" color="#ffb6c1" >
+            <MglPopup>
+              <v-card>
+                <div>Hello, This is second marker!</div>
+              </v-card>
+            </MglPopup>
+          </mglMarker>
+        </MglMap>
+        <div class="location__wrapper" v-show="!mapToggle">
+          <div class="explain">
+            <h2 class="explain__title">약속장소에 적합한 장소를 추천해드립니다</h2>
+            <h4 class="explain__description">현재 위치 또는<br>직접 현재 위치를 입력하실 수 있습니다.<br> <b>한 가지의 방법을 선택하시면, 다른 한가지 방법은 사용하실 수 없습니다.</b></h4>
+          </div>
+          <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
+          <button href="#" class="location__my-location text-bold"
+          @click="findCurrentLocation">
+            내 현재 위치
+          </button>
+          <div class="text-center or-text">
+            <b>혹은</b>
+          </div>
+          <div class="search-location">
+            <input type="text" disabled class="location-text" v-model="location">
+            <v-dialog
+              v-model="dialog"
+              width="500"
             >
-          </template>
-          <v-card>
-            <DaumPostcode :on-complete="handleAddress"/>
-          </v-card>
-        </v-dialog>
-
-        </div>
+            <template v-slot:activator="{ on, attrs }">
+              <input type="button"
+                class="btn text-bold"
+                v-bind="attrs"
+                v-on="on"
+                value="위치 입력"
+                @click="findInputLocation"
+              >
+            </template>
+            <v-card>
+              <DaumPostcode :on-complete="handleAddress"/>
+            </v-card>
+            </v-dialog>
+          </div>
 
         <div class="terms">
           <v-dialog
@@ -109,7 +128,11 @@
           >
           <label for="agree">동의</label>
         </div>
-          <button href="#" class="btn terms__recom text-bold">약속 장소 추천 받기 !</button>
+          <button href="#" class="btn terms__recom text-bold"
+            @click="getRecom">
+            약속 장소 추천 받기 !
+          </button>
+        </div>
       </section>
 
       <section class="location-list">
@@ -128,24 +151,52 @@
   </div>
 </template>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js'></script>
+
 <script>
 import DaumPostcode from "vuejs-daum-postcode";
+import Mapbox from "mapbox-gl";
+import { MglMap, MglMarker, MglPopup } from "vue-mapbox";
 
 export default {
     components:{
       DaumPostcode,
+      MglMap,
+      MglMarker,
+      MglPopup,
     },
     data(){
       return{
+        accessToken: 'pk.eyJ1IjoiaHN5MTE4IiwiYSI6ImNrbWxibWNueDByeGkycGxzMXZmZHJ5eGUifQ.MN9N94gheL1y_QPLj1vm7w',
+        mapStyle: "mapbox://styles/hsy118/ckmlk2yhknikz17qsc283g4yj",
+        coordinates: [],
+        mapToggle: false,
         agreed: false,
         dialogTerms: false,
         location: '',
         dialog: false,
         selectMethod : '',
-      }
+        }
     },
 
  methods:{
+      getRecom () {
+        this.mapToggle = true
+      },
+      async onMapLoaded(event) {
+        // 순위들 마커 리스트에 넣고
+        this.coordinates.push([127.039280, 37.501021])
+        this.coordinates.push([128, 36])
+        const asyncActions = event.component.actions
+        // 순위 보여주는 비동기 함수
+        const newParams = await asyncActions.flyTo({
+          center: [127.039280, 37.501021],
+          zoom: 11,
+          speed: 0.5,
+        })
+
+        console.log(newParams)
+      },
       handleAddress: function(data) {
         this.location = data.jibunAddress;
         console.log(data)
@@ -173,6 +224,9 @@ export default {
         or.style.display = 'none'
       }
     },
+  },
+  created() {
+    this.mapbox = null;
   },
 }
 </script>
@@ -243,6 +297,12 @@ export default {
   .terms__body {
     padding: 2rem;
   }
+  #map {
+    width: 100%;
+    height: 25em;
+    border-radius: 5px;
+  }
+
   /* 로케이션 리스트 ! */
   .location-list{
     width: 40%;
