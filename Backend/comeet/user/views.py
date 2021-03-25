@@ -12,6 +12,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 #import jwt
 import json
+import bcrypt
 from .token import user_activation_token
 from .text import message
 from comeet.settings import SECRET_KEY, REDIRECT_PAGE
@@ -45,6 +46,11 @@ class UserViewSet(viewsets.GenericViewSet,
         # if Users.exists():
         #     return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
+        password = request.data['password'].encode('utf-8')
+        password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())
+        password_crypt = password_crypt.decode('utf-8')
+
+        request.data['password'] = password_crypt
         User_serializer = UserSerializer(data=request.data, partial=True)
 
         if not User_serializer.is_valid():
