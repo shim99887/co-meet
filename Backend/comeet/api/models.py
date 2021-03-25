@@ -11,6 +11,18 @@ class Code(models.Model):
     signgu_nm = models.CharField(max_length=20)
 
 
+class GugunLocate(models.Model):
+    signgu_nm = models.CharField(max_length=20, primary_key=True)
+    lat = models.FloatField()
+    lng = models.FloatField()
+
+
+class Gugun(models.Model):
+    signgu_nm = models.CharField(max_length=20, primary_key=True)
+    lat = models.FloatField()
+    lng = models.FloatField()
+
+
 class Fpopl(models.Model):
     _id = models.IntegerField(primary_key=True)
     date = models.CharField(max_length=20)
