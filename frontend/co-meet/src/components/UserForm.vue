@@ -25,8 +25,8 @@
       </v-row>
 
       <form id="login" action="" class="input-group">
-        <v-text-field label="Email" :rules="emailRules" />
-        <v-text-field type="password" label="Password" />
+        <v-text-field label="Email" v-model="user.email" :rules="emailRules" />
+        <v-text-field type="password" v-model="user.pwd" label="Password" />
         <v-row align="center">
           <v-col cols="1">
             <v-checkbox />
@@ -36,20 +36,35 @@
           </v-col>
         </v-row>
         <v-row justify="center" align="center">
-          <v-btn outlined color="pink">로그인</v-btn>
+          <v-btn outlined color="pink" @click="loginComp">로그인</v-btn>
         </v-row>
       </form>
       <form id="register" action="" class="input-group">
         <v-row align="center">
           <v-col cols="10">
-            <v-text-field label="Email" v-model="user.email" :rules="emailRules" />
+            <v-text-field
+              label="Email"
+              v-model="email"
+              :rules="emailRules"
+            />
           </v-col>
           <v-col cols="2">
             <v-btn width="40px" outlined color="pink">중복체크</v-btn>
           </v-col>
         </v-row>
-        <v-text-field type="password" label="Password" v-model="user.pwd" :rules="pwdRules"/>
-        <v-text-field type="password" label="Password Confirm" :rules="pwdChkRules" v-model="user.pwdChk" />
+        <v-text-field label="Name" :rules="nameRules" v-model="user.name"/>
+        <v-text-field
+          type="password"
+          label="Password"
+          v-model="pwd"
+          :rules="pwdRules"
+        />
+        <v-text-field
+          type="password"
+          label="Password Confirm"
+          :rules="pwdChkRules"
+          v-model="pwdChk"
+        />
         <v-row align="center">
           <v-col cols="1">
             <v-checkbox />
@@ -66,26 +81,37 @@
   </v-container>
 </template>
 <script>
+const SERVER_URL = process.env.VUE_APP_SERVER_URL;
+
 export default {
-  data(){
-    return{
-      user:{
-        email:'',
-        pwd:'',
-        pwdChk:'',
+  data() {
+    return {
+      user: {
+        email: "",
+        name:'',
+        pwd: "",
       },
-      emailRules:[
-        v => !!v || 'Email is required',
-        v => /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i.test(v) || 'Email must be valid',
+      email: "",
+      pwd: "",
+      pwdChk: "",
+      emailRules: [
+        (v) => !!v || "Email is required",
+        (v) =>
+          /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i.test(
+            v
+          ) || "Email must be valid",
       ],
-      pwdRules:[
-        v => !!v || 'Password is required',
-        v => v.length >= 8 || 'Password must be over 8',
+      nameRules: [
+        v => !!v || "Name is required",
       ],
-      pwdChkRules:[
-        v => v == this.user.pwd || 'Password Check must be equal'
+      pwdRules: [
+        (v) => !!v || "Password is required",
+        (v) => v.length >= 8 || "Password must be over 8",
       ],
-    }
+      pwdChkRules: [
+        (v) => v == this.pwd || "Password Check must be equal",
+      ],
+    };
   },
   props: {
     msg: {
@@ -109,6 +135,19 @@ export default {
       y.style.left = "50px";
       z.style.left = "110px";
     },
+    loginComp(){
+      this.$store.dispatch('LOGIN', this.user);
+      
+    },
+    registComp(){
+      axios.post(`${SERVER_URL}/user`, {user})
+      .then(response => {
+        console.log(response);
+      })
+      .catch(error => {
+        alert(error);
+      })
+    }
   },
 };
 </script>
@@ -129,7 +168,7 @@ export default {
 }
 .form-wrap {
   width: 380px;
-  height: 480px;
+  height: 510px;
   position: relative;
   /* margin: 6% auto; */
   background: #fff;
