@@ -55,6 +55,12 @@ export default {
     },
     logout(){
       this.$store.dispatch('LOGOUT', this.$store.getters.getUserEmail);
+      this.$fire({
+        type:'success',
+        title:'로그아웃',
+        text:'성공',
+        timer: 3000,
+      })
     }
   },
 
