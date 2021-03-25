@@ -28,8 +28,12 @@ SECRET_KEY = 'h@us1+p%s(rv@+cs^%rpx(r686)sdy47%atshhd76$&0_$(ur3'
 # 운영시에는 False로 변경을 해준다.
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', 'j4a203.p.ssafy.io', '127.0.0.1']
 
+# Swagger Setting
+SWAGGER_SETTINGS = {
+    'USER_SESSION_AUTH': False
+}
 
 # Application definition
 
@@ -44,6 +48,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'corsheaders',
     'drf_yasg',  # Swagger
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -116,6 +121,32 @@ DATABASES = {
     }
 }
 
+# Cache
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        # "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": "redis://j4a203.p.ssafy.io:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# Google Email
+SITE_ID = 1
+
+DEFAULT_FROM_EMAIL = 'comeetmanager@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'comeetmanager@gmail.com'
+EMAIL_HOST_PASSWORD = 'comeet1234'
+SERVER_EMAIL = 'comeetmanager'
+REDIRECT_PAGE = 'https://j4a203.p.ssafy.io'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -154,3 +185,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
