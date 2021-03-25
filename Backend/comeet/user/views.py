@@ -10,7 +10,7 @@ from .serializers import UserSerializer, UserBodySerializer
 from drf_yasg.utils import swagger_auto_schema
 
 
-#import jwt
+import jwt
 import json
 import bcrypt
 from .token import user_activation_token
@@ -23,6 +23,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.mail import EmailMessage
 from django.utils.encoding import force_bytes, force_text
+from django.core.cache import cache
 
 
 class UserViewSet(viewsets.GenericViewSet,
@@ -161,3 +162,37 @@ class Activate(viewsets.GenericViewSet,
             return JsonResponse({"message": "TYPE_ERROR"}, status=400)
         except KeyError:
             return JsonResponse({"message": "INVALID_KEY"}, status=400)
+
+
+class LoginViewSet(viewsets.GenericViewSet,
+                   mixins.ListModelMixin,
+                   View):
+
+    @swagger_auto_schema(request_body=UserBodySerializer)
+    def login_check(self, request):
+
+        Users = User.objects.filter(email=request.data['email'])
+
+        password = request.data['password'].encode('utf-8')
+
+        if bcrypt.checkpw(password, Users[0].password.encode('utf-8')):
+
+            token = jwt.encode(
+                {'email': request.data['email']}, SECRET_KEY, algorithm="HS256")
+
+            cache.set(request.data['email'], token, 60*60)
+
+            return Response({"token": token}, status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+class LogoutViewSet(viewsets.GenericViewSet,
+                    mixins.ListModelMixin,
+                    View):
+
+    def logout_check(self, *args, **kwargs):
+
+        cache.delete(self.kwargs['email'])
+
+        return Response(True, status=status.HTTP_200_OK)
