@@ -5,20 +5,22 @@
           @load="onMapLoaded"
         >
         <!-- 마커를 반복문을 돌면서 coordinate의 좌표를 넣는다. -->
-          <mglMarker :coordinates="coordinates[0]" color="#ffb6c1" >
+        <div class="" v-for="(item, idx) in coordinates" :key="idx">
+          <mglMarker :coordinates="coordinates[idx]" color="#ffb6c1" >
             <MglPopup>
               <v-card>
-                <div>Hello, This is SSAFY!</div>
+                <div>만날 장소 추천지: {{recomCity[idx].gu}}</div>
               </v-card>
             </MglPopup>
           </mglMarker>
-          <mglMarker :coordinates="coordinates[1]" color="#ffb6c1" >
+        </div>
+          <!-- <mglMarker :coordinates="coordinates[1]" color="#ffb6c1" >
             <MglPopup>
               <v-card>
                 <div>Hello, This is second marker!</div>
               </v-card>
             </MglPopup>
-          </mglMarker>
+          </mglMarker> -->
         </MglMap>
         <div class="location__wrapper" v-show="!mapToggle">
           <div class="explain">
@@ -118,7 +120,6 @@
                 귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 장학생 선발 과정에 있어 불이익이 발생할 수<br>
                 있음을 알려드립니다.<br>
               </v-container>
-
             </v-card>
           </v-dialog>
 
@@ -139,14 +140,16 @@
         <div class="list__header">
           약속 장소 리스트
         </div>
-        <div class="list__contents">
-          <div class="contents__title">서초동</div>
-          <div class="contents__description">서울시 서초구 서초3동 방배역</div>
+        <div v-if="city.length">
+          <div class="list__contents" v-for="(item, idx) in recomCity" :key="idx">
+            <div class="contents__title">{{recomCity[idx].gu}}</div>
+            <div class="contents__description">서울시 {{recomCity[idx].gu}}</div>
+          </div>
         </div>
-        <div class="list__contents">
+        <!-- <div class="list__contents" v-if="gugun.length">
           <div class="contents__title">명동</div>
           <div class="contents__description">서울시 중구 명동역</div>
-        </div>
+        </div> -->
       </section>
   </div>
 </template>
@@ -159,58 +162,83 @@ import Mapbox from "mapbox-gl";
 import { MglMap, MglMarker, MglPopup } from "vue-mapbox";
 
 export default {
-    components:{
-      DaumPostcode,
-      MglMap,
-      MglMarker,
-      MglPopup,
-    },
-    data(){
-      return{
-        accessToken: 'pk.eyJ1IjoiaHN5MTE4IiwiYSI6ImNrbWxibWNueDByeGkycGxzMXZmZHJ5eGUifQ.MN9N94gheL1y_QPLj1vm7w',
-        mapStyle: "mapbox://styles/hsy118/ckmlk2yhknikz17qsc283g4yj",
-        coordinates: [],
-        mapToggle: false,
-        agreed: false,
-        dialogTerms: false,
-        location: '',
-        dialog: false,
-        selectMethod : '',
-        }
-    },
+  components:{
+    DaumPostcode,
+    MglMap,
+    MglMarker,
+    MglPopup,
+  },
+  data(){
+    return{
+      accessToken: 'pk.eyJ1IjoiaHN5MTE4IiwiYSI6ImNrbWxibWNueDByeGkycGxzMXZmZHJ5eGUifQ.MN9N94gheL1y_QPLj1vm7w',
+      mapStyle: "mapbox://styles/hsy118/ckmlk2yhknikz17qsc283g4yj",
+      coordinates: [],
+      // mapToggle: false,
+      agreed: false,
+      dialogTerms: false,
+      location: '',
+      dialog: false,
+      selectMethod : '',
+      }
+  },
 
- methods:{
-      getRecom () {
-        this.mapToggle = true
-      },
-      async onMapLoaded(event) {
-        // 순위들 마커 리스트에 넣고
-        this.coordinates.push([127.039280, 37.501021])
-        this.coordinates.push([128, 36])
-        const asyncActions = event.component.actions
-        // 순위 보여주는 비동기 함수
-        const newParams = await asyncActions.flyTo({
-          center: [127.039280, 37.501021],
-          zoom: 11,
-          speed: 0.5,
-        })
+  methods:{
+        getRecom () {
+          // 구만 보내기
+          const filtering = this.location.split(' ')
+          console.log(filtering[1])
+          // 장소 리스트
+          this.$store.dispatch("GET_RECOM", filtering[1])
+          this.$store.commit('ON_SEARCHING')
+          // 지도
+          this.$store.dispatch("GET_CORONA_PER_CITY")
 
-        console.log(newParams)
-      },
-      handleAddress: function(data) {
-        this.location = data.jibunAddress;
-        console.log(data)
-        this.dialog = false;
-      },
-      findCurrentLocation() {
-        console.log('click cur location')
-        this.selectMethod = 'currentLocation'
-      },
-      findInputLocation() {
-        console.log('click input location')
-        this.selectMethod = 'inputLocation'
-      },
+        },
+        async onMapLoaded(event) {
+          // 도시 받은거 입력
+          const data = this.$store.getters.get_result
+          // 순위들 마커 리스트에 넣고
+          // this.coordinates.push([data[0].lng, data[0].lat])
+          await this.putCoordinate(data)
+          const asyncActions = event.component.actions
+          // 순위 보여주는 비동기 함수
+          const newParams = await asyncActions.flyTo({
+            center: [data[0].lng, data[0].lat],
+            zoom: 11,
+            speed: 0.5,
+          })
+
+          console.log(newParams)
+        },
+        putCoordinate: function (data) {
+          this.coordinates.push([data[0].lng, data[0].lat])
+          console.log(this.coordinates)
+        },
+        handleAddress: function(data) {
+          this.location = data.jibunAddress;
+          console.log(data)
+          this.dialog = false;
+        },
+        findCurrentLocation() {
+          console.log('click cur location')
+          this.selectMethod = 'currentLocation'
+        },
+        findInputLocation() {
+          console.log('click input location')
+          this.selectMethod = 'inputLocation'
+        },
+  },
+  computed: {
+    mapToggle() {
+      return this.$store.getters.get_mapToggle
     },
+    city() {
+      return this.$store.getters.get_result
+    },
+    recomCity() {
+      return this.$store.getters.get_result
+    },
+  },
   watch: {
     selectMethod: function () {
       const inputLocation = document.querySelector('.search-location')

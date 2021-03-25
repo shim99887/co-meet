@@ -5,7 +5,7 @@
         <h4 class="graph__description">추천 받으신 장소는 다양한 데이터를 통해 연산되어 제공합니다</h4>
       </section>
       <section class="graph__reason">
-        <!-- 시각화 자료 -->
+        <Chart class="graph__chart" v-if="gugun.length"/>
       </section>
       <section class="graph__footer">
         <button class="graph-btn">새로운 장소 추천받기</button>
@@ -15,7 +15,17 @@
 </template>
 
 <script>
+import Chart from "@/components/graph/chart.vue"
 export default {
+  components: {
+    Chart,
+  },
+  computed: {
+    gugun() {
+      return this.$store.getters.get_gugun
+    },
+  },
+
 
 }
 </script>
@@ -46,6 +56,10 @@ export default {
     &__description {
       @include textLayout();
       margin-top: 0.5rem;
+    }
+    &__chart {
+      width: 100%;
+      padding: 1rem;
     }
 
     &__footer {

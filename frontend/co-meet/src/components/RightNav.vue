@@ -19,14 +19,7 @@
     >
       <v-list-item class="mt-10">
         <v-list-item-content>
-          <v-list-item-title style="font-size:40px;">John Leider</v-list-item-title>
-        </v-list-item-content>
-        <v-list-item-content>
-          <v-list-item-title
-            ><v-btn color="pink" outlined rounded
-              >로그아웃</v-btn
-            ></v-list-item-title
-          >
+          <v-list-item-title style="font-size:40px;">{{$store.getters.getUserName}}</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
 
@@ -42,6 +35,7 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+      <button @click="drawerMove" style="font-family:verdana;font-size:35px;position:fixed;right:0px;background:#fadde1;">x</button>
     </v-navigation-drawer>
   </div>
 </template>
@@ -50,9 +44,14 @@ export default {
   data() {
     return {
       drawer: null,
-      items: ["서울 강남구 압구정동 386-1", "경기도", "강원도"],
+      items: ["서울 강남구 압구정동 386-1", "서울 노원구 월계동 472-31", "서울 강남구 신사동 537-5"],
     };
   },
+  methods:{
+    drawerMove(){
+      this.drawer = false;
+    }
+  }
 };
 </script>
 <style scoped>
