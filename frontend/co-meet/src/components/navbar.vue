@@ -5,7 +5,8 @@
       <div class="navbar__logo">
         <img src="@/assets/logo.png" alt="logo">
         <!-- 이거 라우트 링크 써야됌 -->
-        <a href="#">Co-Meet</a>
+        <a @click="$router.push('/')">Co-Meet</a>
+        <!-- <div>Co-Meet</div> -->
 
       <a href="#" 
       class="navbar__toggle"

@@ -1,20 +1,20 @@
 <template>
   <v-app>
     <v-main>
-      <!-- <Navbar /> -->
+      <right-nav style="z-index:1;"/>
       <router-view></router-view>
     </v-main>
   </v-app>
 </template>
 
 <script>
-// import Navbar from "./components/navbar.vue"
+import RightNav from "@/components/RightNav.vue";
 
 export default {
   name: 'App',
 
   components: {
-    // Navbar,
+    RightNav,
   },
 
   data: () => ({
