@@ -87,9 +87,6 @@ class EmailViewSet(viewsets.GenericViewSet,
         if Emails.exists():
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
-        if not "@" in self.kwargs['email']:
-            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
-
         return Response(True, status=status.HTTP_200_OK)
 
     def delete_user(self, *args, **kwargs):
