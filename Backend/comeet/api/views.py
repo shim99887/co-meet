@@ -73,7 +73,7 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     def get_corona_list(self, request, *args, **kwargs):
         corona_queryset = cache.get("corona_data")
-        
+
         # 구군마다 전체 분포표
         df = pd.DataFrame(
             list(corona_queryset.all().values("serial_number", "gugun")))
@@ -82,8 +82,9 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         df = df.drop(index=[8, 26], axis=0)  # 기타, 타시도 삭제
 
         corona_json = df.to_dict()
-    
+
         return JsonResponse(corona_json, safe=False)
+
 
 class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = FpoplSerializer
@@ -124,25 +125,24 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         # 중간 지점을 기반으로 가까운 지역 리스트 조회
         nlist = nearbyArea(mid)
         # 로케이션 : lat , lng
-        temp_area = random.choice(nlist)
+        temp_area = nlist[0]
         print(temp_area)
         recomm_loc = Gugun.objects.filter(signgu_nm=temp_area)
         for loc in recomm_loc.iterator():
             lat = loc.lat
             lng = loc.lng
-        # 해당 구의 코로나 정보 뽑아오기 
+        # 해당 구의 코로나 정보 뽑아오기
         corona_list = cache.get("corona_data")
-        if corona_list is None: 
+        if corona_list is None:
             corona_list = CoronaData.objects.all()
             cache.set("corona_data", corona_list, 24 * 60 * 60)
 
         target_corona_data = corona_list.objects.filter(gugun=temp_area)
 
-
         # 해당 구의 위도 경도, 코로나 제이슨, 유동인구 제이슨
 
         # 코로나 제이슨, 유동인구 제이슨
-        return JsonResponse({"recomm_lat": lat, "recomm_lng" : lng, "signgu_nm" : temp_area}, safe=False)
+        return JsonResponse({"recomm_lat": lat, "recomm_lng": lng, "signgu_nm": temp_area}, safe=False)
 
 
 def midpoint(loc):
@@ -151,9 +151,40 @@ def midpoint(loc):
 
 def nearbyArea(loc):
     area = []
-    code_list = Code.objects.filter(brtc_nm="서울특별시")
-    for code in code_list.iterator():
-        area.append(code.signgu_nm)
-    area = list(set(area))
+
+    target = Gugun.objects.filter(signgu_nm=loc)
+    others = Gugun.objects.all().exclude(signgu_nm=loc)
+
+    for i in target.iterator():
+        target_lat = float(i.lat)
+        target_lng = float(i.lng)
+
+    print(target_lat)
+    print(target_lng)
+
+    for i in others.iterator():
+        area.append([i.signgu_nm])
+
+    cnt = 0
+
+    for i in others.iterator():
+
+        dist = (float(i.lat) - target_lat) * (float(i.lat) - target_lat) + (
+            float(i.lng) - target_lng)*(float(i.lng) - target_lng)
+
+        area[cnt].append(dist)
+
+        cnt += 1
+
+    area.sort(key=lambda x: x[1])
+
+    area_list = []
+
     print(area)
-    return area
+
+    for i in area:
+        area_list.append(i[0])
+
+    print(area_list)
+
+    return area_list
