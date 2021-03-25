@@ -5,7 +5,8 @@
       <div class="navbar__logo">
         <img src="@/assets/logo.png" alt="logo">
         <!-- 이거 라우트 링크 써야됌 -->
-        <a href="/">Co-Meet</a>
+        <a @click="$router.push('/')">Co-Meet</a>
+        <!-- <div>Co-Meet</div> -->
 
       <a href="#" 
       class="navbar__toggle"
@@ -23,9 +24,13 @@
       </router-link>
     </ul>
   <!-- 이것도 라우터 링크 써야됌 -->
-    <ul class="navbar__community">
+    <ul class="navbar__community" v-if="!$store.getters.getAccessToken">
       <a class="navbar__community__button" href="#" @click="loginToggle"><li>로그인</li></a>
       <a class="navbar__community__button" href="#" @click="registToggle"><li>회원 가입</li></a>
+    </ul>
+    <ul class="navbar__community" v-else>
+      <span class="navbar__community__button">{{$store.getters.getUserName}}님</span>
+      <a class="navbar__community__button" href="#" @click="logout"><li>로그아웃</li></a>
     </ul>
   </div>
 </div>
@@ -48,6 +53,9 @@ export default {
     registToggle(){
       this.$emit("msg", 'regist');
     },
+    logout(){
+      this.$store.dispatch('LOGOUT', this.$store.getters.getUserEmail);
+    }
   },
 
 }
