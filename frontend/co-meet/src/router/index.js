@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 
 import LandingPage from '@/views/LandingPage.vue'
 import Recommendation from '@/views/Recom.vue'
+import notFound from '@/views/notFound.vue'
 
 Vue.use(VueRouter)
 
@@ -17,6 +18,15 @@ const routes = [
     name: 'Recommendation',
     component: Recommendation,
   },
+  {
+    path: '/404',
+    name: 'notFound',
+    component: notFound,
+  },
+  {
+    path:'*',
+    redirect: '/404',
+  }
 ]
 
 const router = new VueRouter({
