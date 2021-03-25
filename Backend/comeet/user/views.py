@@ -182,7 +182,7 @@ class LoginViewSet(viewsets.GenericViewSet,
 
             cache.set(request.data['email'], token, 60*60)
 
-            return Response({"token": token}, status=status.HTTP_200_OK)
+            return Response({"email": Users[0].email, "nickname": Users[0].nickname, "token": token}, status=status.HTTP_200_OK)
 
         return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
