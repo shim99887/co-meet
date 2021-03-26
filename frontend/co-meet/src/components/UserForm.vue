@@ -40,7 +40,7 @@
             <v-checkbox />
           </v-col>
           <v-col cols="6" style="font-size:13px;">
-            Remember Password
+            Remember Email
           </v-col>
         </v-row>
         <v-row justify="center" align="center">

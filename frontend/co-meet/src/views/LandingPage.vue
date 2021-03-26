@@ -119,9 +119,10 @@ body {
   bottom: -100%;
   position: absolute;
   font-size: 6rem;
-  color: #22223b;
-  opacity: 0.75;
-  text-shadow: 4px 4px 4px gray;
+  color : #ffa38c;
+  text-shadow: 4px 4px 4px rgb(214, 107, 107);
+  z-index: 1;
+  font-family: "Bahnschrift Condensed";
   z-index: 1;
 }
 @keyframes anim {
@@ -137,7 +138,7 @@ body {
     bottom: -100%;
   }
   to {
-    bottom: 60%;
+    bottom: 50%;
   }
 }
 @keyframes anim3 {
