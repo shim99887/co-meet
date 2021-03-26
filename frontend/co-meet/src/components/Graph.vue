@@ -5,7 +5,10 @@
         <h4 class="graph__description">추천 받으신 장소는 다양한 데이터를 통해 연산되어 제공합니다</h4>
       </section>
       <section class="graph__reason">
-        <Chart class="graph__chart" v-if="gugun.length"/>
+        <h4>서울시 구별 확진자에 대한 데이터입니다.</h4>
+        <Barchart class="graph__chart" v-if="gugun.length"/>
+        <h4>추천 받은 장소에 대한 확진자 데이터입니다.</h4>
+        <Linechart class="graph__chart" v-if="recomCity.length"/>
       </section>
       <section class="graph__footer">
         <button class="graph-btn">새로운 장소 추천받기</button>
@@ -15,14 +18,20 @@
 </template>
 
 <script>
-import Chart from "@/components/graph/chart.vue"
+import Barchart from "@/components/graph/Barchart.vue"
+import Linechart from "@/components/graph/LineChart.vue"
+
 export default {
   components: {
-    Chart,
+    Barchart,
+    Linechart,
   },
   computed: {
     gugun() {
       return this.$store.getters.get_gugun
+    },
+    recomCity() {
+      return this.$store.getters.get_resultCity
     },
   },
 
