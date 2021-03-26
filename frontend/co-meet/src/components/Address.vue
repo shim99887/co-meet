@@ -184,14 +184,18 @@ export default {
 
   methods:{
         getRecom () {
-          // 구만 보내기
-          const filtering = this.location.split(' ')
-          console.log(filtering[1])
-          // 장소 리스트
-          this.$store.dispatch("GET_RECOM", filtering[1])
-          this.$store.commit('ON_SEARCHING')
-          // 지도
-          this.$store.dispatch("GET_CORONA_PER_CITY")
+          if (this.agreed === true) {
+            // 구만 보내기
+            const filtering = this.location.split(' ')
+            console.log(filtering[1])
+            this.$store.commit('ON_SEARCHING')
+            // 장소 리스트
+            this.$store.dispatch("GET_RECOM", filtering[1])
+            // 지도
+            this.$store.dispatch("GET_CORONA_PER_CITY")
+          } else {
+            alert("정보 이용에 동의해주세요")
+          }
 
         },
         async onMapLoaded(event) {

@@ -42,7 +42,10 @@ export default new Vuex.Store({
     },
     get_mapToggle(state) {
       return state.mapToggle
-    }
+    },
+    get_resultCity(state) {
+      return state.recomCity
+    },
   },
   mutations: {
     LOGIN(state){
@@ -78,15 +81,20 @@ export default new Vuex.Store({
     async GET_RECOM(context, city) {
       try {
         const res = await axios.post("https://j4a203.p.ssafy.io/api/recomm", {signgu_nm: city})
+        // 검색으로 넣은 구 
         context.commit('PUT_CITY', city)
         const data = res.data
         const location = {
           lat: data.recomm_lat,
           lng: data.recomm_lng,
           gu: data.signgu_nm,
+          date: data.date,
+          patients: data.patients
         }
         context.commit("PUT_RESULT", location)
         context.commit("MAPTOGGLE")
+        console.log(`recomcity`)
+        console.log(this.state.recomCity)
       } catch(err) {
         console.log(err)
       }
