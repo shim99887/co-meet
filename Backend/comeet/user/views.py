@@ -59,8 +59,7 @@ class UserViewSet(viewsets.GenericViewSet,
 
         Users = User_serializer.save()
 
-        current_site = get_current_site(request)
-        domain = current_site.domain
+        domain = "j4a203.p.ssafy.io"
         uidb64 = urlsafe_base64_encode(force_bytes(request.data['email']))
         token = user_activation_token.make_token(Users)
         message_data = message(domain, uidb64, token)
