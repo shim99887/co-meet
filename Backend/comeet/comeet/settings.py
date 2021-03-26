@@ -66,6 +66,7 @@ MIDDLEWARE = [
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:8000',
+    'http://localhost:8080',
 )
 
 ROOT_URLCONF = 'comeet.urls'
@@ -120,6 +121,32 @@ DATABASES = {
         },
     }
 }
+
+# Cache
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        # "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": "redis://j4a203.p.ssafy.io:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# Google Email
+SITE_ID = 1
+
+DEFAULT_FROM_EMAIL = 'comeetmanager@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'comeetmanager@gmail.com'
+EMAIL_HOST_PASSWORD = 'comeet1234'
+SERVER_EMAIL = 'comeetmanager'
+REDIRECT_PAGE = 'https://j4a203.p.ssafy.io'
 
 
 # Password validation

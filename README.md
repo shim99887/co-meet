@@ -4,7 +4,7 @@
 
 
 > **Co-** (함께) + **Meet** (약속) = **CO-MEET**
-
+![milestone_forward](Document/Page Screenshot/screenshot/landing_page.png)
 
 ## 프로젝트 개요
 
@@ -95,6 +95,14 @@ yarn add vuetify
     </ul>
 </details>
 <details>
+    <summary> Specification</summary>
+    <ul>
+![Specification_1](Document/Specification/Specification_1.png)
+![Specification_2](Document/Specification/Specification_2.png)
+![Specification_3](Document/Specification/Specification_3.png)
+    </ul>
+</details>
+<details>
     <summary> Data Modeling</summary>
     <ul>
         <a href="Document/Data Modeling/Data Modeling.md"><li> Data Modeling</li></a>
@@ -136,9 +144,9 @@ yarn add vuetify
 <details>
     <summary> Milestone</summary>
     <ul>
-![milestone_rec](Document/Milestone/milestone_rec.png)
+![milestone_rec](Document/Milestone/before_milestone.png)
 
-![milestone_forward](Document/Milestone/milestone_forward.png)
+![milestone_forward](Document/Milestone/future_forward.png)
     </ul>
 </details>
 <details>
