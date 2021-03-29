@@ -70,7 +70,7 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = CoronaDataSerializer
 
     def get_corona_list(self, request, *args, **kwargs):
-        corona_queryset = CoronaData.objects.all()
+        corona_queryset = CoronaData.objects.filter(date__contains="2021-02")
         # corona_queryset = cache.get("corona_data")
 
         # 구군마다 전체 분포표
@@ -118,9 +118,7 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     @swagger_auto_schema(request_body=CodeBodySerializer)
     def recomm_loc(self, request, *args, **kwargs):
-        if cache.get("서대문구") is not None :
-            return cache.get("서대문구")
-        
+
         # 주어지는 주소 기반으로 중간지점을 가져오는 로직
         mid = midpoint(request.data['signgu_nm'])
         # 중간 지점을 기반으로 가까운 지역 리스트 조회
@@ -164,28 +162,49 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
                                     int(df_2007["gugun"].sum()), int(df_2008["gugun"].sum()), int(
                            df_2009["gugun"].sum()), int(df_2010["gugun"].sum()),
             int(df_2011["gugun"].sum()), int(df_2012["gugun"].sum()), int(df_2101["gugun"].sum()), int(df_2102["gugun"].sum()), int(df_2103["gugun"].sum())]}
-            
+
+        print(corona_data)
+        print("===========================================")
+
         total_data = {**loc_data, **corona_data}
 
-         # 해당 구의 유동인구 데이터
-        target_fpopl_data = Fpopl.objects.filter(gugun=temp_area)
-        target_fpopl_bc_data = Fpopl_BC.objects.filter(gugun=temp_area)
-        
+        data = cache.get("fpopl_data")
+
+        # 해당 구의 유동인구 데이터
+        target_fpopl_data = data.filter(
+            gugun=temp_area).exclude(age_range=60).exclude(age_range=70).filter(per_time="21")
+        target_fpopl_bc_data = Fpopl_BC.objects.filter(
+            gugun=temp_area).exclude(age_range=60).exclude(age_range=70).filter(per_time="21")
+
         fpopl_df = pd.DataFrame(list(target_fpopl_data.values("date", "popl")))
-        fpopl_df.loc[(fpopl_df['date'] >= "20200101") & (fpopl_df['date'] <= "20200131"), 'date'] = "202001"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200201") & (fpopl_df['date'] <= "20200229"), 'date'] = "202002"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200301") & (fpopl_df['date'] <= "20200331"), 'date'] = "202003"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200401") & (fpopl_df['date'] <= "20200430"), 'date'] = "202004"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200501") & (fpopl_df['date'] <= "20200531"), 'date'] = "202005"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200601") & (fpopl_df['date'] <= "20200630"), 'date'] = "202006"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200701") & (fpopl_df['date'] <= "20200731"), 'date'] = "202007"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200801") & (fpopl_df['date'] <= "20200831"), 'date'] = "202008"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200901") & (fpopl_df['date'] <= "20200930"), 'date'] = "202009"
-        fpopl_df.loc[(fpopl_df['date'] >= "20201001") & (fpopl_df['date'] <= "20201031"), 'date'] = "202010"
-        fpopl_df.loc[(fpopl_df['date'] >= "20201101") & (fpopl_df['date'] <= "20201130"), 'date'] = "202011"
-        fpopl_df.loc[(fpopl_df['date'] >= "20201201") & (fpopl_df['date'] <= "20201231"), 'date'] = "202012"
-        fpopl_df.loc[(fpopl_df['date'] >= "20210101") & (fpopl_df['date'] <= "20210131"), 'date'] = "202101"
-        fpopl_df.loc[(fpopl_df['date'] >= "20210201") & (fpopl_df['date'] <= "20210228"), 'date'] = "202102"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200101") & (
+            fpopl_df['date'] <= "20200131"), 'date'] = "202001"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200201") & (
+            fpopl_df['date'] <= "20200229"), 'date'] = "202002"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200301") & (
+            fpopl_df['date'] <= "20200331"), 'date'] = "202003"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200401") & (
+            fpopl_df['date'] <= "20200430"), 'date'] = "202004"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200501") & (
+            fpopl_df['date'] <= "20200531"), 'date'] = "202005"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200601") & (
+            fpopl_df['date'] <= "20200630"), 'date'] = "202006"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200701") & (
+            fpopl_df['date'] <= "20200731"), 'date'] = "202007"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200801") & (
+            fpopl_df['date'] <= "20200831"), 'date'] = "202008"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200901") & (
+            fpopl_df['date'] <= "20200930"), 'date'] = "202009"
+        fpopl_df.loc[(fpopl_df['date'] >= "20201001") & (
+            fpopl_df['date'] <= "20201031"), 'date'] = "202010"
+        fpopl_df.loc[(fpopl_df['date'] >= "20201101") & (
+            fpopl_df['date'] <= "20201130"), 'date'] = "202011"
+        fpopl_df.loc[(fpopl_df['date'] >= "20201201") & (
+            fpopl_df['date'] <= "20201231"), 'date'] = "202012"
+        fpopl_df.loc[(fpopl_df['date'] >= "20210101") & (
+            fpopl_df['date'] <= "20210131"), 'date'] = "202101"
+        fpopl_df.loc[(fpopl_df['date'] >= "20210201") & (
+            fpopl_df['date'] <= "20210228"), 'date'] = "202102"
 
         fpopl_df = fpopl_df.groupby("date").mean()
         fpopl_data = fpopl_df.to_dict('split')
@@ -193,18 +212,29 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         total_data = {**total_data, **fpopl_data}
 
         # 코로나 이전 유동인구 데이터 확인
-        fpopl_BC_df = pd.DataFrame(list(target_fpopl_bc_data.values("date", "popl")))
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190301") & (fpopl_BC_df['date'] <= "20190331"), 'date'] = "201903"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190401") & (fpopl_BC_df['date'] <= "20190430"), 'date'] = "201904"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190501") & (fpopl_BC_df['date'] <= "20190531"), 'date'] = "201905"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190601") & (fpopl_BC_df['date'] <= "20190630"), 'date'] = "201906"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190701") & (fpopl_BC_df['date'] <= "20190731"), 'date'] = "201907"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190801") & (fpopl_BC_df['date'] <= "20190831"), 'date'] = "201908"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190901") & (fpopl_BC_df['date'] <= "20190930"), 'date'] = "201909"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20191001") & (fpopl_BC_df['date'] <= "20191031"), 'date'] = "201910"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20191101") & (fpopl_BC_df['date'] <= "20191130"), 'date'] = "201911"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20191201") & (fpopl_BC_df['date'] <= "20191231"), 'date'] = "201912"
-        
+        fpopl_BC_df = pd.DataFrame(
+            list(target_fpopl_bc_data.values("date", "popl")))
+        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190301") & (
+            fpopl_BC_df['date'] <= "20190331"), 'date'] = "201903"
+        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190401") & (
+            fpopl_BC_df['date'] <= "20190430"), 'date'] = "201904"
+        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190501") & (
+            fpopl_BC_df['date'] <= "20190531"), 'date'] = "201905"
+        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190601") & (
+            fpopl_BC_df['date'] <= "20190630"), 'date'] = "201906"
+        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190701") & (
+            fpopl_BC_df['date'] <= "20190731"), 'date'] = "201907"
+        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190801") & (
+            fpopl_BC_df['date'] <= "20190831"), 'date'] = "201908"
+        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190901") & (
+            fpopl_BC_df['date'] <= "20190930"), 'date'] = "201909"
+        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20191001") & (
+            fpopl_BC_df['date'] <= "20191031"), 'date'] = "201910"
+        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20191101") & (
+            fpopl_BC_df['date'] <= "20191130"), 'date'] = "201911"
+        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20191201") & (
+            fpopl_BC_df['date'] <= "20191231"), 'date'] = "201912"
+
         fpopl_BC_df = fpopl_BC_df.groupby("date").mean()
         # fpopl_BC_data = fpopl_BC_df.to_dict('split')
         print("===========================================")
