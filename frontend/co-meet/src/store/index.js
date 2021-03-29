@@ -46,6 +46,9 @@ export default new Vuex.Store({
     get_resultCity(state) {
       return state.recomCity
     },
+    get_onSearching(state) {
+      return state.onSearching
+    }
   },
   mutations: {
     LOGIN(state){
@@ -97,6 +100,7 @@ export default new Vuex.Store({
         console.log(this.state.recomCity)
       } catch(err) {
         console.log(err)
+        context.commit("OFF_SEARCHING")
       }
     },
     async GET_CORONA_PER_CITY(context) {
@@ -115,9 +119,11 @@ export default new Vuex.Store({
         
       } catch (err) {
         console.log(err)
+        context.commit("OFF_SEARCHING")
       }
     },
     LOGIN(context, user){
+      context.commit("ON_SEARCHING")
       const params = new URLSearchParams();
       params.append('email', user.email);
       params.append('password', user.password);
@@ -128,8 +134,10 @@ export default new Vuex.Store({
         localStorage.setItem('nickname', response.data.nickname);
         localStorage.setItem('email', response.data.email);
         context.commit('LOGIN');
+        context.commit("OFF_SEARCHING")
       })
       .catch(() => {
+        context.commit("OFF_SEARCHING")
       })     
     },
     LOGOUT(context, email){
@@ -138,6 +146,7 @@ export default new Vuex.Store({
         console.log(response);
       })
       .catch(error => {
+        context.commit("OFF_SEARCHING")
         alert(error);
       })
 
