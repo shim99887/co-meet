@@ -131,15 +131,17 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             lat = loc.lat
             lng = loc.lng
         # 첫번째 딕셔너리 완성
-        loc_data = {"recomm_lat": lat, "recomm_lng" : lng, "signgu_nm" : temp_area}
+        loc_data = {"recomm_lat": lat,
+                    "recomm_lng": lng, "signgu_nm": temp_area}
 
         # 해당 구의 코로나 정보 뽑아오기(해당 구에 사망하였거나 아직 완치되지 않은 데이터 추출)
-        target_corona_data = CoronaData.objects.filter(gugun=temp_area).exclude(discharge="퇴원")
+        target_corona_data = CoronaData.objects.filter(
+            gugun=temp_area).exclude(discharge="퇴원")
         # 월별로 정렬
         df = pd.DataFrame(list(target_corona_data.values("gugun", "date")))
         # 먼저 일별로 정리
         df = df.groupby(by=["date"], as_index=False).count()
-        # 월별로 통합 
+        # 월별로 통합
         # print(df["date"].str.contains("2021-03")["gugun"])
         df_2003 = df[df["date"].str.contains("2020-03")]
         df_2004 = df[df["date"].str.contains("2020-04")]
@@ -155,14 +157,15 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         df_2102 = df[df["date"].str.contains("2021-02")]
         df_2103 = df[df["date"].str.contains("2021-03")]
 
-        corona_data = {'date' : ["2020-03","2020-04","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12","2021-01","2021-02","2021-03"],
-                        'patients' :[int(df_2003["gugun"].sum()),int(df_2004["gugun"].sum()),int(df_2005["gugun"].sum()),int(df_2006["gugun"].sum()),
-                                    int(df_2007["gugun"].sum()),int(df_2008["gugun"].sum()),int(df_2009["gugun"].sum()),int(df_2010["gugun"].sum()),
-                                    int(df_2011["gugun"].sum()),int(df_2012["gugun"].sum()),int(df_2101["gugun"].sum()),int(df_2102["gugun"].sum()),int(df_2103["gugun"].sum())]}
+        corona_data = {'date': ["2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03"],
+                       'patients': [int(df_2003["gugun"].sum()), int(df_2004["gugun"].sum()), int(df_2005["gugun"].sum()), int(df_2006["gugun"].sum()),
+                                    int(df_2007["gugun"].sum()), int(df_2008["gugun"].sum()), int(
+                           df_2009["gugun"].sum()), int(df_2010["gugun"].sum()),
+            int(df_2011["gugun"].sum()), int(df_2012["gugun"].sum()), int(df_2101["gugun"].sum()), int(df_2102["gugun"].sum()), int(df_2103["gugun"].sum())]}
 
         total_data = {**loc_data, **corona_data}
-        
-        # 해당 구의 유동인구 데이터 
+
+        # 해당 구의 유동인구 데이터
         target_fpopl_data = Fpopl.objects.filter(gugun=temp_area)
         # print(target_fpopl_data)
 
@@ -170,6 +173,9 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
 
 def midpoint(loc):
+
+    target = Gugun.objects.filter(signgu_nm=loc)
+
     return loc
 
 
