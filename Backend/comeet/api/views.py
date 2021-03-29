@@ -162,10 +162,14 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         total_data = {**loc_data, **corona_data}
         
-        # 해당 구의 유동인구 데이터 
+        # 해당 구의 유동인구 데이터
         target_fpopl_data = Fpopl.objects.filter(gugun=temp_area)
-        # print(target_fpopl_data)
-
+        fpopl_df = pd.DataFrame(list(target_fpopl_data.values("date", "popl")))
+        fpopl_df = fpopl_df.groupby("date").mean()
+        # print(fpopl_df)
+        fpopl_data = fpopl_df.to_dict()
+        # print(fpopl_data)
+        
         return JsonResponse(total_data, safe=False)
 
 
