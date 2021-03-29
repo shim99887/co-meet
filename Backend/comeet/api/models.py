@@ -33,6 +33,15 @@ class Fpopl(models.Model):
     gugun = models.CharField(max_length=10)
     popl = models.IntegerField()
 
+class Fpopl_BC(models.Model):
+    _id = models.IntegerField(primary_key=True)
+    date = models.CharField(max_length=20)
+    per_time = models.CharField(max_length=20)
+    age_range = models.IntegerField()
+    sex = models.CharField(max_length=10)
+    city = models.CharField(max_length=10)
+    gugun = models.CharField(max_length=10)
+    popl = models.IntegerField()
 
 class Card(models.Model):
     _id = models.IntegerField(primary_key=True)

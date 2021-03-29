@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import Code, Fpopl, Card, CoronaData, GugunLocate, Gugun
+from api.models import Code, Fpopl, Card, CoronaData, GugunLocate, Gugun, Fpopl_BC
 
 
 class CodeSerializer(serializers.ModelSerializer):
@@ -42,6 +42,17 @@ class FpoplSerializer(serializers.ModelSerializer):
                   'gugun',
                   'popl')
 
+class Fpopl_BCSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Fpopl_BC
+        fields = ('date',
+                  'per_time',
+                  'age_range',
+                  'sex',
+                  'city',
+                  'gugun',
+                  'popl')
 
 class CardSerializer(serializers.ModelSerializer):
 
