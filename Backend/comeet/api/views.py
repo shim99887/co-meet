@@ -165,10 +165,27 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         total_data = {**loc_data, **corona_data}
 
-        # 해당 구의 유동인구 데이터
+         # 해당 구의 유동인구 데이터
         target_fpopl_data = Fpopl.objects.filter(gugun=temp_area)
-        # print(target_fpopl_data)
-
+        fpopl_df = pd.DataFrame(list(target_fpopl_data.values("date", "popl")))
+        fpopl_df.loc[(fpopl_df['date'] >= "20200101") & (fpopl_df['date'] <= "20200131"), 'date'] = "202001"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200201") & (fpopl_df['date'] <= "20200229"), 'date'] = "202002"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200301") & (fpopl_df['date'] <= "20200331"), 'date'] = "202003"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200401") & (fpopl_df['date'] <= "20200430"), 'date'] = "202004"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200501") & (fpopl_df['date'] <= "20200531"), 'date'] = "202005"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200601") & (fpopl_df['date'] <= "20200630"), 'date'] = "202006"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200701") & (fpopl_df['date'] <= "20200731"), 'date'] = "202007"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200801") & (fpopl_df['date'] <= "20200831"), 'date'] = "202008"
+        fpopl_df.loc[(fpopl_df['date'] >= "20200901") & (fpopl_df['date'] <= "20200930"), 'date'] = "202009"
+        fpopl_df.loc[(fpopl_df['date'] >= "20201001") & (fpopl_df['date'] <= "20201031"), 'date'] = "202010"
+        fpopl_df.loc[(fpopl_df['date'] >= "20201101") & (fpopl_df['date'] <= "20201130"), 'date'] = "202011"
+        fpopl_df.loc[(fpopl_df['date'] >= "20201201") & (fpopl_df['date'] <= "20201231"), 'date'] = "202012"
+        fpopl_df.loc[(fpopl_df['date'] >= "20210101") & (fpopl_df['date'] <= "20210131"), 'date'] = "202101"
+        
+        fpopl_df = fpopl_df.groupby("date").mean()
+        fpopl_data = fpopl_df.to_dict('split')
+        total_data = {**total_data, **fpopl_data}
+        
         return JsonResponse(total_data, safe=False)
 
 
