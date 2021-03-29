@@ -17,3 +17,8 @@ class UserBodySerializer(serializers.Serializer):
     password = serializers.CharField(help_text="비밀번호")
     nickname = serializers.CharField(help_text="별명")
     is_auth = serializers.BooleanField(help_text="True, false")
+
+
+# class UserBodySerializer(serializers.Serializer):
+#     email = serializers.CharField(help_text="이메일")
+#     searchList = serializers.ArrayField(help_text="장소검색리스트")
