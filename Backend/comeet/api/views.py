@@ -301,6 +301,11 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     def corona_data_analysis(self, *args, **kwargs):
+        f_path = "c:/Windows/Fonts/malgun.ttf"
+        font_name = fm.FontProperties(fname=f_path).get_name()
+        plt.rc('font', family=font_name)
+        plt.rc('axes', unicode_minus=False)
+
         corona_data = CoronaData.objects.all()
 
         corona_df = pd.DataFrame(
@@ -314,40 +319,39 @@ class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         raw_1['year'] = raw_1.date.dt.year
         raw_1['month'] = raw_1.date.dt.month
         raw_1['day'] = raw_1.date.dt.day
-
+        raw_1['year-month'] = raw_1['year'].apply(
+            str) + '-' + raw_1['month'].apply(str)
+        print(raw_1)
         temp = raw_1.groupby(
-            by=["gugun", "year", "month"]).mean().reset_index()
+            by=["gugun", "year-month"]).mean().reset_index()
         raw_1 = temp.drop('day', axis=1)
+        raw_1 = temp.drop('month', axis=1)
+        raw_1 = temp.drop('year', axis=1)
 
         # 그래프 그리기
         raw_1 = raw_1.set_index('gugun')
-
         raw_1 = raw_1.drop('기타', axis=0)
         raw_1 = raw_1.drop('타시도', axis=0)
 
         fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(15, 15))
-        print(raw_1.index.unique())
-
-        f_path = "c:/Windows/Fonts/NanumGothic.ttf"
-        font_name = fm.FontProperties(fname=f_path).get_name()
-        rc('font', family=font_name)
-        rc('axes', unicode_minus=False)
+        # print(raw_1.index.unique())
+        # print(raw_1)
 
         for i, f in enumerate(raw_1.index.unique()):
-            # print(i)
-            # print(r)
-            # print(c)
             r = int(i / 5)  # 행별로 그래프 배치하기
             c = i % 5  # 열별로 그래프 배치하기
 
-            df20 = raw_1[(raw_1.index == f) & (raw_1.year == 2020)]
-            df21 = raw_1[(raw_1.index == f) & (raw_1.year == 2021)]
-            # print(df21)
-            line20 = sns.lineplot(
-                data=df20, x='month', y='serial_number', label='2020', ax=axes[r][c])
+            # df20 = raw_1[(raw_1.index == f) & (raw_1.year == 2020)]
+            # df21 = raw_1[(raw_1.index == f) & (raw_1.year == 2021)]
+            df = raw_1[(raw_1.index == f)]
+            # line20 = sns.lineplot(
+            #     data=df20, x='month', y='serial_number', label='2020', ax=axes[r][c])
 
+            # line21 = sns.lineplot(
+            #     data=df21, x='month', y='serial_number', label='2021', ax=axes[r][c])
             line21 = sns.lineplot(
-                data=df21, x='month', y='serial_number', label='2021', ax=axes[r][c])
+                data=df, x='year-month', y='serial_number', label='corona', ax=axes[r][c])
+
             line21.set_ylim(-30, 50)
             line21.set_title(f)
 
