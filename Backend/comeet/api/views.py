@@ -286,6 +286,11 @@ def nearbyArea(loc):
 class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     def data_analysis(self, *args, **kwargs):
+        f_path = "c:/Windows/Fonts/malgun.ttf"
+        font_name = fm.FontProperties(fname=f_path).get_name()
+        plt.rc('font', family=font_name)
+        plt.rc('axes', unicode_minus=False)
+
         bc_data = Fpopl_BC.objects.all()
         ac_data = Fpopl.objects.all()
 
@@ -329,6 +334,8 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             line21.set_title(f)
 
         fig.tight_layout()
+        plt.savefig('fpopl_data.png')
+        return Response(status=200)
 
 
 class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
