@@ -8,7 +8,7 @@
         <Chart class="graph__chart" v-if="gugun.length"/>
       </section>
       <section class="graph__footer">
-        <button class="graph-btn">새로운 장소 추천받기</button>
+        <button class="graph-btn" @click="reRecom">새로운 장소 추천받기</button>
         <h4 class="footer__description">장소를 재추천 받으시려면 버튼을 누르세요</h4>
       </section>
   </div>
@@ -25,6 +25,11 @@ export default {
       return this.$store.getters.get_gugun
     },
   },
+  methods:{
+    reRecom(){
+      this.$store.commit('MAPCANCLE');
+    }
+  }
 
 
 }
