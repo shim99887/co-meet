@@ -12,6 +12,7 @@ from django.core.cache import cache
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 from matplotlib import rc
 import io
 import urllib
@@ -282,7 +283,7 @@ def nearbyArea(loc):
     return area_list
 
 
-class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View) :
+class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     def data_analysis(self, *args, **kwargs):
         bc_data = Fpopl_BC.objects.all()
@@ -296,4 +297,60 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View) :
         temp = total_df.groupby(by=['date', 'gugun']).sum().reset_index()
         temp.head()
 
-        
+
+class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+
+    def corona_data_analysis(self, *args, **kwargs):
+        corona_data = CoronaData.objects.all()
+
+        corona_df = pd.DataFrame(
+            list(corona_data.values("serial_number", "date", "gugun")))
+
+        raw_1 = corona_df.groupby(by=['date', 'gugun']).count().reset_index()
+
+        raw_1["date"] = pd.to_datetime(raw_1["date"], format='%Y-%m-%d')
+
+        # '연도', '월', '일' 컬럼 생성
+        raw_1['year'] = raw_1.date.dt.year
+        raw_1['month'] = raw_1.date.dt.month
+        raw_1['day'] = raw_1.date.dt.day
+
+        temp = raw_1.groupby(
+            by=["gugun", "year", "month"]).mean().reset_index()
+        raw_1 = temp.drop('day', axis=1)
+
+        # 그래프 그리기
+        raw_1 = raw_1.set_index('gugun')
+
+        raw_1 = raw_1.drop('기타', axis=0)
+        raw_1 = raw_1.drop('타시도', axis=0)
+
+        fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(15, 15))
+        print(raw_1.index.unique())
+
+        f_path = "c:/Windows/Fonts/NanumGothic.ttf"
+        font_name = fm.FontProperties(fname=f_path).get_name()
+        rc('font', family=font_name)
+        rc('axes', unicode_minus=False)
+
+        for i, f in enumerate(raw_1.index.unique()):
+            # print(i)
+            # print(r)
+            # print(c)
+            r = int(i / 5)  # 행별로 그래프 배치하기
+            c = i % 5  # 열별로 그래프 배치하기
+
+            df20 = raw_1[(raw_1.index == f) & (raw_1.year == 2020)]
+            df21 = raw_1[(raw_1.index == f) & (raw_1.year == 2021)]
+            # print(df21)
+            line20 = sns.lineplot(
+                data=df20, x='month', y='serial_number', label='2020', ax=axes[r][c])
+
+            line21 = sns.lineplot(
+                data=df21, x='month', y='serial_number', label='2021', ax=axes[r][c])
+            line21.set_ylim(-30, 50)
+            line21.set_title(f)
+
+        fig.tight_layout()
+        plt.savefig('corona_data.png')
+        return Response(status=200)
