@@ -118,8 +118,6 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     @swagger_auto_schema(request_body=CodeBodySerializer)
     def recomm_loc(self, request, *args, **kwargs):
-        if cache.get("서대문구") is not None :
-            return cache.get("서대문구")
         
         # 주어지는 주소 기반으로 중간지점을 가져오는 로직
         mid = midpoint(request.data['signgu_nm'])
@@ -164,7 +162,7 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
                                     int(df_2007["gugun"].sum()), int(df_2008["gugun"].sum()), int(
                            df_2009["gugun"].sum()), int(df_2010["gugun"].sum()),
             int(df_2011["gugun"].sum()), int(df_2012["gugun"].sum()), int(df_2101["gugun"].sum()), int(df_2102["gugun"].sum()), int(df_2103["gugun"].sum())]}
-            
+
         total_data = {**loc_data, **corona_data}
 
          # 해당 구의 유동인구 데이터
@@ -251,3 +249,20 @@ def nearbyArea(loc):
         area_list.append(i[0])
 
     return area_list
+
+
+class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View) :
+
+    def data_analysis(self, *args, **kwargs):
+        bc_data = Fpopl_BC.objects.all()
+        ac_data = Fpopl.objects.all()
+
+        bc_df = pd.DataFrame(list(bc_data.values("date", "gugun", "popl")))
+        ac_df = pd.DataFrame(list(ac_data.values("date", "gugun", "popl")))
+
+        total_df = pd.concat([bc_df, ac_df], axis=0, ignore_index=True)
+
+        temp = total_df.groupby(by=['date', 'gugun']).sum().reset_index()
+        temp.head()
+
+        
