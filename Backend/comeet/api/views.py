@@ -294,8 +294,41 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         total_df = pd.concat([bc_df, ac_df], axis=0, ignore_index=True)
 
-        temp = total_df.groupby(by=['date', 'gugun']).sum().reset_index()
-        temp.head()
+        raw_1 = total_df.groupby(by=['date', 'gugun']).sum().reset_index()
+
+        raw_1["date"] = pd.to_datetime(raw_1["date"], format='%Y%m%d')
+
+        # '연도', '월', '일' 컬럼 생성
+        raw_1['year'] = raw_1.date.dt.year
+        raw_1['month'] = raw_1.date.dt.month
+        raw_1['day'] = raw_1.date.dt.day
+
+        # 월평균 유동인구수 구하기
+        temp = raw_1.groupby(
+            by=["gugun", "year", "month"]).mean().reset_index()
+        raw_1 = temp.drop('day', axis=1)
+
+        # 그래프 그리기
+        raw_1 = raw_1.set_index('gugun')
+
+        fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(15, 15))
+
+        for i, f in enumerate(raw_1.index.unique()):
+            r = int(i / 5)  # 행별로 그래프 배치하기
+            c = i % 5  # 열별로 그래프 배치하기
+            df19 = raw_1[(raw_1.index == f) & (raw_1.year == 2019)]
+            line19 = sns.lineplot(
+                data=df19, x='month', y='popl', label='2019', ax=axes[r][c])
+            df20 = raw_1[(raw_1.index == f) & (raw_1.year == 2020)]
+            line20 = sns.lineplot(
+                data=df20, x='month', y='popl', label='2020', ax=axes[r][c])
+            df21 = raw_1[(raw_1.index == f) & (raw_1.year == 2021)]
+            line21 = sns.lineplot(
+                data=df21, x='month', y='popl', label='2021', ax=axes[r][c])
+            line21.set_ylim(0, 1.5e+07)
+            line21.set_title(f)
+
+        fig.tight_layout()
 
 
 class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
