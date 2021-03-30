@@ -351,27 +351,42 @@ class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         corona_df = pd.DataFrame(
             list(corona_data.values("serial_number", "date", "gugun")))
 
-        raw_1 = corona_df.groupby(by=['date', 'gugun']).count().reset_index()
+        # print(corona_df)
 
-        raw_1["date"] = pd.to_datetime(raw_1["date"], format='%Y-%m-%d')
+        corona_df['date'] = [''.join(x.split('-')[0:2])
+                             for x in corona_df.date]  # 2020-01 2020-01 2021-03-07 -> 202001, 202103
+
+        # print(corona_df)
+
+        raw_1 = corona_df.groupby(
+            by=['date', 'gugun']).count().reset_index()
+
+        # raw_1["date"] = pd.to_datetime(raw_1["date"], format='%Y%m')
 
         # '연도', '월', '일' 컬럼 생성
-        raw_1['year'] = raw_1.date.dt.year
-        raw_1['month'] = raw_1.date.dt.month
-        raw_1['day'] = raw_1.date.dt.day
-        raw_1['year-month'] = raw_1['year'].apply(
-            str) + '-' + raw_1['month'].apply(str)
-        print(raw_1)
-        temp = raw_1.groupby(
-            by=["gugun", "year-month"]).mean().reset_index()
-        raw_1 = temp.drop('day', axis=1)
-        raw_1 = temp.drop('month', axis=1)
-        raw_1 = temp.drop('year', axis=1)
+        # raw_1['year'] = raw_1.date.dt.year
+        # raw_1['month'] = raw_1.date.dt.month
+        # raw_1['day'] = raw_1.date.dt.day
+        # raw_1['year-month'] = raw_1['year'].apply(
+        #    str) + '-' + raw_1['month'].apply(str)
+        # print(raw_1)
+        # raw_1 = raw_1.groupby(
+        #     by=["gugun", "date"]).mean().reset_index()
+        # raw_1 = temp.drop('day', axis=1)
+        #raw_1 = temp.drop('month', axis=1)
+        #raw_1 = temp.drop('year', axis=1)
 
         # 그래프 그리기
         raw_1 = raw_1.set_index('gugun')
         raw_1 = raw_1.drop('기타', axis=0)
         raw_1 = raw_1.drop('타시도', axis=0)
+
+        raw_2 = raw_1
+        raw_2 = raw_2.groupby(by=['date']).sum().reset_index()
+        raw_2["serial_number"] = raw_2["serial_number"]/25
+
+        # raw_1 = raw_1.groupby(
+        #     by=["gugun", "date"]).mean().reset_index()
 
         fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(15, 15))
         # print(raw_1.index.unique())
@@ -384,15 +399,15 @@ class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             # df20 = raw_1[(raw_1.index == f) & (raw_1.year == 2020)]
             # df21 = raw_1[(raw_1.index == f) & (raw_1.year == 2021)]
             df = raw_1[(raw_1.index == f)]
-            # line20 = sns.lineplot(
+
             #     data=df20, x='month', y='serial_number', label='2020', ax=axes[r][c])
 
-            # line21 = sns.lineplot(
-            #     data=df21, x='month', y='serial_number', label='2021', ax=axes[r][c])
+            line20 = sns.lineplot(
+                data=raw_2, x='date', y='serial_number', label='average', ax=axes[r][c])
             line21 = sns.lineplot(
-                data=df, x='year-month', y='serial_number', label='corona', ax=axes[r][c])
+                data=df, x='date', y='serial_number', label='corona', ax=axes[r][c])
 
-            line21.set_ylim(-30, 50)
+            line21.set_ylim(0, 800)
             line21.set_title(f)
 
         fig.tight_layout()
