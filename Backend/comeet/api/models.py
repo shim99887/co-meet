@@ -1,4 +1,4 @@
-from django.db import models
+from djongo import models
 
 # Create your models here.
 
@@ -62,3 +62,27 @@ class CoronaData(models.Model):
     overseas = models.CharField(max_length=20)  # 해외 여부
     route = models.CharField(max_length=50)  # 확진 경로
     discharge = models.CharField(max_length=50, null=True)  # 퇴원 여부
+
+class DistWegiht(models.Model):
+    signgu_nm = models.CharField(max_length=20)
+    weight_point = models.FloatField()
+
+class CoronaWeight(models.Model):
+    signgu_nm = models.CharField(max_length=20)
+    weight_point = models.FloatField()
+
+class FpoplWeight(models.Model):
+    signgu_nm = models.CharField(max_length=20)
+    weight_point = models.FloatField()
+
+class RecommData(models.Model):
+    signgu_nm = models.CharField(max_length=20)
+    dist_weights = models.ArrayField(
+        model_container= DistWegiht
+    )
+    corona_weights = models.ArrayField(
+        model_container = CoronaWeight
+    )
+    fpopl_weights = models.ArrayField(
+        model_container = FpoplWeight
+    )

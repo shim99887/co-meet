@@ -243,14 +243,25 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         print(fpopl_BC_df)
         return JsonResponse(total_data, safe=False)
 
-
+# 구별로 현재 점수 계산 ? 
 class FindLoc2(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = SearchLogSerializer
 
     @swagger_auto_schema(request_body=SearchLogBodySerializer)
     def recomm_loc(self, request, *args, **kwargs):
 
+        # 입력된 위치 기반 중간지점 도출 => 구로 변환
         mid = midpoint(request.data['searchList'])
+
+        # 중간 지점을 기반으로 가까운 지역 순으로 리스트 조회
+        nlist = nearbyArea(mid)
+        # 변환된 구를 이용해 해당 지역의 좌표 탐색
+        # recomm_loc = Gugun.objects.filter(signgu_nm=mid)
+        # for loc in recomm_loc.iterator():
+        #     lat = loc.lat
+        #     lng = loc.lng
+
+
 
         return Response(status=200)
 
@@ -295,7 +306,7 @@ def nearbyArea(loc):
     area = []
 
     target = Gugun.objects.filter(signgu_nm=loc)
-    others = Gugun.objects.all().exclude(signgu_nm=loc)
+    others = Gugun.objects.all()
 
     for i in target.iterator():
         target_lat = float(i.lat)
