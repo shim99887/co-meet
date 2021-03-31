@@ -35,7 +35,7 @@ class SearchLogSerializer(serializers.ModelSerializer):
 
 
 class SearchBodySerializer(serializers.Serializer):
-    juiso = serializers.CharField(help_text="주소")
+    juso = serializers.CharField(help_text="주소")
     lat = serializers.FloatField(help_text="위도")
     lng = serializers.FloatField(help_text="경도")
 

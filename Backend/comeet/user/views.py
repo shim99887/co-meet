@@ -8,7 +8,7 @@ from django.views import View
 from user.models import User, SearchLog
 from .serializers import UserSerializer, UserBodySerializer, SearchLogSerializer, SearchLogBodySerializer
 from drf_yasg.utils import swagger_auto_schema
-
+from django.core import serializers
 
 import jwt
 import json
@@ -208,13 +208,21 @@ class SearchLogViewSet(viewsets.GenericViewSet,
         sl_serializer.save()
 
         # 10개가 넘으면 처리를 여기서 할거
+        searchLog = SearchLog.objects.filter(email=request.data['email'])
+        searchLog_list = list(searchLog)
+
+        if searchLog.count() > 10:
+            eraseCount = searchLog.count() - 10
+            for i in range(eraseCount):
+                searchLog[i].delete()
 
         return Response(status=status.HTTP_200_OK)
 
     def serveSearchLog(self, *args, **kwargs):
         Search = SearchLog.objects.filter(email=self.kwargs['email'])
-        Search = list(Search)
-        return JsonResponse(json.dumps(Search), status=status.HTTP_200_OK, safe=False)
+        search_list = serializers.serialize('json', Search)
+
+        return HttpResponse(search_list, status=status.HTTP_200_OK)
 
 #  def nickname_vaild_check(self, *args, **kwargs):
 
