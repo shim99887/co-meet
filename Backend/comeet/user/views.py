@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
 # from django.http.response import JsonResponse
 from django.views import View
-from user.models import User
+from user.models import User, SearchLog
 from .serializers import UserSerializer, UserBodySerializer, SearchLogSerializer, SearchLogBodySerializer
 from drf_yasg.utils import swagger_auto_schema
 
@@ -201,7 +201,26 @@ class SearchLogViewSet(viewsets.GenericViewSet,
 
     @swagger_auto_schema(request_body=SearchLogBodySerializer)
     def saveSearchLog(self, request):
-        json = request.data
-        print(request.data)
 
-        return Response(True, status=status.HTTP_200_OK)
+        sl_serializer = SearchLogSerializer(data=request.data, partial=True)
+        if not sl_serializer.is_valid():
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+        sl_serializer.save()
+
+        # 10개가 넘으면 처리를 여기서 할거
+
+        return Response(status=status.HTTP_200_OK)
+
+    def serveSearchLog(self, *args, **kwargs):
+        Search = SearchLog.objects.filter(email=self.kwargs['email'])
+        Search = list(Search)
+        return JsonResponse(json.dumps(Search), status=status.HTTP_200_OK, safe=False)
+
+#  def nickname_vaild_check(self, *args, **kwargs):
+
+#         NickNames = User.objects.filter(nickname=self.kwargs['nickname'])
+
+#         if NickNames.exists():
+#             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+
+#         return Response(True, status=status.HTTP_200_OK)

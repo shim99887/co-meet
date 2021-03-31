@@ -23,5 +23,8 @@ urlpatterns = [
         {"get": "logout_check"}), name="Logout"),
 
     path('searchlog', SearchLogViewSet.as_view(
-         {"post": "saveSearchLog"}), name="saveSearchLog")
+         {"post": "saveSearchLog"}), name="saveSearchLog"),
+
+    path('searchlog/<email>', SearchLogViewSet.as_view(
+         {"get": "serveSearchLog"}), name="serveSearchLog")
 ]
