@@ -6,7 +6,7 @@ from django.http import HttpResponse, Http404, JsonResponse
 # from django.http.response import JsonResponse
 from django.views import View
 from user.models import User
-from .serializers import UserSerializer, UserBodySerializer
+from .serializers import UserSerializer, UserBodySerializer, SearchLogSerializer, SearchLogBodySerializer
 from drf_yasg.utils import swagger_auto_schema
 
 
@@ -190,5 +190,18 @@ class LogoutViewSet(viewsets.GenericViewSet,
     def logout_check(self, *args, **kwargs):
 
         cache.delete(self.kwargs['email'])
+
+        return Response(True, status=status.HTTP_200_OK)
+
+
+class SearchLogViewSet(viewsets.GenericViewSet,
+                       mixins.ListModelMixin,
+                       View):
+    serializer_class = SearchLogSerializer
+
+    @swagger_auto_schema(request_body=SearchLogBodySerializer)
+    def saveSearchLog(self, request):
+        json = request.data
+        print(request.data)
 
         return Response(True, status=status.HTTP_200_OK)
