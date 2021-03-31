@@ -189,6 +189,7 @@ export default {
       }, 1500);
     },
     registComp() {
+      this.$store.commit("ON_SEARCHING")
       if (
         this.nameChecked &&
         this.emailChecked &&
@@ -205,6 +206,7 @@ export default {
                 "회원가입을 성공했습니다. 가입하신 아이디로 이메일을 발송했으니 인증 후 이용가능합니다.",
               timer: 3000,
             });
+            this.$store.commit("OFF_SEARCHING")
           })
           .catch((error) => {
             this.$fire({
@@ -221,6 +223,7 @@ export default {
             title: "닉네임 중복 미체크",
             timer: 3000,
           });
+          this.$store.commit("OFF_SEARCHING")
         }
         if (!this.emailChecked) {
           this.$fire({
@@ -228,6 +231,7 @@ export default {
             title: "이메일 중복 미체크",
             timer: 3000,
           });
+          this.$store.commit("OFF_SEARCHING")
         }
         if (!this.user.password) {
           this.$fire({
@@ -235,13 +239,15 @@ export default {
             title: "비밀번호를 입력해주세요",
             timer: 3000,
           });
+          this.$store.commit("OFF_SEARCHING")
         }
         if (this.user.password != this.pwdChk) {
           this.$fire({
             type: "error",
             title: "비밀번호가 일치하지 않습니다.",
             timer: 3000,
-          });
+          })
+          this.$store.commit("OFF_SEARCHING")
         }
       }
     },

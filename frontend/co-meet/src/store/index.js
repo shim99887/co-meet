@@ -46,6 +46,12 @@ export default new Vuex.Store({
     },
     get_reRecom(state){
       return state.reRecom;
+    },
+    get_resultCity(state) {
+      return state.recomCity
+    },
+    get_onSearching(state) {
+      return state.onSearching
     }
   },
   mutations: {
@@ -94,17 +100,23 @@ export default new Vuex.Store({
     async GET_RECOM(context, city) {
       try {
         const res = await axios.post("https://j4a203.p.ssafy.io/api/recomm", {signgu_nm: city})
+        // 검색으로 넣은 구 
         context.commit('PUT_CITY', city)
         const data = res.data
         const location = {
           lat: data.recomm_lat,
           lng: data.recomm_lng,
           gu: data.signgu_nm,
+          date: data.date,
+          patients: data.patients
         }
         context.commit("PUT_RESULT", location)
         context.commit("MAPTOGGLE")
+        console.log(`recomcity`)
+        console.log(this.state.recomCity)
       } catch(err) {
         console.log(err)
+        context.commit("OFF_SEARCHING")
       }
     },
     async GET_CORONA_PER_CITY(context) {
@@ -123,9 +135,11 @@ export default new Vuex.Store({
         
       } catch (err) {
         console.log(err)
+        context.commit("OFF_SEARCHING")
       }
     },
     LOGIN(context, user){
+      context.commit("ON_SEARCHING")
       const params = new URLSearchParams();
       params.append('email', user.email);
       params.append('password', user.password);
@@ -136,8 +150,10 @@ export default new Vuex.Store({
         localStorage.setItem('nickname', response.data.nickname);
         localStorage.setItem('email', response.data.email);
         context.commit('LOGIN');
+        context.commit("OFF_SEARCHING")
       })
       .catch(() => {
+        context.commit("OFF_SEARCHING")
       })     
     },
     LOGOUT(context, email){
@@ -146,6 +162,7 @@ export default new Vuex.Store({
         console.log(response);
       })
       .catch(error => {
+        context.commit("OFF_SEARCHING")
         alert(error);
       })
 
