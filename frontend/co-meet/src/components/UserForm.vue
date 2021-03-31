@@ -76,23 +76,39 @@
             >
           </v-col>
         </v-row>
-        <v-text-field
-          type="password"
-          label="Password"
-          v-model="user.password"
-          :rules="pwdRules"
-        />
-        <v-text-field
-          type="password"
-          label="Password Confirm"
-          :rules="pwdChkRules"
-          v-model="pwdChk"
-        />
         <v-row align="center">
-          <v-col cols="1">
+          <v-col cols="10" style="padding:0px;">
+
+            <v-text-field
+              type="password"
+              label="Password"
+              v-model="user.password"
+              :rules="pwdRules"
+              style="padding:0px;"
+            />
+          </v-col>
+          <v-col cols="2">
+            <v-btn width="40px" style="visibility:hidden;"></v-btn>
+          </v-col>
+        </v-row>
+        <v-row align="center">
+          <v-col cols="10" style="padding:0px;">
+            <v-text-field
+              type="password"
+              label="Password Confirm"
+              :rules="pwdChkRules"
+              v-model="pwdChk"
+            />
+          </v-col>
+          <v-col cols="2">
+            <v-btn width="40px" style="visibility:hidden;"></v-btn> 
+          </v-col>
+        </v-row>
+        <v-row align="center">
+          <v-col cols="1" style="padding:0px;">
             <v-checkbox />
           </v-col>
-          <v-col cols="6" style="font-size:13px;">
+          <v-col cols="6" style="font-size:13px;padding:0px;">
             Terms and conditions
           </v-col>
         </v-row>
