@@ -6,7 +6,9 @@ from django.http import HttpResponse
 from django.core import serializers
 from django.http.response import JsonResponse
 from api.models import Code, Fpopl, Card, CoronaData, Gugun, Fpopl_BC
+from user.models import SearchLog
 from .serializers import CodeSerializer, FpoplSerializer, CardSerializer, CoronaDataSerializer, CodeBodySerializer
+from user.serializers import SearchSerializer, SearchLogSerializer, SearchBodySerializer, SearchLogBodySerializer
 from drf_yasg.utils import swagger_auto_schema
 from django.core.cache import cache
 import pandas as pd
@@ -242,11 +244,51 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         return JsonResponse(total_data, safe=False)
 
 
+class FindLoc2(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    serializer_class = SearchLogSerializer
+
+    @swagger_auto_schema(request_body=SearchLogBodySerializer)
+    def recomm_loc(self, request, *args, **kwargs):
+
+        mid = midpoint(request.data['searchList'])
+
+        return Response(status=200)
+
+
 def midpoint(loc):
+    area = []
 
-    target = Gugun.objects.filter(signgu_nm=loc)
+    target_lat = 0.0
+    target_lng = 0.0
 
-    return loc
+    for i in loc:
+        target_lat += i["lat"]
+        target_lng += i["lng"]
+
+    target_lat /= len(loc)
+    target_lng /= len(loc)
+
+    get_list = Gugun.objects.all()
+
+    for i in get_list.iterator():
+        area.append([i.signgu_nm])
+
+    cnt = 0
+
+    for i in get_list.iterator():
+
+        dist = (float(i.lat) - target_lat) * (float(i.lat) - target_lat) + (
+            float(i.lng) - target_lng)*(float(i.lng) - target_lng)
+
+        area[cnt].append(dist)
+
+        cnt += 1
+
+    area.sort(key=lambda x: x[1])
+
+    print(area[0][0])
+
+    return area[0][0]
 
 
 def nearbyArea(loc):

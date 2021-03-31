@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.conf.urls import url
 from django.conf import settings
-from .views import CoronaSet, CodeSet, FpoplSet, CoronaList, FpoplList, FindLoc, DataAnalysis, CoronaDataAnalysis
+from .views import CoronaSet, CodeSet, FpoplSet, CoronaList, FpoplList, FindLoc2, DataAnalysis, CoronaDataAnalysis
 
 urlpatterns = [
     # path('', views.index, name='index'),
@@ -13,7 +13,7 @@ urlpatterns = [
     path("fpopl", FpoplSet.as_view({"get": "set_fpopl"})),
     path("corona-list", CoronaList.as_view({"get": "get_corona_list"})),
     path("fpopl-list", FpoplList.as_view({"get": "get_fpopl_list"})),
-    path("recomm", FindLoc.as_view({"post": "recomm_loc"})),
+    path("recomm", FindLoc2.as_view({"post": "recomm_loc"})),
     path("data-analysis", DataAnalysis.as_view({"get": "data_analysis"})),
     path("corona-data-analysis",
          CoronaDataAnalysis.as_view({"get": "corona_data_analysis"})),
