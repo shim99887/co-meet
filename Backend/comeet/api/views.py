@@ -333,10 +333,12 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         plt.rc('font', family=font_name)
         plt.rc('axes', unicode_minus=False)
 
-        bc_data = Fpopl_BC.objects.filter(
-            per_time__in=["12", "18", "19", "20", "21", "22", "23"])
-        ac_data = Fpopl.objects.filter(
-            per_time__in=["12", "18", "19", "20", "21", "22", "23"])
+        # bc_data = Fpopl_BC.objects.filter(
+        #     per_time__in=["12", "18", "19", "20", "21", "22", "23"])
+        # ac_data = Fpopl.objects.filter(
+        #     per_time__in=["12", "18", "19", "20", "21", "22", "23"])
+        bc_data = Fpopl_BC.objects.filter(age_range__in=[20, 30, 40])
+        ac_data = Fpopl.objects.filter(age_range__in=[20, 30, 40])
 
         bc_df = pd.DataFrame(list(bc_data.values("date", "gugun", "popl")))
         ac_df = pd.DataFrame(list(ac_data.values("date", "gugun", "popl")))
@@ -374,11 +376,12 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             df21 = raw_1[(raw_1.index == f) & (raw_1.year == 2021)]
             line21 = sns.lineplot(
                 data=df21, x='month', y='popl', label='2021', ax=axes[r][c])
-            line21.set_ylim(0, 8e+06)
+            # line21.set_ylim(0, 8e+06)
+            line21.set_ylim(0, 1.5e+07)
             line21.set_title(f)
 
         fig.tight_layout()
-        plt.savefig('fpopl_data5.png')
+        plt.savefig('fpopl_data6.png')
         return Response(status=200)
 
 
@@ -457,3 +460,4 @@ class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         fig.tight_layout()
         plt.savefig('corona_data.png')
         return Response(status=200)
+
