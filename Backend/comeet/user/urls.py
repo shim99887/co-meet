@@ -1,7 +1,7 @@
 
 from django.urls import path, include
 from django.conf.urls import url
-from .views import UserViewSet, EmailViewSet, NickNameViewSet, Activate, LoginViewSet, LogoutViewSet
+from .views import UserViewSet, EmailViewSet, NickNameViewSet, Activate, LoginViewSet, LogoutViewSet, SearchLogViewSet
 #from . import views
 
 urlpatterns = [
@@ -20,5 +20,8 @@ urlpatterns = [
         {"post": "login_check"}), name="Login"),
 
     path('logout/<email>', LogoutViewSet.as_view(
-        {"get": "logout_check"}), name="Logout")
+        {"get": "logout_check"}), name="Logout"),
+
+    path('searchlog', SearchLogViewSet.as_view(
+         {"post": "saveSearchLog"}), name="saveSearchLog")
 ]

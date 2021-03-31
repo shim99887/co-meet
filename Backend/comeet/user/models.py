@@ -1,4 +1,4 @@
-from django.db import models
+#from django.db import models
 from djongo import models
 # Create your models here.
 
@@ -11,7 +11,7 @@ class User(models.Model):
 
 
 class Search(models.Model):
-    address = models.CharField(primary_key=True, max_length=200)
+    juso = models.CharField(primary_key=True, max_length=200)
     lat = models.FloatField()
     lng = models.FloatField()
 
