@@ -41,12 +41,14 @@
         </div>
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
         <button
-          href="#"
           class="location__my-location text-bold"
           @click="findCurrentLocation"
         >
           내 현재 위치
         </button>
+          {{latitude}}
+          {{longitude}}
+          {{textContent}}
         <div class="text-center or-text">
           <b>혹은</b>
         </div>
@@ -59,8 +61,8 @@
               v-for="(addr, index) in addrList"
               :key="index"
               @click:close="temp(index)"
-              >{{ addr.juso }}</v-chip
-            >
+              >{{ addr }}
+            </v-chip>
           </div>
           <v-dialog v-model="dialog" width="500">
             <template v-slot:activator="{ on, attrs }">
@@ -188,6 +190,7 @@ import DaumPostcode from "vuejs-daum-postcode";
 import Mapbox from "mapbox-gl";
 import { MglMap, MglMarker, MglPopup } from "vue-mapbox";
 import axios from 'axios';
+import VueGeolocationApi from 'vue-geolocation-api'
 
 export default {
   components: {
@@ -208,7 +211,12 @@ export default {
       location: "",
       dialog: false,
       selectMethod: "",
+      //여기에 주소가 저장되서 이걸로 getRecom함수에 넣어야함. (03-31일 현재, location에 보낼 '구' 하나만 저장되어서 요청 보냄)
       addrList: [],
+
+      latitude: '',
+      longitude: '',
+      textContent: '',
     };
   },
 
@@ -255,35 +263,48 @@ export default {
     handleAddress: function(data) {
       this.location = data.jibunAddress;
       console.log(data);
-      var parseString = require('xml2js').parseString;
-      var key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
-      var jsonTemp = {};
-      var self = this;
-      axios.get('http://apis.vworld.kr/jibun2coord.do?q=' + data.jibunAddress + "&format=json&apiKey=" + key)
-      .then(response => {
-        parseString(response.data, function(err, result){
-          // console.log(result);
+      // var parseString = require('xml2js').parseString;
+      // var key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
+      // const jsonTemp = {};
+      // var self = this;
+      // axios.get('http://apis.vworld.kr/jibun2coord.do?q=' + data.jibunAddress + "&format=json&apiKey=" + key)
+      // .then(response => {
+      //   parseString(response.data, function(err, result){
+      //     // console.log(result);
 
-          // console.log(result.result.EPSG_4326_Y[0]);
-          // console.log(result.result.EPSG_4326_X[0]);
-          // console.log(result.result.JUSO[0]);
-          jsonTemp = {
-            juso: result.result.JUSO[0],
-            lat : result.result.EPSG_4326_X[0],
-            lng : result.result.EPSG_4326_Y[0]
-          };
-        self.addrList.push(jsonTemp);
-        })
-      })
-      .catch(error => { 
-        alert(error);
-      })
+      //     // console.log(result.result.EPSG_4326_Y[0]);
+      //     // console.log(result.result.EPSG_4326_X[0]);
+      //     // console.log(result.result.JUSO[0]);
+      //     jsonTemp = {
+      //       juso: result.result.JUSO[0],
+      //       lat : result.result.EPSG_4326_X[0],
+      //       lng : result.result.EPSG_4326_Y[0]
+      //     };
+      this.addrList.push(data.jibunAddress);
+
+      //   })
+      // })
+      // .catch(error => { 
+      //   alert(error);
+      // })
       console.log(this.addrList);
       this.dialog = false;
     },
     findCurrentLocation() {
       console.log("click cur location");
       this.selectMethod = "currentLocation";
+      if(!("geolocation" in navigator)) {
+        this.textContent = 'Geolocation is not available'
+        return
+      }
+      this.textContent = 'Locating...'
+      navigator.geolocation.getCurrentPosition(pos => {
+        this.latitude = pos.coords.latitude;
+        this.longitude = pos.coords.longitude;
+        this.textContent = 'Your location data is ' + this.latitude + ', ' + this.longitude
+        }, err => {
+        this.textContent = err.message;
+        })
     },
     findInputLocation() {
       console.log("click input location");

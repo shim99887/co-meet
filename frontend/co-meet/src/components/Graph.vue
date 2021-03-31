@@ -7,6 +7,7 @@
       <section class="graph__reason">
         <h4>서울시 구별 확진자에 대한 데이터입니다.</h4>
         <Barchart class="graph__chart" v-if="gugun.length"/>
+        <img src="@/assets/non_data.png" alt="non_data" class="graph__non-data" v-else>
         <h4>추천 받은 장소에 대한 확진자 데이터입니다.</h4>
         <Linechart class="graph__chart" v-if="recomCity.length"/>
       </section>
@@ -75,7 +76,10 @@ export default {
       width: 100%;
       padding: 1rem;
     }
-
+    &__non-data {
+      width: 100%;
+      padding: 1rem 0;
+    }
     &__footer {
       margin-top: 2em;
       border-top: $inside-border;
