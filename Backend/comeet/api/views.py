@@ -19,6 +19,8 @@ from matplotlib import rc
 import io
 import urllib
 import base64
+from datetime import datetime, timedelta
+from collections import Counter
 # Create your views here.
 
 
@@ -328,11 +330,104 @@ def nearbyArea(loc):
 class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     def save_corona_weight(self, *args, **kwargs):
         return None
-        
+
 # 유동인구 지수 저장
 class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     def save_fpopl_weight(self, *args, **kwargs):
-        return None
+        today = datetime.today()
+
+        cal = today - datetime(2020, 12, 1, 0, 0, 0)
+        # print(cal.days)
+        standard = today - timedelta(cal.days)
+        fpopl_list = Fpopl.objects.filter(
+            date__range=[standard.strftime('%Y%m%d'), today.strftime('%Y%m%d')]
+        )
+        df = pd.DataFrame(list(fpopl_list.values("date", "popl", "gugun")))
+
+        df['date'] = [ x[0:6] for x in df.date]  # 2020-01 2020-01 2021-03-07 -> 202001, 202103
+        # print(df)
+        df = df.groupby(by=["gugun", "date"], as_index=False).sum()
+        # print(df)
+
+        # 월별 총 유동인구수 
+        df_first = df[df['date'] == '202012'].groupby(by=['date']).sum()
+        df_second = df[df['date'] == '202101'].groupby(by=['date']).sum()
+        df_third = df[df['date'] == '202102'].groupby(by=['date']).sum()
+
+        a = df_first.iloc[0]['popl']
+        b = df_second.iloc[0]['popl']
+        c = df_third.iloc[0]['popl']
+        # print(a)
+        # print(b)
+        # print(c)
+
+        # 상대적 유동인구 분포율 
+        relative_first = df[df['date'] == '202012']
+        relative_first['popl'] =[(x/a)*100 for x in relative_first.popl]
+        relative_second = df[df['date'] == '202101']
+        relative_second['popl'] = [(x/b)*100 for x in relative_second.popl]
+        relative_third = df[df['date'] == '202102']
+        relative_third['popl'] = [(x/c)*100 for x in relative_third.popl]
+        
+        # print(relative_first)
+        # print(relative_second)
+        # print(relative_third)
+
+        # 유동인구수 평균 - 25개 구
+        a = df_first.iloc[0]['popl'] / 25
+        b = df_second.iloc[0]['popl'] / 25
+        c = df_third.iloc[0]['popl'] / 25
+
+        # 유동인구수 - 평균 유동인구수보다 유동인구수가 많은 지역을 1로 적은 지역은 0으로 표시
+        absolute_first = df[df['date'] == '202012']
+        absolute_first['popl'] =[1 if x - a > 0 else 0 for x in absolute_first.popl]
+        absolute_second = df[df['date'] == '202101']
+        absolute_second['popl'] = [1 if x - b > 0 else 0 for x in absolute_second.popl]
+        absolute_third = df[df['date'] == '202102']
+        absolute_third['popl'] = [ 1 if x - c > 0 else 0 for x in absolute_third.popl]
+
+        # print(absolute_first)
+        # print(absolute_second)
+        # print(absolute_third)
+
+        # 유동인구 변화량 계산 
+        gugun_list = list(Gugun.objects.values())
+        # print(gugun_list)
+        data = {'gugun' : [], 'popl' : [], 'first_popl_rate' : [], 'second_popl_rate' : []}
+        fpop_rate = pd.DataFrame(data)
+        for i in range(0, len(gugun_list)):
+            temp_df = df[df['gugun'] == gugun_list[i]['signgu_nm']]
+            popl_first = temp_df.iloc[0]['popl']
+            popl_second = temp_df.iloc[1]['popl']
+            popl_third = temp_df.iloc[2]['popl']
+            # 12~1월 유동인구 변화율
+            temp_df['first_popl_rate'] = ((popl_second - popl_first) / popl_first) * 100
+            # 1~2월 유동인구 변화율
+            temp_df['second_popl_rate'] = ((popl_third - popl_second) / popl_second) * 100
+            temp_df = temp_df.groupby(["gugun"], as_index=False).mean()
+            # print(temp_df)
+            fpop_rate = fpop_rate.append(temp_df, ignore_index=False)
+        # print(fpop_rate.groupby(["gugun"], as_index=False).mean())
+        
+        # 해당 구의 유동인구 / 전체 유동인구 => 등수 뽑아 
+        point_1 = relative_third.sort_values(by=['popl'], axis=0)
+        list_1 = point_1['gugun'].to_list()
+        weight_1 = {string : (i + 1) * 4 for i,string in enumerate(list_1)}
+        # print(weight_1)
+        # 첫번째 달에서 두번째 달 넘어가는 걸로 소트해서 등수 뽑아 (12 => 1)
+        point_2 = fpop_rate.sort_values(by=['first_popl_rate'], axis=0)
+        list_2 = point_2['gugun'].to_list()
+        weight_2 = {string : (i + 1) * 1 for i,string in enumerate(list_2)}
+        # print(weight_2)
+        # 두번째 달 넘어가는 거에서 세번째 달 넘어가는 걸로 소트해서 등수 뽑아(1 => 2)
+        point_3 = fpop_rate.sort_values(by=['second_popl_rate'], axis=0)
+        list_3 = point_3['gugun'].to_list()
+        weight_3 = {string : (i + 1) * 2 for i,string in enumerate(list_3)}
+        # print(weight_3)
+
+        total_score = Counter(weight_1) + Counter(weight_2) + Counter(weight_3)
+        print(total_score)
+        return Response(status=200)
 
 class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
