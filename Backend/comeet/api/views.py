@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.core import serializers
 from django.http.response import JsonResponse
-from api.models import Code, Fpopl, Card, CoronaData, Gugun, Fpopl_BC
+from api.models import Code, Fpopl, Card, CoronaData, Gugun, Fpopl_BC, CoronaWeight
 from user.models import SearchLog
 from .serializers import CodeSerializer, FpoplSerializer, CardSerializer, CoronaDataSerializer, CodeBodySerializer
 from user.serializers import SearchSerializer, SearchLogSerializer, SearchBodySerializer, SearchLogBodySerializer
@@ -15,11 +15,12 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
+import numpy as np
 from matplotlib import rc
 import io
 import urllib
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from collections import Counter
 # Create your views here.
 
@@ -40,6 +41,7 @@ class CoronaSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         return JsonResponse({"message": "CORONA_SUCCESS"}, status=200)
 
+
 class CodeSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = CodeSerializer
 
@@ -52,6 +54,7 @@ class CodeSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         cache.set("code_data", code_data, 24 * 60 * 60)
 
         return JsonResponse({'message': 'CODE_SUCCESS'}, status=200)
+
 
 class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = FpoplSerializer
@@ -67,6 +70,7 @@ class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         print("33")
 
         return JsonResponse({'message': 'FPOPL_SUCCESS'}, status=200)
+
 
 class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = CoronaDataSerializer
@@ -85,6 +89,7 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         corona_json = df.to_dict()
 
         return JsonResponse(corona_json, safe=False)
+
 
 class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = FpoplSerializer
@@ -112,6 +117,7 @@ class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         print("333")
         return JsonResponse(fpopl_json, safe=False)
         # return None
+
 
 class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = CodeSerializer
@@ -241,6 +247,8 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         return JsonResponse(total_data, safe=False)
 
 # 거리 지수 저장
+
+
 class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = SearchLogSerializer
 
@@ -249,14 +257,15 @@ class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         # 입력된 위치 기반 중간지점 도출 => 구로 변환
         mid = midpoint(request.data['searchList'])
-        
+
         # 중간 지점을 기반으로 가까운 지역 순으로 리스트 조회
         nlist = nearbyArea(mid)
 
-        # 현재는 인덱스 값으로 저장 => 거리 가중치로 변환해야됨 
-        dist_weights = {string : 25 - i for i,string in enumerate(nlist)}
+        # 현재는 인덱스 값으로 저장 => 거리 가중치로 변환해야됨
+        dist_weights = {string: 25 - i for i, string in enumerate(nlist)}
         # print(dist_weights)
         return Response(status=200)
+
 
 def midpoint(loc):
     area = []
@@ -293,6 +302,7 @@ def midpoint(loc):
 
     return area[0][0]
 
+
 def nearbyArea(loc):
     area = []
 
@@ -327,11 +337,142 @@ def nearbyArea(loc):
     return area_list
 
 # 코로나 지수 저장
+
+
 class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     def save_corona_weight(self, *args, **kwargs):
-        return None
+        today = datetime.today()
+        recentdate = datetime(2021, 3, 31, 0, 0, 0)
+        print(today)
+        #print(datetime(2021, 1, 1))
+        cal = recentdate - datetime(2021, recentdate.month - 2, 1, 0, 0, 0)
+        standard = recentdate - timedelta(cal.days)
+        print(standard)
+        corona = CoronaData.objects.filter(
+            date__range=[standard.strftime('%Y-%m-%d'), recentdate.strftime('%Y-%m-%d')])
+        df = pd.DataFrame(
+            list(corona.values('date', 'gugun', 'serial_number')))
+
+        df['date'] = [''.join(x.split('-')[0:2])
+                      for x in df.date]  # 2020-01 2020-01 2021-03-07 -> 202001, 202103
+        df = df.groupby(["gugun", "date"], as_index=False).count()
+        # df.set_index('date')
+        df = df.set_index('gugun')
+        df = df.drop(index='기타', axis=0)
+        df = df.drop(index='타시도', axis=0)
+        df = df.rename_axis('gugun').reset_index()
+
+        # 구 별로 월 별 코로나 평균
+        df_first = df[df["date"] == "202101"].groupby(by=["date"]).sum()
+        df_second = df[df["date"] == "202102"].groupby(by=["date"]).sum()
+        df_third = df[df["date"] == "202103"].groupby(by=["date"]).sum()
+
+        first_avg = df_first.iloc[0]['serial_number'] / 25
+        second_avg = df_second.iloc[0]['serial_number'] / 25
+        third_avg = df_third.iloc[0]['serial_number'] / 25
+        # print(first_avg)
+        # print(second_avg)
+        # print(third_avg)
+
+        df_first = df[df["date"] == "202101"]
+        df_first["serial_number"] = [
+            x/first_avg for x in df_first.serial_number]
+        df_second = df[df["date"] == "202102"]
+        df_second["serial_number"] = [
+            x/second_avg for x in df_second.serial_number]
+        df_third = df[df["date"] == "202103"]
+        df_third["serial_number"] = [
+            x/third_avg for x in df_third.serial_number]
+        first_list = df_first.sort_values(by=['serial_number'], axis=0)
+        second_list = df_second.sort_values(by=['serial_number'], axis=0)
+        third_list = df_third.sort_values(by=['serial_number'], axis=0)
+
+        print(first_list)
+
+        list_1 = first_list['gugun'].to_list()
+        list_2 = second_list['gugun'].to_list()
+        list_3 = third_list['gugun'].to_list()
+
+        weight_1 = {string: (i + 1) * 10000 for i, string in enumerate(list_1)}
+        weight_2 = {string: (i + 1) * 10000 for i, string in enumerate(list_2)}
+        weight_3 = {string: (i + 1) * 10000 for i, string in enumerate(list_3)}
+
+        total_corona_rate = Counter(
+            weight_1) + Counter(weight_2) + Counter(weight_3)
+
+        for i in total_corona_rate:
+            total_corona_rate[i] = total_corona_rate[i] / 10000
+        print(total_corona_rate)
+
+        gugun_list = list(Gugun.objects.values())
+
+        # print(gugun_list['signgu_nm'])
+        # print(len(gugun_list))
+
+        # 기존 코로나 데이터 삭제
+        corona_weight_data = CoronaWeight.objects.all()
+        # print(corona_weight_data.count())
+        for i in range(0, corona_weight_data.count()):
+            corona_weight_data[0].delete()
+
+        data = {'gugun': [], 'before_corona_rate': [],
+                'after_corona_rate': [], 'serial_number': []}
+        corona_df = pd.DataFrame(data)
+        for i in range(0, len(gugun_list)):
+            temp_df = df[df['gugun'] == gugun_list[i]['signgu_nm']]
+            cor1 = temp_df.iloc[0]['serial_number']
+            cor2 = temp_df.iloc[1]['serial_number']
+            cor3 = temp_df.iloc[2]['serial_number']
+            # 1~2월 코로나 확진자 변화율
+            temp_df['before_corona_rate'] = ((cor2 - cor1) / cor1) * 100
+            # 2~3월 코로나 확진자 변화율
+            temp_df['after_corona_rate'] = ((cor3 - cor2) / cor2) * 100
+            temp_df = temp_df.groupby(["gugun"], as_index=False).mean()
+            # print(temp_df)
+            corona_df = corona_df.append(temp_df, ignore_index=False)
+
+        before_corona_list = corona_df.sort_values(
+            by=['before_corona_rate'], axis=0)
+        after_corona_list = corona_df.sort_values(
+            by=['after_corona_rate'], axis=0)
+
+        before_list = before_corona_list['gugun'].to_list()
+        after_list = after_corona_list['gugun'].to_list()
+
+        before_1 = {string: (i + 1) for i,
+                    string in enumerate(before_list)}
+        after_2 = {string: (i + 1) for i,
+                   string in enumerate(after_list)}
+
+        print(before_1)
+        print(after_2)
+
+        # for i in range(0, len(gugun_list)):
+        #     temp_df = df.filter(like=gugun_list[i]['signgu_nm'], axis=0)
+        #     cor1 = temp_df.iloc[0]['serial_number']
+        #     cor2 = temp_df.iloc[1]['serial_number']
+        #     cor3 = temp_df.iloc[2]['serial_number']
+        #     # 1~2월 코로나 확진자 변화율
+        #     temp_df['before_corona_rate'] = ((cor2 - cor1) / cor1) * 100
+        #     # 2~3월 코로나 확진자 변화율
+        #     temp_df['after_corona_rate'] = ((cor3 - cor2) / cor2) * 100
+        #     temp_df = temp_df.groupby(["gugun"], as_index=True).mean()
+
+        #     # db에 저장
+        #     weight = temp_df.iloc[0]['before_corona_rate'] + \
+        #         1.5 * temp_df.iloc[0]['after_corona_rate']
+
+        # 구군 이름, 1~2월 변화량, 2~3월 변화량
+        # coronaWeight = CoronaWeight(
+        # signgu_nm=gugun_list[i]['signgu_nm'], weight_point=weight)
+        # 계산을 해서 저장
+        # coronaWeight.save()
+
+        return HttpResponse(status=status.HTTP_200_OK)
 
 # 유동인구 지수 저장
+
+
 class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     def save_fpopl_weight(self, *args, **kwargs):
         today = datetime.today()
@@ -429,6 +570,7 @@ class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         print(total_score)
         return Response(status=200)
 
+
 class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     def data_analysis(self, *args, **kwargs):
@@ -488,6 +630,7 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         plt.savefig('fpopl_data6.png')
         return Response(status=200)
 
+
 class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     def corona_data_analysis(self, *args, **kwargs):
@@ -523,8 +666,8 @@ class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         # raw_1 = raw_1.groupby(
         #     by=["gugun", "date"]).mean().reset_index()
         # raw_1 = temp.drop('day', axis=1)
-        #raw_1 = temp.drop('month', axis=1)
-        #raw_1 = temp.drop('year', axis=1)
+        # raw_1 = temp.drop('month', axis=1)
+        # raw_1 = temp.drop('year', axis=1)
 
         # 그래프 그리기
         raw_1 = raw_1.set_index('gugun')
