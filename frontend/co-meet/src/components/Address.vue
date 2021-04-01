@@ -31,15 +31,17 @@
           <h2 class="explain__title">
             약속장소에 적합한 장소를 추천해드립니다
           </h2>
-          <h4 class="explain__description">
+          <!-- <h4 class="explain__description">
             현재 위치 또는<br />직접 현재 위치를 입력하실 수 있습니다.<br />
             <b
               >한 가지의 방법을 선택하시면, 다른 한가지 방법은 사용하실 수
               없습니다.</b
             >
-          </h4>
+          </h4> -->
+          
         </div>
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
+        <section class="location__selection">
         <button
           class="location__my-location text-bold"
           @click="findCurrentLocation"
@@ -50,7 +52,7 @@
           {{longitude}}
           {{textContent}}
         <div class="text-center or-text">
-          <b>혹은</b>
+          <img src="../assets/map.gif" alt="map gif" class="map-gif">
         </div>
         <div class="search-location">
           <div v-if="addrList.length > 0">
@@ -80,6 +82,10 @@
             </v-card>
           </v-dialog>
         </div>
+        </section>
+        <button href="#" class="btn terms__recom text-bold" @click="getRecom">
+          약속 장소 추천 받기 !
+        </button>
         <div class="terms">
           <v-dialog
             v-model="dialogTerms"
@@ -88,13 +94,12 @@
             transition="dialog-bottom-transition"
           >
             <template v-slot:activator="{ on, attrs }">
-              <button
+              <a
                 v-bind="attrs"
                 v-on="on"
-                class="location__terms btn text-bold"
+                class="location__terms"
               >
-                개인 정보 이용 동의서
-              </button>
+                개인 정보 이용 동의서</a>
             </template>
             <v-card>
               <v-toolbar dark color="#ffb6c1">
@@ -155,15 +160,12 @@
             class="terms-checkbox"
             v-model="agreed"
           />
-          <label for="agree">동의</label>
+          <label for="agree" class="checkbox-label">동의</label>
         </div>
-        <button href="#" class="btn terms__recom text-bold" @click="getRecom">
-          약속 장소 추천 받기 !
-        </button>
       </div>
     </section>
 
-    <section class="location-list">
+    <section class="location-list" v-if="gugun.length">
       <div class="list__header">
         약속 장소 리스트
       </div>
@@ -321,6 +323,9 @@ export default {
     recomCity() {
       return this.$store.getters.get_result;
     },
+    gugun() {
+      return this.$store.getters.get_gugun
+    },
   },
   watch: {
     selectMethod: function() {
@@ -343,37 +348,53 @@ export default {
 </script>
 
 <style>
-.explain__title,
-.explain__description,
-.search-location,
+.explain__description {
+  border-left: 5px solid #e0958d;
+  padding-left: 16px;
+  margin: 16px 0;
+}
+.map-gif {
+  display: block;
+  height: 160px;
+  border-radius: 10px;
+
+}
 .terms {
   padding: 2%;
-  border-bottom: 2px solid #ffb6c1;
 }
 .text-bold {
   font-weight: 600;
 }
 .address {
-  margin-top: 100px;
+  margin-top: 10px;
   display: flex;
   justify-content: space-between;
 }
 .location {
   padding: 10px 22px;
-  width: 55%;
+  width: 100%;
   border: 3px solid #ffb6c1;
   border-radius: 5px;
 }
 .location__terms {
   margin-right: 3%;
+  text-decoration: underline;
+  color: grey !important;
+}
+.location__selection {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-bottom: 26px;
 }
 .location__my-location {
   display: block;
-  width: 60%;
   border: 1px solid #41b6e6;
   border-radius: 5px;
-  margin: 10px auto;
-  padding: 10px 0;
+  padding: 8px 16px;
+}
+.or-text {
+  display: inline-block;
 }
 .location__my-location:hover {
   background-color: #41b6e6;
@@ -381,8 +402,7 @@ export default {
   box-shadow: 0.5px 0.5px grey;
 }
 .search-location {
-  display: flex;
-  justify-content: space-evenly;
+  display: inline-block;
 }
 .location-text {
   background-color: gainsboro;
@@ -402,7 +422,47 @@ export default {
 }
 .terms {
   padding: 12px;
+  text-align: center;
 }
+input[type="checkbox"] {
+  display: none;
+}
+.checkbox-label {
+  position: relative;
+  margin-left: 28px;
+  font-size: 16px;
+}
+.checkbox-label:hover {
+  cursor: pointer;
+}
+.checkbox-label::before{
+  content: "";
+  background-image: url("../assets/check-circle.svg");
+  background-position: center;
+  background-size: contain;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  left: -26px;
+  top: -3px;
+
+  transform: scale(0) rotateZ(180deg);
+  transition: all 0.4s cubic-bezier(0.54, 0.01, 0, 1.49);
+}
+input[type="checkbox"]:checked + .checkbox-label::before {
+  transform: scale(1) rotateZ(0deg);
+}
+.checkbox-label::after{
+  content: "";
+  border: 2px solid #27ae60;
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  left: -25px;
+  top: -2px;
+  border-radius: 50%;
+}
+
 .terms__recom {
   display: block;
   margin: 3% auto 0 auto;
@@ -421,6 +481,7 @@ export default {
   width: 40%;
   border: 3px solid #ec8a8a;
   border-radius: 5px;
+  margin-left: 1.5rem;
 }
 
 .list__header {
@@ -446,16 +507,18 @@ export default {
 }
 @media screen and (max-width: 48rem) {
   .address {
-    margin-top: 100px;
+    margin-top: 10px;
     display: flex;
     flex-direction: column;
   }
   .location {
     width: 100%;
     margin-bottom: 5%;
+    padding: 0;
   }
   .location-list {
     width: 100%;
+    margin-left: 0
   }
 }
 </style>

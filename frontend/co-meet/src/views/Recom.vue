@@ -1,6 +1,6 @@
 <template>
   <div class="reccom">
-    <Navbar />
+    <Navbar class="navbar"/>
     <Address />
     <Graph/>
     <Explain />
@@ -23,9 +23,18 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
   .reccom {
+    width: 80vw;
+    margin: 0 auto 0 auto;
+    .navbar {
+      margin-top: 5vh;
+    }
+  }
+  @media screen and (max-width: 48rem) {
+    .reccom {
     width: 93vw;
-    margin: 10% auto 0 auto;
+    margin: 0 auto 0 auto;
+  }
   }
 </style>

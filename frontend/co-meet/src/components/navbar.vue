@@ -73,16 +73,12 @@ export default {
   }
   #navbar {
     z-index: 1;
-    position: absolute;
-    top: -100%;
-    left: 2%;
-    width: 93.5vw;
     display: flex;
     justify-content: space-between;
     padding: 0.6rem;
     margin-right: auto;
     margin-left: auto;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 5px;
     animation: anim4 2.0s forwards 1.0s;
   }
