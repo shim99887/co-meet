@@ -2,7 +2,6 @@ from djongo import models
 
 # Create your models here.
 
-
 class Code(models.Model):
     _id = models.IntegerField(primary_key=True)
     adstrd_code = models.CharField(max_length=20)
@@ -10,18 +9,15 @@ class Code(models.Model):
     brtc_nm = models.CharField(max_length=20)
     signgu_nm = models.CharField(max_length=20)
 
-
 class GugunLocate(models.Model):
     signgu_nm = models.CharField(max_length=20, primary_key=True)
     lat = models.FloatField()
     lng = models.FloatField()
 
-
 class Gugun(models.Model):
     signgu_nm = models.CharField(max_length=20, primary_key=True)
     lat = models.FloatField()
     lng = models.FloatField()
-
 
 class Fpopl(models.Model):
     _id = models.IntegerField(primary_key=True)
@@ -53,7 +49,6 @@ class Card(models.Model):
     selng_cascnt = models.CharField(max_length=20)
     salamt = models.IntegerField()
 
-
 class CoronaData(models.Model):
     serial_number = models.IntegerField(primary_key=True)  # 연번
     patient_number = models.IntegerField()  # 환자 번호
@@ -63,26 +58,30 @@ class CoronaData(models.Model):
     route = models.CharField(max_length=50)  # 확진 경로
     discharge = models.CharField(max_length=50, null=True)  # 퇴원 여부
 
-class DistWegiht(models.Model):
+class DistWeight(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
     signgu_nm = models.CharField(max_length=20)
     weight_point = models.FloatField()
 
 class CoronaWeight(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
     signgu_nm = models.CharField(max_length=20)
     weight_point = models.FloatField()
 
 class FpoplWeight(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
     signgu_nm = models.CharField(max_length=20)
     weight_point = models.FloatField()
 
-class RecommData(models.Model):
+class DistanceData(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
     signgu_nm = models.CharField(max_length=20)
     dist_weights = models.ArrayField(
-        model_container= DistWegiht
+        model_container= DistWeight
     )
-    corona_weights = models.ArrayField(
-        model_container = CoronaWeight
-    )
-    fpopl_weights = models.ArrayField(
-        model_container = FpoplWeight
-    )
+    # corona_weights = models.ArrayField(
+    #     model_container = CoronaWeight
+    # )
+    # fpopl_weights = models.ArrayField(
+    #     model_container = FpoplWeight
+    # )

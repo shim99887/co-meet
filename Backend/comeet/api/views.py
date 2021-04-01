@@ -38,7 +38,6 @@ class CoronaSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         return JsonResponse({"message": "CORONA_SUCCESS"}, status=200)
 
-
 class CodeSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = CodeSerializer
 
@@ -51,7 +50,6 @@ class CodeSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         cache.set("code_data", code_data, 24 * 60 * 60)
 
         return JsonResponse({'message': 'CODE_SUCCESS'}, status=200)
-
 
 class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = FpoplSerializer
@@ -67,7 +65,6 @@ class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         print("33")
 
         return JsonResponse({'message': 'FPOPL_SUCCESS'}, status=200)
-
 
 class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = CoronaDataSerializer
@@ -86,7 +83,6 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         corona_json = df.to_dict()
 
         return JsonResponse(corona_json, safe=False)
-
 
 class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = FpoplSerializer
@@ -114,7 +110,6 @@ class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         print("333")
         return JsonResponse(fpopl_json, safe=False)
         # return None
-
 
 class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = CodeSerializer
@@ -243,28 +238,23 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         print(fpopl_BC_df)
         return JsonResponse(total_data, safe=False)
 
-# 구별로 현재 점수 계산 ? 
-class FindLoc2(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+# 거리 지수 저장
+class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     serializer_class = SearchLogSerializer
 
     @swagger_auto_schema(request_body=SearchLogBodySerializer)
-    def recomm_loc(self, request, *args, **kwargs):
+    def save_recomm_list(self, request, *args, **kwargs):
 
         # 입력된 위치 기반 중간지점 도출 => 구로 변환
         mid = midpoint(request.data['searchList'])
-
+        
         # 중간 지점을 기반으로 가까운 지역 순으로 리스트 조회
         nlist = nearbyArea(mid)
-        # 변환된 구를 이용해 해당 지역의 좌표 탐색
-        # recomm_loc = Gugun.objects.filter(signgu_nm=mid)
-        # for loc in recomm_loc.iterator():
-        #     lat = loc.lat
-        #     lng = loc.lng
 
-
-
+        # 현재는 인덱스 값으로 저장 => 거리 가중치로 변환해야됨 
+        dist_weights = {string : 25 - i for i,string in enumerate(nlist)}
+        # print(dist_weights)
         return Response(status=200)
-
 
 def midpoint(loc):
     area = []
@@ -301,7 +291,6 @@ def midpoint(loc):
 
     return area[0][0]
 
-
 def nearbyArea(loc):
     area = []
 
@@ -335,6 +324,15 @@ def nearbyArea(loc):
 
     return area_list
 
+# 코로나 지수 저장
+class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    def save_corona_weight(self, *args, **kwargs):
+        return None
+        
+# 유동인구 지수 저장
+class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    def save_fpopl_weight(self, *args, **kwargs):
+        return None
 
 class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
@@ -394,7 +392,6 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         fig.tight_layout()
         plt.savefig('fpopl_data6.png')
         return Response(status=200)
-
 
 class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
@@ -471,4 +468,3 @@ class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         fig.tight_layout()
         plt.savefig('corona_data.png')
         return Response(status=200)
-

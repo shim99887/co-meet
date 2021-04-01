@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import Code, Fpopl, Card, CoronaData, GugunLocate, Gugun, Fpopl_BC, DistWegiht, CoronaWeight, FpoplWeight, RecommData
+from api.models import Code, Fpopl, Card, CoronaData, GugunLocate, Gugun, Fpopl_BC, DistWeight, CoronaWeight, FpoplWeight, DistanceData
 
 
 class CodeSerializer(serializers.ModelSerializer):
@@ -76,27 +76,27 @@ class CoronaDataSerializer(serializers.ModelSerializer):
 
 class DistWeightSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DistWegiht
-        fields = ('signgu_nm', 'weight')
+        model = DistWeight
+        fields = ('signgu_nm', 'weight_point')
 
 class CoronaWeightSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoronaWeight
-        fields = ('signgu_nm', 'weight')
+        fields = ('signgu_nm', 'weight_point')
 
 class FpoplWeightSerializer(serializers.ModelSerializer):
     class Meta:
         model = FpoplWeight
-        fields = ('signgu_nm', 'weight')
+        fields = ('signgu_nm', 'weight_point')
 
-class RecommDataSerializer(serializers.ModelSerializer):
+class DistanceDataSerializer(serializers.ModelSerializer):
     dist_weights = DistWeightSerializer(many=True, read_only=True)
-    corona_weights = CoronaWeightSerializer(many=True, read_only=True)
-    fpopl_weights = FpoplWeightSerializer(many=True, read_only=True)
+    # corona_weights = CoronaWeightSerializer(many=True, read_only=True)
+    # fpopl_weights = FpoplWeightSerializer(many=True, read_only=True)
     class Meta:
-        model = RecommData
-        fields = ('signgu_nm', 'dist_weights', 'corona_weights', 'fpopl_weights')
-
+        model = DistanceData
+        # fields = ('signgu_nm', 'dist_weights', 'corona_weights', 'fpopl_weights')
+        fiedls = ('signgu_nm', 'dist_weights')
 class DistWeightBodySerializer(serializers.Serializer):
     signgu_nm = serializers.CharField(help_text="시군구 이름")
     weight = serializers.FloatField(help_text="거리 가중치")
@@ -109,8 +109,8 @@ class FpoplWeightBodySerializer(serializers.Serializer):
     signgu_nm = serializers.CharField(help_text="시군구 이름")
     weight = serializers.FloatField(help_text="유동인구 지수 가중치")
 
-class RecommDataBodySerializer(serializers.Serializer):
+class DistanceDataBodySerializer(serializers.Serializer):
     signgu_nm = serializers.CharField(help_text="시군구 이름")
     dist_weights = DistWeightBodySerializer(many=True)
-    corona_weights = CoronaWeightBodySerializer(many=True)
-    fpopl_weights = FpoplWeightBodySerializer(many=True)
+    # corona_weights = CoronaWeightBodySerializer(many=True)
+    # fpopl_weights = FpoplWeightBodySerializer(many=True)
