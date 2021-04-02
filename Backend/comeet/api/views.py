@@ -343,11 +343,9 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     def save_corona_weight(self, *args, **kwargs):
         today = datetime.today()
         recentdate = datetime(2021, 3, 31, 0, 0, 0)
-        print(today)
         #print(datetime(2021, 1, 1))
         cal = recentdate - datetime(2021, recentdate.month - 2, 1, 0, 0, 0)
         standard = recentdate - timedelta(cal.days)
-        print(standard)
         corona = CoronaData.objects.filter(
             date__range=[standard.strftime('%Y-%m-%d'), recentdate.strftime('%Y-%m-%d')])
         df = pd.DataFrame(
@@ -387,12 +385,7 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         second_list = df_second.sort_values(by=['serial_number'], axis=0)
         third_list = df_third.sort_values(by=['serial_number'], axis=0)
 
-        # print(first_list)
         temp_list = pd.concat([first_list, second_list, third_list])
-        # print(second_list)
-        # print(third_list)
-        print(temp_list)
-
         list_1 = first_list['gugun'].to_list()
         list_2 = second_list['gugun'].to_list()
         list_3 = third_list['gugun'].to_list()
@@ -401,29 +394,13 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         weight_2 = {string: (i + 1) for i, string in enumerate(list_2)}
         weight_3 = {string: (i + 1) for i, string in enumerate(list_3)}
 
-        # print(weight_3)
-
         total_corona_rate = Counter(
             weight_1) + Counter(weight_2) + Counter(weight_3)
-        # total_corona_rate.most_common()
-
-        # for i in total_corona_rate:
-        #     total_corona_rate[i] = total_corona_rate[i]
-        # total_corona_rate = dict(total_corona_rate)
-        # total_corona_rate = sorted(
-        #     total_corona_rate.items(), key=(lambda x: x[1]))
-        print("111")
-        print(total_corona_rate)
-        #total_corona_rate = dict(total_corona_rate)
 
         gugun_list = list(Gugun.objects.values())
 
-        # print(gugun_list['signgu_nm'])
-        # print(len(gugun_list))
-
         # 기존 코로나 데이터 삭제
         corona_weight_data = CoronaWeight.objects.all()
-        # print(corona_weight_data.count())
         for i in range(0, corona_weight_data.count()):
             corona_weight_data[0].delete()
 
@@ -440,7 +417,6 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             # 2~3월 코로나 확진자 변화율
             temp_df['after_corona_rate'] = ((cor3 - cor2) / cor2) * 100
             temp_df = temp_df.groupby(["gugun"], as_index=False).mean()
-            # print(temp_df)
             corona_df = corona_df.append(temp_df, ignore_index=False)
 
         before_corona_list = corona_df.sort_values(
@@ -459,28 +435,12 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         total_corona_rate = total_corona_rate + \
             Counter(before_1) + Counter(after_2)
 
-        print(total_corona_rate)
-
-        # for i in range(0, len(gugun_list)):
-        #     temp_df = df.filter(like=gugun_list[i]['signgu_nm'], axis=0)
-        #     cor1 = temp_df.iloc[0]['serial_number']
-        #     cor2 = temp_df.iloc[1]['serial_number']
-        #     cor3 = temp_df.iloc[2]['serial_number']
-        #     # 1~2월 코로나 확진자 변화율
-        #     temp_df['before_corona_rate'] = ((cor2 - cor1) / cor1) * 100
-        #     # 2~3월 코로나 확진자 변화율
-        #     temp_df['after_corona_rate'] = ((cor3 - cor2) / cor2) * 100
-        #     temp_df = temp_df.groupby(["gugun"], as_index=True).mean()
-
-        #     # db에 저장
-        #     weight = temp_df.iloc[0]['before_corona_rate'] + \
-        #         1.5 * temp_df.iloc[0]['after_corona_rate']
-
         # 구군 이름, 1~2월 변화량, 2~3월 변화량
-        # coronaWeight = CoronaWeight(
-        # signgu_nm=gugun_list[i]['signgu_nm'], weight_point=weight)
-        # 계산을 해서 저장
-        # coronaWeight.save()
+        for signgu_nm, point in total_corona_rate.items():
+            coronaWeight = CoronaWeight(
+                signgu_nm=signgu_nm, weight_point=point)
+            # 계산을 해서 저장
+            coronaWeight.save()
 
         return HttpResponse(status=status.HTTP_200_OK)
 
