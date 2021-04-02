@@ -17,7 +17,8 @@ class Search(models.Model):
 
 
 class SearchLog(models.Model):
-    email = models.CharField(primary_key=True, max_length=30)
+    _id = models.ObjectIdField(primary_key=True)
+    email = models.CharField(max_length=200)
     searchList = models.ArrayField(
         model_container=Search
     )
