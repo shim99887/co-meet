@@ -257,35 +257,15 @@ class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         gugun_list = Gugun.objects.all()
 
         for i in gugun_list.values("signgu_nm"):
-
-            near_area = nearbyArea(i["signgu_nm"])
-
-            nm_list = []
-            nm = DistWeight.objects.all()
+            signgu_nm = i["signgu_nm"]
+            near_area = nearbyArea(signgu_nm)
+            nm = []
 
             for idx, j in enumerate(near_area):
-
-                # nm.append(DistWeight(signgu_nm=j, weight_point=idx + 1))
-                nm.signgu_nm = j
-                nm.weight_point = idx + 1
-
-                nm_list.append(list(nm))
-
-                print(nm_list)
-
+                nm.append({'signgu_nm': j, 'weight_point': idx + 1})
             dist_weight = DistanceData(
-                signgu_nm=i["signgu_nm"], dist_weights=nm_list)
-
-            # print(dist_weight)
-
-            # print(dist_weight.dist_weights.signgu_nm)
-
+                signgu_nm=signgu_nm, dist_weights=nm)
             dist_weight.save()
-
-        # 현재는 인덱스 값으로 저장 => 거리 가중치로 변환해야됨
-        # dist_weights = {string: i+1 for i, string in enumerate(nlist)}
-        # print(dist_weights)
-        # print(type(dist_weights))
 
         return Response(status=200)
 
@@ -366,7 +346,6 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     def save_corona_weight(self, *args, **kwargs):
         today = datetime.today()
         recentdate = datetime(2021, 3, 31, 0, 0, 0)
-        #print(datetime(2021, 1, 1))
         cal = recentdate - datetime(2021, recentdate.month - 2, 1, 0, 0, 0)
         standard = recentdate - timedelta(cal.days)
         corona = CoronaData.objects.filter(
@@ -377,7 +356,6 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         df['date'] = [''.join(x.split('-')[0:2])
                       for x in df.date]  # 2020-01 2020-01 2021-03-07 -> 202001, 202103
         df = df.groupby(["gugun", "date"], as_index=False).count()
-        # df.set_index('date')
         df = df.set_index('gugun')
         df = df.drop(index='기타', axis=0)
         df = df.drop(index='타시도', axis=0)
@@ -391,9 +369,6 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         first_avg = df_first.iloc[0]['serial_number'] / 25
         second_avg = df_second.iloc[0]['serial_number'] / 25
         third_avg = df_third.iloc[0]['serial_number'] / 25
-        # print(first_avg)
-        # print(second_avg)
-        # print(third_avg)
 
         df_first = df[df["date"] == "202101"]
         df_first["serial_number"] = [
