@@ -102,12 +102,9 @@ class FpoplWeightSerializer(serializers.ModelSerializer):
 
 class DistanceDataSerializer(serializers.ModelSerializer):
     dist_weights = DistWeightSerializer(many=True, read_only=True)
-    # corona_weights = CoronaWeightSerializer(many=True, read_only=True)
-    # fpopl_weights = FpoplWeightSerializer(many=True, read_only=True)
 
     class Meta:
         model = DistanceData
-        # fields = ('signgu_nm', 'dist_weights', 'corona_weights', 'fpopl_weights')
         fields = ('signgu_nm', 'dist_weights')
 
 
@@ -129,5 +126,3 @@ class FpoplWeightBodySerializer(serializers.Serializer):
 class DistanceDataBodySerializer(serializers.Serializer):
     signgu_nm = serializers.CharField(help_text="시군구 이름")
     dist_weights = DistWeightBodySerializer(many=True)
-    # corona_weights = CoronaWeightBodySerializer(many=True)
-    # fpopl_weights = FpoplWeightBodySerializer(many=True)

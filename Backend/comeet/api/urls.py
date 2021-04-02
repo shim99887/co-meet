@@ -4,10 +4,6 @@ from django.conf import settings
 from .views import CoronaSet, CodeSet, FpoplSet, CoronaList, FpoplList, FindLoc, SaveDistWeight, SaveCoronaWeight, SaveFpoplWeight, DataAnalysis, CoronaDataAnalysis, RecommendPlace
 
 urlpatterns = [
-    # path('', views.index, name='index'),
-    # url(r'^code$', views.Code_list),
-    # url(r'^fpopl$', views.Fpopl_list),
-    # url(r'^coronaData$', views.CoronaData_list),
     path("corona", CoronaSet.as_view({"get": "set_corona"})),
     path("code", CodeSet.as_view({"get": "set_code"})),
     path("fpopl", FpoplSet.as_view({"get": "set_fpopl"})),
@@ -23,6 +19,4 @@ urlpatterns = [
          CoronaDataAnalysis.as_view({"get": "corona_data_analysis"})),
     path("recommend",
          RecommendPlace.as_view({"post": "recommend"})),
-    # path("code", CodeSet.as_view({"get" : "list"})),
-    # path("fpopl", FpoplSet.as_view({"get" : "list"})),
 ]

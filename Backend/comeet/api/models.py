@@ -67,7 +67,6 @@ class CoronaData(models.Model):
 
 
 class DistWeight(models.Model):
-    #_id = models.ObjectIdField(primary_key=True)
     signgu_nm = models.CharField(primary_key=True, max_length=20)
     weight_point = models.FloatField()
 
@@ -90,9 +89,3 @@ class DistanceData(models.Model):
     dist_weights = models.ArrayField(
         model_container=DistWeight
     )
-    # corona_weights = models.ArrayField(
-    #     model_container = CoronaWeight
-    # )
-    # fpopl_weights = models.ArrayField(
-    #     model_container = FpoplWeight
-    # )

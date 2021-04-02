@@ -22,6 +22,7 @@ import urllib
 import base64
 from datetime import datetime, timedelta, date
 from collections import Counter
+import math
 # Create your views here.
 
 
@@ -36,7 +37,7 @@ class CoronaSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         # json 파일로 변환
         corona_data_list = serializers.serialize('json', corona_data)
-        # # 데이터를 하루동안 저장, 자르기 편하게 queryset 형식으로
+        # 데이터를 하루동안 저장, 자르기 편하게 queryset 형식으로
         cache.set("corona_data", corona_data, 24 * 60 * 60)
 
         return JsonResponse({"message": "CORONA_SUCCESS"}, status=200)
@@ -48,9 +49,9 @@ class CodeSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     def set_code(self, *args, **kwargs):
         code_data = Code.objects.all()
 
-       # json 파일로 변환
+        # json 파일로 변환
         code_data_list = serializers.serialize('json', code_data)
-        # # 데이터를 하루동안 저장, 자르기 편하게 queryset 형식으로
+        # 데이터를 하루동안 저장, 자르기 편하게 queryset 형식으로
         cache.set("code_data", code_data, 24 * 60 * 60)
 
         return JsonResponse({'message': 'CODE_SUCCESS'}, status=200)
@@ -63,9 +64,9 @@ class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         print("11")
         fpopl_data = Fpopl.objects.all()
         print("22")
-       # json 파일로 변환
+        # json 파일로 변환
         fpopl_data_list = serializers.serialize('json', fpopl_data)
-        # # 데이터를 하루동안 저장, 자르기 편하게 queryset 형식으로
+        # 데이터를 하루동안 저장, 자르기 편하게 queryset 형식으로
         cache.set("fpopl_data", fpopl_data, 24 * 60 * 60)
         print("33")
 
@@ -77,7 +78,6 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     def get_corona_list(self, request, *args, **kwargs):
         corona_queryset = CoronaData.objects.filter(date__contains="2021-02")
-        # corona_queryset = cache.get("corona_data")
 
         # 구군마다 전체 분포표
         df = pd.DataFrame(
@@ -96,8 +96,6 @@ class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
     def get_fpopl_list(self, request, *args, **kwargs):
 
-        # fpopl_queryset = cache.get("fpopl_data")
-        # if fpopl_queryset is None :
         fpopl_queryset = Fpopl.objects.filter(date__contains="202001")
 
         df = pd.DataFrame(
@@ -111,12 +109,9 @@ class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         # 구로구 => 1월 ~ 12월 평균유동인구수
         # 구별로 유동인구수를 더하고 12로 나눠 그럼 1년동안 평균 유동인구수
         # 구별 평균 유동인구수를 한표에 보여줄수 있어 이게 정확해?
-        #
-        # print(df)
         fpopl_json = df.to_json(orient="index", force_ascii=False)
         print("333")
         return JsonResponse(fpopl_json, safe=False)
-        # return None
 
 
 class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
@@ -147,7 +142,6 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         # 먼저 일별로 정리
         df = df.groupby(by=["date"], as_index=False).count()
         # 월별로 통합
-        # print(df["date"].str.contains("2021-03")["gugun"])
         df_2003 = df[df["date"].str.contains("2020-03")]
         df_2004 = df[df["date"].str.contains("2020-04")]
         df_2005 = df[df["date"].str.contains("2020-05")]
@@ -167,9 +161,6 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
                                     int(df_2007["gugun"].sum()), int(df_2008["gugun"].sum()), int(
                            df_2009["gugun"].sum()), int(df_2010["gugun"].sum()),
             int(df_2011["gugun"].sum()), int(df_2012["gugun"].sum()), int(df_2101["gugun"].sum()), int(df_2102["gugun"].sum()), int(df_2103["gugun"].sum())]}
-
-        print(corona_data)
-        print("===========================================")
 
         total_data = {**loc_data, **corona_data}
 
@@ -213,10 +204,8 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         fpopl_df = fpopl_df.groupby("date").mean()
         fpopl_data = fpopl_df.to_dict('split')
-        print(fpopl_df)
         total_data = {**total_data, **fpopl_data}
 
-        # 코로나 이전 유동인구 데이터 확인
         fpopl_BC_df = pd.DataFrame(
             list(target_fpopl_bc_data.values("date", "popl")))
         fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190301") & (
@@ -241,9 +230,6 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             fpopl_BC_df['date'] <= "20191231"), 'date'] = "201912"
 
         fpopl_BC_df = fpopl_BC_df.groupby("date").mean()
-        # fpopl_BC_data = fpopl_BC_df.to_dict('split')
-        print("===========================================")
-        print(fpopl_BC_df)
         return JsonResponse(total_data, safe=False)
 
 # 거리 지수 저장
@@ -258,11 +244,11 @@ class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         for i in gugun_list.values("signgu_nm"):
             signgu_nm = i["signgu_nm"]
-            near_area = nearbyArea(signgu_nm)
+            near_area = nearbyArea2(signgu_nm)
             nm = []
 
             for idx, j in enumerate(near_area):
-                nm.append({'signgu_nm': j, 'weight_point': idx + 1})
+                nm.append({'signgu_nm': j[0], 'weight_point': j[1]})
             dist_weight = DistanceData(
                 signgu_nm=signgu_nm, dist_weights=nm)
             dist_weight.save()
@@ -301,8 +287,6 @@ def midpoint(loc):
 
     area.sort(key=lambda x: x[1])
 
-    print(area[0][0])
-
     return area[0][0]
 
 
@@ -340,6 +324,37 @@ def nearbyArea(loc):
     return area_list
 
 # 코로나 지수 저장
+
+
+def nearbyArea2(loc):
+    area = []
+
+    target = Gugun.objects.filter(signgu_nm=loc)
+    others = Gugun.objects.all()
+
+    for i in target.iterator():
+        target_lat = float(i.lat)
+        target_lng = float(i.lng)
+
+    for i in others.iterator():
+        area.append([i.signgu_nm])
+
+    cnt = 0
+
+    for i in others.iterator():
+
+        dist = (float(i.lat) - target_lat) * (float(i.lat) - target_lat) + (
+            float(i.lng) - target_lng)*(float(i.lng) - target_lng)
+
+        dist = int(math.sqrt(dist) * 1000)
+
+        area[cnt].append(dist)
+
+        cnt += 1
+
+    area.sort(key=lambda x: x[1])
+
+    return area
 
 
 class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
@@ -554,10 +569,6 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         plt.rc('font', family=font_name)
         plt.rc('axes', unicode_minus=False)
 
-        # bc_data = Fpopl_BC.objects.filter(
-        #     per_time__in=["12", "18", "19", "20", "21", "22", "23"])
-        # ac_data = Fpopl.objects.filter(
-        #     per_time__in=["12", "18", "19", "20", "21", "22", "23"])
         bc_data = Fpopl_BC.objects.filter(age_range__in=[20, 30, 40])
         ac_data = Fpopl.objects.filter(age_range__in=[20, 30, 40])
 
@@ -597,7 +608,6 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             df21 = raw_1[(raw_1.index == f) & (raw_1.year == 2021)]
             line21 = sns.lineplot(
                 data=df21, x='month', y='popl', label='2021', ax=axes[r][c])
-            # line21.set_ylim(0, 8e+06)
             line21.set_ylim(0, 1.5e+07)
             line21.set_title(f)
 
@@ -619,30 +629,11 @@ class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         corona_df = pd.DataFrame(
             list(corona_data.values("serial_number", "date", "gugun")))
 
-        # print(corona_df)
-
         corona_df['date'] = [''.join(x.split('-')[0:2])
                              for x in corona_df.date]  # 2020-01 2020-01 2021-03-07 -> 202001, 202103
 
-        # print(corona_df)
-
         raw_1 = corona_df.groupby(
             by=['date', 'gugun']).count().reset_index()
-
-        # raw_1["date"] = pd.to_datetime(raw_1["date"], format='%Y%m')
-
-        # '연도', '월', '일' 컬럼 생성
-        # raw_1['year'] = raw_1.date.dt.year
-        # raw_1['month'] = raw_1.date.dt.month
-        # raw_1['day'] = raw_1.date.dt.day
-        # raw_1['year-month'] = raw_1['year'].apply(
-        #    str) + '-' + raw_1['month'].apply(str)
-        # print(raw_1)
-        # raw_1 = raw_1.groupby(
-        #     by=["gugun", "date"]).mean().reset_index()
-        # raw_1 = temp.drop('day', axis=1)
-        # raw_1 = temp.drop('month', axis=1)
-        # raw_1 = temp.drop('year', axis=1)
 
         # 그래프 그리기
         raw_1 = raw_1.set_index('gugun')
@@ -653,22 +644,13 @@ class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         raw_2 = raw_2.groupby(by=['date']).sum().reset_index()
         raw_2["serial_number"] = raw_2["serial_number"]/25
 
-        # raw_1 = raw_1.groupby(
-        #     by=["gugun", "date"]).mean().reset_index()
-
         fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(15, 15))
-        # print(raw_1.index.unique())
-        # print(raw_1)
 
         for i, f in enumerate(raw_1.index.unique()):
             r = int(i / 5)  # 행별로 그래프 배치하기
             c = i % 5  # 열별로 그래프 배치하기
 
-            # df20 = raw_1[(raw_1.index == f) & (raw_1.year == 2020)]
-            # df21 = raw_1[(raw_1.index == f) & (raw_1.year == 2021)]
             df = raw_1[(raw_1.index == f)]
-
-            #     data=df20, x='month', y='serial_number', label='2020', ax=axes[r][c])
 
             line20 = sns.lineplot(
                 data=raw_2, x='date', y='serial_number', label='average', ax=axes[r][c])
@@ -695,29 +677,20 @@ class RecommendPlace(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         dist_weight = DistanceData.objects.filter(
             signgu_nm=midpoint(request.data["searchList"])).values('dist_weights')
 
-        # print(corona_weight.values("signgu_nm", "weight_point"))
-        # print(fpopl_weight.values("signgu_nm", "weight_point"))
-        # print(dist_weight.values("signgu_nm", "dist_weights"))
-        #print(list(corona_weight.values("signgu_nm", "weight_point")))
-        #print(list(fpopl_weight.values("signgu_nm", "weight_point")))
-        # print(list(list(dist_weight.values('dist_weights'))[0].values()))
-
         dist_weight = list(
             list(dist_weight.values('dist_weights'))[0].values())
         dist_weight = dist_weight[0]
-        # print(dist_weight)
         # 구군 리스트를 가져와 디비에서 (25개 구)
         # 이걸 포문을 돌려요
-        # for 문 안에서 구군이름으로 필터를 돌려서 점수들을 뽑은다음에 가중치 적용해서 점수를 새로 뽑아요 그리고 그걸 한 리스트에 넣어요
+        # for 문 안에서 구군이름으로 필터를 돌려서 점수들을 뽑은다음에
+        # 가중치 적용해서 점수를 새로 뽑아요 그리고 그걸 한 리스트에 넣어요
         # 정렬해요
         # 상위에서 3개 뽑아요
         # 끝
 
-        # for i in dist_weight:
-        #     print(i['weight_point'])
+        new_point = []
 
         for i in range(0, len(gugun_list)):
-            # print(gugun_list[i].signgu_nm)
             gugun_name = gugun_list[i].signgu_nm
             corona_weight_point = list(corona_weight.filter(
                 signgu_nm=gugun_name).values("weight_point"))[0]['weight_point']
@@ -725,9 +698,61 @@ class RecommendPlace(viewsets.GenericViewSet, mixins.ListModelMixin, View):
                 signgu_nm=gugun_name).values("weight_point"))[0]['weight_point']
             dist_weight_point = [
                 x for x in dist_weight if x['signgu_nm'] == gugun_name][0]['weight_point']
-            print(gugun_name)
-            print(corona_weight_point)
-            print(fpopl_weight_point)
-            print(dist_weight_point)
-            print("")
-        return Response(status=200)
+
+            sum_point = corona_weight_point + fpopl_weight_point + dist_weight_point
+
+            new_point.append({'signgu_nm': gugun_name, 'point': sum_point})
+
+        new_point.sort(key=lambda x: x["point"])
+
+        df = pd.DataFrame(data=new_point)
+
+        df_json = df.to_dict()
+
+        ltln_dic = {"signgu_nm": [], "lat": [], "lng": []}
+        total_dic = []
+        for i in new_point:
+            filter_list = gugun_list.filter(signgu_nm=i["signgu_nm"])
+
+            for j in filter_list.iterator():
+                lat = j.lat
+                lng = j.lng
+
+                ltln_dic["signgu_nm"].append(j.signgu_nm)
+                ltln_dic["lat"].append(j.lat)
+                ltln_dic["lng"].append(j.lng)
+
+            target_corona_data = CoronaData.objects.filter(
+                gugun=i["signgu_nm"]).exclude(discharge="퇴원")
+            # 월별로 정렬
+            df = pd.DataFrame(list(target_corona_data.values("gugun", "date")))
+            # 먼저 일별로 정리
+            df = df.groupby(by=["date"], as_index=False).count()
+            # 월별로 통합
+            df_2003 = df[df["date"].str.contains("2020-03")]
+            df_2004 = df[df["date"].str.contains("2020-04")]
+            df_2005 = df[df["date"].str.contains("2020-05")]
+            df_2006 = df[df["date"].str.contains("2020-06")]
+            df_2007 = df[df["date"].str.contains("2020-07")]
+            df_2008 = df[df["date"].str.contains("2020-08")]
+            df_2009 = df[df["date"].str.contains("2020-09")]
+            df_2010 = df[df["date"].str.contains("2020-10")]
+            df_2011 = df[df["date"].str.contains("2020-11")]
+            df_2012 = df[df["date"].str.contains("2020-12")]
+            df_2101 = df[df["date"].str.contains("2021-01")]
+            df_2102 = df[df["date"].str.contains("2021-02")]
+            df_2103 = df[df["date"].str.contains("2021-03")]
+            df_2104 = df[df["date"].str.contains("2021-04")]
+            corona_data = {'date': ["2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03", "2021-04"],
+                           'patients': [int(df_2003["gugun"].sum()), int(df_2004["gugun"].sum()), int(df_2005["gugun"].sum()), int(df_2006["gugun"].sum()),
+                                        int(df_2007["gugun"].sum()), int(df_2008["gugun"].sum()), int(
+                               df_2009["gugun"].sum()), int(df_2010["gugun"].sum()),
+                int(df_2011["gugun"].sum()), int(df_2012["gugun"].sum()), int(df_2101["gugun"].sum()), int(df_2102["gugun"].sum()), int(df_2103["gugun"].sum()), int(df_2104["gugun"].sum())]}
+            total_dic.append(corona_data)
+
+        tt = {i: total_dic[i] for i in range(len(total_dic))}
+
+        total_data = {**df_json, **tt}
+        total_data = {**total_data, **ltln_dic}
+
+        return JsonResponse(total_data, status=200)
