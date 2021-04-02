@@ -693,28 +693,41 @@ class RecommendPlace(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         corona_weight = CoronaWeight.objects.all()
         fpopl_weight = FpoplWeight.objects.all()
         dist_weight = DistanceData.objects.filter(
-            signgu_nm=midpoint(request.data["searchList"]))
+            signgu_nm=midpoint(request.data["searchList"])).values('dist_weights')
 
         # print(corona_weight.values("signgu_nm", "weight_point"))
         # print(fpopl_weight.values("signgu_nm", "weight_point"))
         # print(dist_weight.values("signgu_nm", "dist_weights"))
-        print(list(corona_weight.values("signgu_nm", "weight_point")))
-        print(list(fpopl_weight.values("signgu_nm", "weight_point")))
-        print(list(dist_weight.values("signgu_nm", "dist_weights")))
+        #print(list(corona_weight.values("signgu_nm", "weight_point")))
+        #print(list(fpopl_weight.values("signgu_nm", "weight_point")))
+        # print(list(list(dist_weight.values('dist_weights'))[0].values()))
 
+        dist_weight = list(
+            list(dist_weight.values('dist_weights'))[0].values())
+        dist_weight = dist_weight[0]
+        # print(dist_weight)
         # 구군 리스트를 가져와 디비에서 (25개 구)
         # 이걸 포문을 돌려요
         # for 문 안에서 구군이름으로 필터를 돌려서 점수들을 뽑은다음에 가중치 적용해서 점수를 새로 뽑아요 그리고 그걸 한 리스트에 넣어요
         # 정렬해요
         # 상위에서 3개 뽑아요
         # 끝
+
+        # for i in dist_weight:
+        #     print(i['weight_point'])
+
         for i in range(0, len(gugun_list)):
             # print(gugun_list[i].signgu_nm)
             gugun_name = gugun_list[i].signgu_nm
-            corona_weight_point = corona_weight.filter(
-                signgu_nm=gugun_name).values("weight_point")
-            fpopl_weight_point = fpopl_weight.filter(
-                signgu_nm=gugun_name).values("weight_point")
-            print(corona_weight_point, ":", fpopl_weight)
-
+            corona_weight_point = list(corona_weight.filter(
+                signgu_nm=gugun_name).values("weight_point"))[0]['weight_point']
+            fpopl_weight_point = list(fpopl_weight.filter(
+                signgu_nm=gugun_name).values("weight_point"))[0]['weight_point']
+            dist_weight_point = [
+                x for x in dist_weight if x['signgu_nm'] == gugun_name][0]['weight_point']
+            print(gugun_name)
+            print(corona_weight_point)
+            print(fpopl_weight_point)
+            print(dist_weight_point)
+            print("")
         return Response(status=200)
