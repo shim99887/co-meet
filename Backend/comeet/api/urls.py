@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.conf.urls import url
 from django.conf import settings
-from .views import CoronaSet, CodeSet, FpoplSet, CoronaList, FpoplList, FindLoc, SaveDistWeight, SaveCoronaWeight, SaveFpoplWeight, DataAnalysis, CoronaDataAnalysis
+from .views import CoronaSet, CodeSet, FpoplSet, CoronaList, FpoplList, FindLoc, SaveDistWeight, SaveCoronaWeight, SaveFpoplWeight, DataAnalysis, CoronaDataAnalysis, RecommendPlace
 
 urlpatterns = [
     # path('', views.index, name='index'),
@@ -21,6 +21,8 @@ urlpatterns = [
     path("data-analysis", DataAnalysis.as_view({"get": "data_analysis"})),
     path("corona-data-analysis",
          CoronaDataAnalysis.as_view({"get": "corona_data_analysis"})),
+    path("recommend",
+         RecommendPlace.as_view({"post": "recommend"})),
     # path("code", CodeSet.as_view({"get" : "list"})),
     # path("fpopl", FpoplSet.as_view({"get" : "list"})),
 ]
