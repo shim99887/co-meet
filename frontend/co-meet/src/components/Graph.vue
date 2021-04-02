@@ -1,5 +1,5 @@
 <template>
-  <div class="graph">
+  <div class="graph" v-if="gugun.length">
       <section class="graph__header">
         <h1 class="graph__title">추천한 장소에 대한 안내</h1>
         <h4 class="graph__description">추천 받으신 장소는 다양한 데이터를 통해 연산되어 제공합니다</h4>
