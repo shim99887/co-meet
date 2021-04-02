@@ -4,6 +4,7 @@ import VueRouter from 'vue-router'
 import LandingPage from '@/views/LandingPage.vue'
 import Recommendation from '@/views/Recom.vue'
 import notFound from '@/views/notFound.vue'
+import faq from '@/views/FAQ.vue';
 
 Vue.use(VueRouter)
 
@@ -26,6 +27,10 @@ const routes = [
   {
     path:'*',
     redirect: '/404',
+  },
+  {
+    path:'/faq',
+    component: faq,
   }
 ]
 

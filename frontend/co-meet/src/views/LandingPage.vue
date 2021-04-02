@@ -138,7 +138,7 @@ body {
     bottom: -100%;
   }
   to {
-    bottom: 50%;
+    bottom:60%;
   }
 }
 @keyframes anim3 {

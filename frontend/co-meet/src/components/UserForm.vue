@@ -328,6 +328,9 @@ export default {
   padding: 0;
   font-family: sans-serif;
 }
+.v-btn{
+  box-shadow: 0.5px 0.5px 0.5px;
+}
 
 .wrap {
   height: 100%;
@@ -345,6 +348,7 @@ export default {
   background: #fff;
   padding: 5px;
   overflow: hidden;
+  box-shadow: 3px 3px 3px;
 }
 .togglebtn {
   padding: 10px 30px;

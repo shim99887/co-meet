@@ -22,6 +22,9 @@
       <router-link to="/recommendation" class="navbar__community__button">
         <li>지역 추천</li>
       </router-link>
+      <router-link to="/faq" class="navbar__community__button">
+        <li>FAQ</li>
+      </router-link>
     </ul>
   <!-- 이것도 라우터 링크 써야됌 -->
     <ul class="navbar__community" v-if="!$store.getters.getAccessToken">
