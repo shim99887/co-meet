@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.core import serializers
 from django.http.response import JsonResponse
-from api.models import Code, Fpopl, Card, CoronaData, Gugun, Fpopl_BC, CoronaWeight
+from api.models import Code, Fpopl, Card, CoronaData, Gugun, Fpopl_BC, CoronaWeight, FpoplWeight
 from user.models import SearchLog
 from .serializers import CodeSerializer, FpoplSerializer, CardSerializer, CoronaDataSerializer, CodeBodySerializer
 from user.serializers import SearchSerializer, SearchLogSerializer, SearchBodySerializer, SearchLogBodySerializer
@@ -478,7 +478,6 @@ class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         today = datetime.today()
 
         cal = today - datetime(2020, 12, 1, 0, 0, 0)
-        # print(cal.days)
         standard = today - timedelta(cal.days)
         fpopl_list = Fpopl.objects.filter(
             date__range=[standard.strftime('%Y%m%d'), today.strftime('%Y%m%d')]
@@ -486,9 +485,7 @@ class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         df = pd.DataFrame(list(fpopl_list.values("date", "popl", "gugun")))
 
         df['date'] = [ x[0:6] for x in df.date]  # 2020-01 2020-01 2021-03-07 -> 202001, 202103
-        # print(df)
         df = df.groupby(by=["gugun", "date"], as_index=False).sum()
-        # print(df)
 
         # 월별 총 유동인구수 
         df_first = df[df['date'] == '202012'].groupby(by=['date']).sum()
@@ -498,9 +495,6 @@ class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         a = df_first.iloc[0]['popl']
         b = df_second.iloc[0]['popl']
         c = df_third.iloc[0]['popl']
-        # print(a)
-        # print(b)
-        # print(c)
 
         # 상대적 유동인구 분포율 
         relative_first = df[df['date'] == '202012']
@@ -510,10 +504,6 @@ class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         relative_third = df[df['date'] == '202102']
         relative_third['popl'] = [(x/c)*100 for x in relative_third.popl]
         
-        # print(relative_first)
-        # print(relative_second)
-        # print(relative_third)
-
         # 유동인구수 평균 - 25개 구
         a = df_first.iloc[0]['popl'] / 25
         b = df_second.iloc[0]['popl'] / 25
@@ -527,13 +517,9 @@ class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         absolute_third = df[df['date'] == '202102']
         absolute_third['popl'] = [ 1 if x - c > 0 else 0 for x in absolute_third.popl]
 
-        # print(absolute_first)
-        # print(absolute_second)
-        # print(absolute_third)
-
         # 유동인구 변화량 계산 
         gugun_list = list(Gugun.objects.values())
-        # print(gugun_list)
+
         data = {'gugun' : [], 'popl' : [], 'first_popl_rate' : [], 'second_popl_rate' : []}
         fpop_rate = pd.DataFrame(data)
         for i in range(0, len(gugun_list)):
@@ -546,30 +532,39 @@ class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             # 1~2월 유동인구 변화율
             temp_df['second_popl_rate'] = ((popl_third - popl_second) / popl_second) * 100
             temp_df = temp_df.groupby(["gugun"], as_index=False).mean()
-            # print(temp_df)
+
             fpop_rate = fpop_rate.append(temp_df, ignore_index=False)
-        # print(fpop_rate.groupby(["gugun"], as_index=False).mean())
         
-        # 해당 구의 유동인구 / 전체 유동인구 => 등수 뽑아 
+        # 해당 구의 유동인구 / 전체 유동인구 => 등수 
         point_1 = relative_third.sort_values(by=['popl'], axis=0)
         list_1 = point_1['gugun'].to_list()
-        weight_1 = {string : (i + 1) * 4 for i,string in enumerate(list_1)}
-        # print(weight_1)
-        # 첫번째 달에서 두번째 달 넘어가는 걸로 소트해서 등수 뽑아 (12 => 1)
+        weight_1 = {string : (i + 1) * 3 for i,string in enumerate(list_1)}
+
+        # 첫번째 달에서 두번째 달 넘어가는 걸로 소트해서 등수(12 => 1)
         point_2 = fpop_rate.sort_values(by=['first_popl_rate'], axis=0)
         list_2 = point_2['gugun'].to_list()
-        weight_2 = {string : (i + 1) * 1 for i,string in enumerate(list_2)}
-        # print(weight_2)
-        # 두번째 달 넘어가는 거에서 세번째 달 넘어가는 걸로 소트해서 등수 뽑아(1 => 2)
+        weight_2 = {string : (i + 1) * 2 for i,string in enumerate(list_2)}
+
+        # 두번째 달 넘어가는 거에서 세번째 달 넘어가는 걸로 소트해서 등수(1 => 2)
         point_3 = fpop_rate.sort_values(by=['second_popl_rate'], axis=0)
         list_3 = point_3['gugun'].to_list()
-        weight_3 = {string : (i + 1) * 2 for i,string in enumerate(list_3)}
-        # print(weight_3)
-
+        weight_3 = {string : (i + 1) * 3 for i,string in enumerate(list_3)}
+        
         total_score = Counter(weight_1) + Counter(weight_2) + Counter(weight_3)
-        print(total_score)
-        return Response(status=200)
+        
+        # 기존  데이터 삭제
+        fpopl_weight_data = FpoplWeight.objects.all()
+        for i in range(0, fpopl_weight_data.count()):
+            fpopl_weight_data[0].delete()
 
+        # 데이터 새로 저장 
+        for gugun, point in total_score.items():
+            fpopl_weight = FpoplWeight(
+                signgu_nm=gugun, weight_point=point)
+            # 계산을 해서 저장
+            fpopl_weight.save()
+
+        return Response(status=200)
 
 class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
@@ -629,7 +624,6 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         fig.tight_layout()
         plt.savefig('fpopl_data6.png')
         return Response(status=200)
-
 
 class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
