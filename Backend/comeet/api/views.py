@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.core import serializers
 from django.http.response import JsonResponse
-from api.models import Code, Fpopl, Card, CoronaData, Gugun, Fpopl_BC, CoronaWeight
+from api.models import Code, Fpopl, Card, CoronaData, Gugun, Fpopl_BC, CoronaWeight, DistanceData, DistWeight
 from user.models import SearchLog
 from .serializers import CodeSerializer, FpoplSerializer, CardSerializer, CoronaDataSerializer, CodeBodySerializer
 from user.serializers import SearchSerializer, SearchLogSerializer, SearchBodySerializer, SearchLogBodySerializer
@@ -250,20 +250,43 @@ class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
 
 class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-    serializer_class = SearchLogSerializer
 
-    @swagger_auto_schema(request_body=SearchLogBodySerializer)
-    def save_recomm_list(self, request, *args, **kwargs):
+    def save_dist_list(self, *args, **kwargs):
 
-        # 입력된 위치 기반 중간지점 도출 => 구로 변환
-        mid = midpoint(request.data['searchList'])
+        # 각 구의 리스트를 DB에서 조회
+        gugun_list = Gugun.objects.all()
 
-        # 중간 지점을 기반으로 가까운 지역 순으로 리스트 조회
-        nlist = nearbyArea(mid)
+        for i in gugun_list.values("signgu_nm"):
+
+            near_area = nearbyArea(i["signgu_nm"])
+
+            nm_list = []
+            nm = DistWeight.objects.all()
+
+            for idx, j in enumerate(near_area):
+
+                # nm.append(DistWeight(signgu_nm=j, weight_point=idx + 1))
+                nm.signgu_nm = j
+                nm.weight_point = idx + 1
+
+                nm_list.append(list(nm))
+
+                print(nm_list)
+
+            dist_weight = DistanceData(
+                signgu_nm=i["signgu_nm"], dist_weights=nm_list)
+
+            # print(dist_weight)
+
+            # print(dist_weight.dist_weights.signgu_nm)
+
+            dist_weight.save()
 
         # 현재는 인덱스 값으로 저장 => 거리 가중치로 변환해야됨
-        dist_weights = {string: 25 - i for i, string in enumerate(nlist)}
+        # dist_weights = {string: i+1 for i, string in enumerate(nlist)}
         # print(dist_weights)
+        # print(type(dist_weights))
+
         return Response(status=200)
 
 
@@ -344,7 +367,7 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         today = datetime.today()
         recentdate = datetime(2021, 3, 31, 0, 0, 0)
         print(today)
-        #print(datetime(2021, 1, 1))
+        # print(datetime(2021, 1, 1))
         cal = recentdate - datetime(2021, recentdate.month - 2, 1, 0, 0, 0)
         standard = recentdate - timedelta(cal.days)
         print(standard)
@@ -414,7 +437,7 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         #     total_corona_rate.items(), key=(lambda x: x[1]))
         print("111")
         print(total_corona_rate)
-        #total_corona_rate = dict(total_corona_rate)
+        # total_corona_rate = dict(total_corona_rate)
 
         gugun_list = list(Gugun.objects.values())
 
