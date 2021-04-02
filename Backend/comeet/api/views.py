@@ -751,8 +751,12 @@ class RecommendPlace(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             total_dic.append(corona_data)
 
         tt = {i: total_dic[i] for i in range(len(total_dic))}
+        rt = {"target" : []}
+        for i in request.data["searchList"]:
+            rt["target"].append(i["juso"])
 
         total_data = {**df_json, **tt}
+        total_data = {**total_data, **rt}
         total_data = {**total_data, **ltln_dic}
 
         return JsonResponse(total_data, status=200)
