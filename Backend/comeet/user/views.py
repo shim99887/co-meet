@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
-# from django.http.response import JsonResponse
 from django.views import View
 from user.models import User, SearchLog
 from .serializers import UserSerializer, UserBodySerializer, SearchLogSerializer, SearchLogBodySerializer
@@ -42,10 +41,7 @@ class UserViewSet(viewsets.GenericViewSet,
 
     @swagger_auto_schema(request_body=UserBodySerializer)   # post에만 붙일 수 있음.
     def add_User(self, request):
-        # print(request.data['email'])
         Users = User.objects.filter(email=request.data['email'])
-        # if Users.exists():
-        #     return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
         password = request.data['password'].encode('utf-8')
         password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())
@@ -122,15 +118,6 @@ class NickNameViewSet(viewsets.GenericViewSet,
     def change_nickname(self, request):
 
         return Response(True, status=status.HTTP_200_OK)
-
-
-# def send_email(request):
-#     subject = "message"
-#     to = ["dhpassion@naver.com"]
-#     from_email = "comeetmanager@gmail.com"
-#     message = "메시지 테스트"
-#     EmailMessage(subject=subject, body=message,
-#                  to=to, from_email=from_email).send()
 
 
 def message(domain, uidb64, token):
@@ -223,12 +210,3 @@ class SearchLogViewSet(viewsets.GenericViewSet,
         search_list = serializers.serialize('json', Search)
 
         return HttpResponse(search_list, status=status.HTTP_200_OK)
-
-#  def nickname_vaild_check(self, *args, **kwargs):
-
-#         NickNames = User.objects.filter(nickname=self.kwargs['nickname'])
-
-#         if NickNames.exists():
-#             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
-
-#         return Response(True, status=status.HTTP_200_OK)
