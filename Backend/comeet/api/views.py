@@ -1,15 +1,12 @@
 from rest_framework import status, viewsets, mixins
-from rest_framework.response import Response
 from django.views import View
+from rest_framework.response import Response
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core import serializers
 from django.http.response import JsonResponse
-from api.models import Code, Fpopl, Card, CoronaData, Gugun, Fpopl_BC, CoronaWeight, DistanceData, DistWeight, FpoplWeight
-from user.models import SearchLog
-from .serializers import CodeSerializer, FpoplSerializer, CardSerializer, CoronaDataSerializer, CodeBodySerializer
-from user.serializers import SearchSerializer, SearchLogSerializer, SearchBodySerializer, SearchLogBodySerializer
-from drf_yasg.utils import swagger_auto_schema
+from api.models import Fpopl, CoronaData, Gugun, Fpopl_BC
+from .serializers import FpoplSerializer
 from django.core.cache import cache
 import pandas as pd
 import seaborn as sns
@@ -21,564 +18,183 @@ import io
 import urllib
 import base64
 from datetime import datetime, timedelta, date
-from collections import Counter
-import math
-# Create your views here.
+from drf_yasg.utils import swagger_auto_schema
 
 
 class CoronaSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-    serializer_class = CoronaDataSerializer
+    """
+        코로나 데이터를 레디스에 저장하는 API
 
+        ---
+        # 내용
+            - serial_number : 연번
+            - patient_number : 환자번호
+            - date : 날짜
+            - gugun : 군, 구
+            - overseas : 해외 이력
+            - route : 감염 경로
+            - discharge : 퇴원, 사망 여부
+    """
     def set_corona(self, *args, **kwargs):
-        # queryset data 받기
+        # MongoDB에서 코로나 데이터 받기, queryset 형태로 데이터 반환
         corona_data = CoronaData.objects.all()
+
+        # 데이터가 존재하지 않을때 에러 처리
         if not corona_data.exists():
             raise HttpResponse()
 
-        # json 파일로 변환
-        corona_data_list = serializers.serialize('json', corona_data)
         # 데이터를 하루동안 저장, 자르기 편하게 queryset 형식으로
         cache.set("corona_data", corona_data, 24 * 60 * 60)
 
         return JsonResponse({"message": "CORONA_SUCCESS"}, status=200)
 
 
-class CodeSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-    serializer_class = CodeSerializer
-
-    def set_code(self, *args, **kwargs):
-        code_data = Code.objects.all()
-
-        # json 파일로 변환
-        code_data_list = serializers.serialize('json', code_data)
-        # 데이터를 하루동안 저장, 자르기 편하게 queryset 형식으로
-        cache.set("code_data", code_data, 24 * 60 * 60)
-
-        return JsonResponse({'message': 'CODE_SUCCESS'}, status=200)
-
-
 class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-    serializer_class = FpoplSerializer
+    """
+        유동인구 데이터를 레디스에 저장하는 API
 
+        ---
+        # 내용
+            - date : 날짜
+            - per_time : 1시간 단위의 시간
+            - age_range : 나이대
+            - sex : 성별
+            - city : 시
+            - gugun : 군, 구
+            - popl : 유동인구수
+    """
     def set_fpopl(self, *args, **kwargs):
-        print("11")
+        # MongoDB에서 유동인구 데이터 받기, queryset 형태로 데이터 반환
         fpopl_data = Fpopl.objects.all()
-        print("22")
-        # json 파일로 변환
-        fpopl_data_list = serializers.serialize('json', fpopl_data)
+
+        # 데이터가 존재하지 않을때 에러 처리
+        if not fpopl_data.exists():
+            raise HttpResponse()
+
         # 데이터를 하루동안 저장, 자르기 편하게 queryset 형식으로
         cache.set("fpopl_data", fpopl_data, 24 * 60 * 60)
-        print("33")
 
         return JsonResponse({'message': 'FPOPL_SUCCESS'}, status=200)
 
 
 class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-    serializer_class = CoronaDataSerializer
+    # 코로나 리스트 반환 
+    """
+        이전 달의 코로나 데이터를 전달하는 API
 
-    def get_corona_list(self, request, *args, **kwargs):
-        corona_queryset = CoronaData.objects.filter(date__contains="2021-02")
+        ---
+        # 내용
+            - serial_number : 연번(해당 달의 총 감염자 수)
+            - gugun : 군, 구
+    """
+    def get_corona_list(self, *args, **kwargs):
+        # 한 달전의 데이터를 전달하기 위해 날짜 설정
+        today = date.today()
 
-        # 구군마다 전체 분포표
+        if today.month < 2:
+            previous_yymm = str(today.year - 1) + "-" + str(today.month + 11)
+        elif today.month > 1 and today.month < 11:
+            previous_yymm = str(today.year) + "-0" + str(today.month - 1)
+        else:
+            previous_yymm = str(today.year) + "-" + str(today.month - 1)
+
+        # 코로나 데이터를 DB에서 검색
+        corona_queryset = CoronaData.objects.filter(
+            date__contains=previous_yymm)
+
+        # 구군마다 전체 분포표(확진자 수 카운트)
         df = pd.DataFrame(
             list(corona_queryset.all().values("serial_number", "gugun")))
         df = df.groupby(["gugun"], as_index=False).count()
 
         df = df.drop(index=[8, 26], axis=0)  # 기타, 타시도 삭제
 
-        corona_json = df.to_dict()
+        corona_json = df.to_dict()  # Json 데이터로 전달하기 위해 dictionary로 변환
 
         return JsonResponse(corona_json, safe=False)
 
-
 class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-    serializer_class = FpoplSerializer
+    # 유동인구 리스트 반환
+    """
+        2달 전의 유동인구 데이터를 반환하는 API (SKT 유동인구 데이터 기준)
 
-    def get_fpopl_list(self, request, *args, **kwargs):
+        ---
+        # 내용
+            - date : 날짜
+            - per_time : 1시간 단위의 시간
+            - age_range : 나이대
+            - sex : 성별
+            - city : 시
+            - gugun : 군, 구
+            - popl : 유동인구수
+    """
+    def get_fpopl_list(self, *args, **kwargs):
+        # 두 달전의 유동인구 데이터를 전달하기 위해 날짜 설정
+        today = date.today()
 
-        fpopl_queryset = Fpopl.objects.filter(date__contains="202001")
+        if today.month < 3:
+            previous_yymm = str(today.year - 1) + str(today.month + 10)
+        elif today.month > 2 and today.month < 12:
+            previous_yymm = str(today.year) + "0" + str(today.month - 2)
+        else:
+            previous_yymm = str(today.year) + str(today.month - 2)
+        # 유동인구 데이터를 DB에서 검색
+        fpopl_queryset = Fpopl.objects.filter(date__contains=previous_yymm)
 
+        # 구별, 날짜별 유동인구수 분포 DataFrame 생성
         df = pd.DataFrame(
             list(fpopl_queryset.all().values("date", "gugun", "popl")))
 
-        # 일자별로 합쳐고 나눠 -> 하루동안 구별 평균 유동인구수
-        # 예시) 20200101 , 영등포구 , popl 합 / 컬럼수
-        # 월별로 합치고 일자로 나눠 -> 한달동안 구별 평균 유동인구수
-        # 예시) 202001 동일하면 popl 합 / 컬럼수(일자별)
-        # 한달, 구, 평균 유동인구수
-        # 구로구 => 1월 ~ 12월 평균유동인구수
-        # 구별로 유동인구수를 더하고 12로 나눠 그럼 1년동안 평균 유동인구수
-        # 구별 평균 유동인구수를 한표에 보여줄수 있어 이게 정확해?
-        fpopl_json = df.to_json(orient="index", force_ascii=False)
-        print("333")
-        return JsonResponse(fpopl_json, safe=False)
-
-
-class FindLoc(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-    serializer_class = CodeSerializer
-
-    @swagger_auto_schema(request_body=CodeBodySerializer)
-    def recomm_loc(self, request, *args, **kwargs):
-        # 주어지는 주소 기반으로 중간지점을 가져오는 로직
-        mid = midpoint(request.data['signgu_nm'])
-        # 중간 지점을 기반으로 가까운 지역 리스트 조회
-        nlist = nearbyArea(mid)
-        # 로케이션 : lat , lng
-        temp_area = nlist[0]
-        print(temp_area)
-        recomm_loc = Gugun.objects.filter(signgu_nm=temp_area)
-        for loc in recomm_loc.iterator():
-            lat = loc.lat
-            lng = loc.lng
-        # 첫번째 딕셔너리 완성
-        loc_data = {"recomm_lat": lat,
-                    "recomm_lng": lng, "signgu_nm": temp_area}
-
-        # 해당 구의 코로나 정보 뽑아오기(해당 구에 사망하였거나 아직 완치되지 않은 데이터 추출)
-        target_corona_data = CoronaData.objects.filter(
-            gugun=temp_area).exclude(discharge="퇴원")
-        # 월별로 정렬
-        df = pd.DataFrame(list(target_corona_data.values("gugun", "date")))
-        # 먼저 일별로 정리
-        df = df.groupby(by=["date"], as_index=False).count()
-        # 월별로 통합
-        df_2003 = df[df["date"].str.contains("2020-03")]
-        df_2004 = df[df["date"].str.contains("2020-04")]
-        df_2005 = df[df["date"].str.contains("2020-05")]
-        df_2006 = df[df["date"].str.contains("2020-06")]
-        df_2007 = df[df["date"].str.contains("2020-07")]
-        df_2008 = df[df["date"].str.contains("2020-08")]
-        df_2009 = df[df["date"].str.contains("2020-09")]
-        df_2010 = df[df["date"].str.contains("2020-10")]
-        df_2011 = df[df["date"].str.contains("2020-11")]
-        df_2012 = df[df["date"].str.contains("2020-12")]
-        df_2101 = df[df["date"].str.contains("2021-01")]
-        df_2102 = df[df["date"].str.contains("2021-02")]
-        df_2103 = df[df["date"].str.contains("2021-03")]
-
-        corona_data = {'date': ["2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03"],
-                       'patients': [int(df_2003["gugun"].sum()), int(df_2004["gugun"].sum()), int(df_2005["gugun"].sum()), int(df_2006["gugun"].sum()),
-                                    int(df_2007["gugun"].sum()), int(df_2008["gugun"].sum()), int(
-                           df_2009["gugun"].sum()), int(df_2010["gugun"].sum()),
-            int(df_2011["gugun"].sum()), int(df_2012["gugun"].sum()), int(df_2101["gugun"].sum()), int(df_2102["gugun"].sum()), int(df_2103["gugun"].sum())]}
-
-        total_data = {**loc_data, **corona_data}
-
-        data = cache.get("fpopl_data")
-
-        # 해당 구의 유동인구 데이터
-        target_fpopl_data = data.filter(
-            gugun=temp_area).exclude(age_range=60).exclude(age_range=70).filter(per_time="21")
-        target_fpopl_bc_data = Fpopl_BC.objects.filter(
-            gugun=temp_area).exclude(age_range=60).exclude(age_range=70).filter(per_time="21")
-
-        fpopl_df = pd.DataFrame(list(target_fpopl_data.values("date", "popl")))
-        fpopl_df.loc[(fpopl_df['date'] >= "20200101") & (
-            fpopl_df['date'] <= "20200131"), 'date'] = "202001"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200201") & (
-            fpopl_df['date'] <= "20200229"), 'date'] = "202002"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200301") & (
-            fpopl_df['date'] <= "20200331"), 'date'] = "202003"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200401") & (
-            fpopl_df['date'] <= "20200430"), 'date'] = "202004"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200501") & (
-            fpopl_df['date'] <= "20200531"), 'date'] = "202005"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200601") & (
-            fpopl_df['date'] <= "20200630"), 'date'] = "202006"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200701") & (
-            fpopl_df['date'] <= "20200731"), 'date'] = "202007"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200801") & (
-            fpopl_df['date'] <= "20200831"), 'date'] = "202008"
-        fpopl_df.loc[(fpopl_df['date'] >= "20200901") & (
-            fpopl_df['date'] <= "20200930"), 'date'] = "202009"
-        fpopl_df.loc[(fpopl_df['date'] >= "20201001") & (
-            fpopl_df['date'] <= "20201031"), 'date'] = "202010"
-        fpopl_df.loc[(fpopl_df['date'] >= "20201101") & (
-            fpopl_df['date'] <= "20201130"), 'date'] = "202011"
-        fpopl_df.loc[(fpopl_df['date'] >= "20201201") & (
-            fpopl_df['date'] <= "20201231"), 'date'] = "202012"
-        fpopl_df.loc[(fpopl_df['date'] >= "20210101") & (
-            fpopl_df['date'] <= "20210131"), 'date'] = "202101"
-        fpopl_df.loc[(fpopl_df['date'] >= "20210201") & (
-            fpopl_df['date'] <= "20210228"), 'date'] = "202102"
-
-        fpopl_df = fpopl_df.groupby("date").mean()
-        fpopl_data = fpopl_df.to_dict('split')
-        total_data = {**total_data, **fpopl_data}
-
-        fpopl_BC_df = pd.DataFrame(
-            list(target_fpopl_bc_data.values("date", "popl")))
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190301") & (
-            fpopl_BC_df['date'] <= "20190331"), 'date'] = "201903"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190401") & (
-            fpopl_BC_df['date'] <= "20190430"), 'date'] = "201904"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190501") & (
-            fpopl_BC_df['date'] <= "20190531"), 'date'] = "201905"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190601") & (
-            fpopl_BC_df['date'] <= "20190630"), 'date'] = "201906"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190701") & (
-            fpopl_BC_df['date'] <= "20190731"), 'date'] = "201907"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190801") & (
-            fpopl_BC_df['date'] <= "20190831"), 'date'] = "201908"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20190901") & (
-            fpopl_BC_df['date'] <= "20190930"), 'date'] = "201909"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20191001") & (
-            fpopl_BC_df['date'] <= "20191031"), 'date'] = "201910"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20191101") & (
-            fpopl_BC_df['date'] <= "20191130"), 'date'] = "201911"
-        fpopl_BC_df.loc[(fpopl_BC_df['date'] >= "20191201") & (
-            fpopl_BC_df['date'] <= "20191231"), 'date'] = "201912"
-
-        fpopl_BC_df = fpopl_BC_df.groupby("date").mean()
-        return JsonResponse(total_data, safe=False)
-
-# 거리 지수 저장
-
-
-class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-
-    def save_dist_list(self, *args, **kwargs):
-
-        # 각 구의 리스트를 DB에서 조회
-        gugun_list = Gugun.objects.all()
-
-        for i in gugun_list.values("signgu_nm"):
-            signgu_nm = i["signgu_nm"]
-            near_area = nearbyArea2(signgu_nm)
-            nm = []
-
-            for idx, j in enumerate(near_area):
-                nm.append({'signgu_nm': j[0], 'weight_point': j[1]})
-            dist_weight = DistanceData(
-                signgu_nm=signgu_nm, dist_weights=nm)
-            dist_weight.save()
-
-        return Response(status=200)
-
-
-def midpoint(loc):
-    area = []
-
-    target_lat = 0.0
-    target_lng = 0.0
-
-    for i in loc:
-        target_lat += i["lat"]
-        target_lng += i["lng"]
-
-    target_lat /= len(loc)
-    target_lng /= len(loc)
-
-    get_list = Gugun.objects.all()
-
-    for i in get_list.iterator():
-        area.append([i.signgu_nm])
-
-    cnt = 0
-
-    for i in get_list.iterator():
-
-        dist = (float(i.lat) - target_lat) * (float(i.lat) - target_lat) + (
-            float(i.lng) - target_lng)*(float(i.lng) - target_lng)
-
-        area[cnt].append(dist)
-
-        cnt += 1
-
-    area.sort(key=lambda x: x[1])
-
-    return area[0][0]
-
-
-def nearbyArea(loc):
-    area = []
-
-    target = Gugun.objects.filter(signgu_nm=loc)
-    others = Gugun.objects.all()
-
-    for i in target.iterator():
-        target_lat = float(i.lat)
-        target_lng = float(i.lng)
-
-    for i in others.iterator():
-        area.append([i.signgu_nm])
-
-    cnt = 0
-
-    for i in others.iterator():
-
-        dist = (float(i.lat) - target_lat) * (float(i.lat) - target_lat) + (
-            float(i.lng) - target_lng)*(float(i.lng) - target_lng)
-
-        area[cnt].append(dist)
-
-        cnt += 1
-
-    area.sort(key=lambda x: x[1])
-
-    area_list = []
-
-    for i in area:
-        area_list.append(i[0])
-
-    return area_list
-
-# 코로나 지수 저장
-
-
-def nearbyArea2(loc):
-    area = []
-
-    target = Gugun.objects.filter(signgu_nm=loc)
-    others = Gugun.objects.all()
-
-    for i in target.iterator():
-        target_lat = float(i.lat)
-        target_lng = float(i.lng)
-
-    for i in others.iterator():
-        area.append([i.signgu_nm])
-
-    cnt = 0
-
-    for i in others.iterator():
-
-        dist = (float(i.lat) - target_lat) * (float(i.lat) - target_lat) + (
-            float(i.lng) - target_lng)*(float(i.lng) - target_lng)
-
-        dist = int(math.sqrt(dist) * 1000)
-
-        area[cnt].append(dist)
-
-        cnt += 1
-
-    area.sort(key=lambda x: x[1])
-
-    return area
-
-
-class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-    def save_corona_weight(self, *args, **kwargs):
-        today = datetime.today()
-        recentdate = datetime(2021, 3, 31, 0, 0, 0)
-        cal = recentdate - datetime(2021, recentdate.month - 2, 1, 0, 0, 0)
-        standard = recentdate - timedelta(cal.days)
-        corona = CoronaData.objects.filter(
-            date__range=[standard.strftime('%Y-%m-%d'), recentdate.strftime('%Y-%m-%d')])
-        df = pd.DataFrame(
-            list(corona.values('date', 'gugun', 'serial_number')))
-
-        df['date'] = [''.join(x.split('-')[0:2])
-                      for x in df.date]  # 2020-01 2020-01 2021-03-07 -> 202001, 202103
-        df = df.groupby(["gugun", "date"], as_index=False).count()
-        df = df.set_index('gugun')
-        df = df.drop(index='기타', axis=0)
-        df = df.drop(index='타시도', axis=0)
-        df = df.rename_axis('gugun').reset_index()
-
-        # 구 별로 월 별 코로나 평균
-        df_first = df[df["date"] == "202101"].groupby(by=["date"]).sum()
-        df_second = df[df["date"] == "202102"].groupby(by=["date"]).sum()
-        df_third = df[df["date"] == "202103"].groupby(by=["date"]).sum()
-
-        first_avg = df_first.iloc[0]['serial_number'] / 25
-        second_avg = df_second.iloc[0]['serial_number'] / 25
-        third_avg = df_third.iloc[0]['serial_number'] / 25
-
-        df_first = df[df["date"] == "202101"]
-        df_first["serial_number"] = [
-            x/first_avg for x in df_first.serial_number]
-        df_second = df[df["date"] == "202102"]
-        df_second["serial_number"] = [
-            x/second_avg for x in df_second.serial_number]
-        df_third = df[df["date"] == "202103"]
-        df_third["serial_number"] = [
-            x/third_avg for x in df_third.serial_number]
-        first_list = df_first.sort_values(by=['serial_number'], axis=0)
-        second_list = df_second.sort_values(by=['serial_number'], axis=0)
-        third_list = df_third.sort_values(by=['serial_number'], axis=0)
-
-        temp_list = pd.concat([first_list, second_list, third_list])
-        list_1 = first_list['gugun'].to_list()
-        list_2 = second_list['gugun'].to_list()
-        list_3 = third_list['gugun'].to_list()
-
-        weight_1 = {string: (i + 1) for i, string in enumerate(list_1)}
-        weight_2 = {string: (i + 1) for i, string in enumerate(list_2)}
-        weight_3 = {string: (i + 1) for i, string in enumerate(list_3)}
-
-        total_corona_rate = Counter(
-            weight_1) + Counter(weight_2) + Counter(weight_3)
-
-        gugun_list = list(Gugun.objects.values())
-
-        # 기존 코로나 데이터 삭제
-        corona_weight_data = CoronaWeight.objects.all()
-        for i in range(0, corona_weight_data.count()):
-            corona_weight_data[0].delete()
-
-        data = {'gugun': [], 'before_corona_rate': [],
-                'after_corona_rate': [], 'serial_number': []}
-        corona_df = pd.DataFrame(data)
-        for i in range(0, len(gugun_list)):
-            temp_df = df[df['gugun'] == gugun_list[i]['signgu_nm']]
-            cor1 = temp_df.iloc[0]['serial_number']
-            cor2 = temp_df.iloc[1]['serial_number']
-            cor3 = temp_df.iloc[2]['serial_number']
-            # 1~2월 코로나 확진자 변화율
-            temp_df['before_corona_rate'] = ((cor2 - cor1) / cor1) * 100
-            # 2~3월 코로나 확진자 변화율
-            temp_df['after_corona_rate'] = ((cor3 - cor2) / cor2) * 100
-            temp_df = temp_df.groupby(["gugun"], as_index=False).mean()
-            corona_df = corona_df.append(temp_df, ignore_index=False)
-
-        before_corona_list = corona_df.sort_values(
-            by=['before_corona_rate'], axis=0)
-        after_corona_list = corona_df.sort_values(
-            by=['after_corona_rate'], axis=0)
-
-        before_list = before_corona_list['gugun'].to_list()
-        after_list = after_corona_list['gugun'].to_list()
-
-        before_1 = {string: (i + 1) for i,
-                    string in enumerate(before_list)}
-        after_2 = {string: (i + 1) for i,
-                   string in enumerate(after_list)}
-
-        total_corona_rate = total_corona_rate + \
-            Counter(before_1) + Counter(after_2)
-
-        # 구군 이름, 1~2월 변화량, 2~3월 변화량
-        for signgu_nm, point in total_corona_rate.items():
-            coronaWeight = CoronaWeight(
-                signgu_nm=signgu_nm, weight_point=point)
-            # 계산을 해서 저장
-            coronaWeight.save()
-
-        return HttpResponse(status=status.HTTP_200_OK)
-
-# 유동인구 지수 저장
-
-
-class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-    def save_fpopl_weight(self, *args, **kwargs):
-        today = datetime.today()
-
-        cal = today - datetime(2020, 12, 1, 0, 0, 0)
-        standard = today - timedelta(cal.days)
-        fpopl_list = Fpopl.objects.filter(
-            date__range=[standard.strftime('%Y%m%d'), today.strftime('%Y%m%d')]
-        )
-        df = pd.DataFrame(list(fpopl_list.values("date", "popl", "gugun")))
-
-        # 2020-01 2020-01 2021-03-07 -> 202001, 202103
-        df['date'] = [x[0:6] for x in df.date]
-        df = df.groupby(by=["gugun", "date"], as_index=False).sum()
-
-        # 월별 총 유동인구수
-        df_first = df[df['date'] == '202012'].groupby(by=['date']).sum()
-        df_second = df[df['date'] == '202101'].groupby(by=['date']).sum()
-        df_third = df[df['date'] == '202102'].groupby(by=['date']).sum()
-
-        a = df_first.iloc[0]['popl']
-        b = df_second.iloc[0]['popl']
-        c = df_third.iloc[0]['popl']
-
-        # 상대적 유동인구 분포율
-        relative_first = df[df['date'] == '202012']
-        relative_first['popl'] = [(x/a)*100 for x in relative_first.popl]
-        relative_second = df[df['date'] == '202101']
-        relative_second['popl'] = [(x/b)*100 for x in relative_second.popl]
-        relative_third = df[df['date'] == '202102']
-        relative_third['popl'] = [(x/c)*100 for x in relative_third.popl]
-
-        # 유동인구수 평균 - 25개 구
-        a = df_first.iloc[0]['popl'] / 25
-        b = df_second.iloc[0]['popl'] / 25
-        c = df_third.iloc[0]['popl'] / 25
-
-        # 유동인구수 - 평균 유동인구수보다 유동인구수가 많은 지역을 1로 적은 지역은 0으로 표시
-        absolute_first = df[df['date'] == '202012']
-        absolute_first['popl'] = [1 if x - a >
-                                  0 else 0 for x in absolute_first.popl]
-        absolute_second = df[df['date'] == '202101']
-        absolute_second['popl'] = [1 if x - b >
-                                   0 else 0 for x in absolute_second.popl]
-        absolute_third = df[df['date'] == '202102']
-        absolute_third['popl'] = [1 if x - c >
-                                  0 else 0 for x in absolute_third.popl]
-
-        # 유동인구 변화량 계산
-        gugun_list = list(Gugun.objects.values())
-
-        data = {'gugun': [], 'popl': [],
-                'first_popl_rate': [], 'second_popl_rate': []}
-        fpop_rate = pd.DataFrame(data)
-        for i in range(0, len(gugun_list)):
-            temp_df = df[df['gugun'] == gugun_list[i]['signgu_nm']]
-            popl_first = temp_df.iloc[0]['popl']
-            popl_second = temp_df.iloc[1]['popl']
-            popl_third = temp_df.iloc[2]['popl']
-            # 12~1월 유동인구 변화율
-            temp_df['first_popl_rate'] = (
-                (popl_second - popl_first) / popl_first) * 100
-            # 1~2월 유동인구 변화율
-            temp_df['second_popl_rate'] = (
-                (popl_third - popl_second) / popl_second) * 100
-            temp_df = temp_df.groupby(["gugun"], as_index=False).mean()
-
-            fpop_rate = fpop_rate.append(temp_df, ignore_index=False)
-
-        # 해당 구의 유동인구 / 전체 유동인구 => 등수
-        point_1 = relative_third.sort_values(by=['popl'], axis=0)
-        list_1 = point_1['gugun'].to_list()
-        weight_1 = {string: (i + 1) * 3 for i, string in enumerate(list_1)}
-
-        # 첫번째 달에서 두번째 달 넘어가는 걸로 소트해서 등수(12 => 1)
-        point_2 = fpop_rate.sort_values(by=['first_popl_rate'], axis=0)
-        list_2 = point_2['gugun'].to_list()
-        weight_2 = {string: (i + 1) * 2 for i, string in enumerate(list_2)}
-
-        # 두번째 달 넘어가는 거에서 세번째 달 넘어가는 걸로 소트해서 등수(1 => 2)
-        point_3 = fpop_rate.sort_values(by=['second_popl_rate'], axis=0)
-        list_3 = point_3['gugun'].to_list()
-        weight_3 = {string: (i + 1) * 3 for i, string in enumerate(list_3)}
-
-        total_score = Counter(weight_1) + Counter(weight_2) + Counter(weight_3)
-
-        # 기존  데이터 삭제
-        fpopl_weight_data = FpoplWeight.objects.all()
-        for i in range(0, fpopl_weight_data.count()):
-            fpopl_weight_data[0].delete()
-
-        # 데이터 새로 저장
-        for gugun, point in total_score.items():
-            fpopl_weight = FpoplWeight(
-                signgu_nm=gugun, weight_point=point)
-            # 계산을 해서 저장
-            fpopl_weight.save()
-
-        return Response(status=200)
-
-
-class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-
-    def data_analysis(self, *args, **kwargs):
+        # Json 데이터로 전달하기 위해 dictionary로 변환
+        fpopl = df.to_dict()
+        return JsonResponse(fpopl, safe=False)
+
+
+class FpoplDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    # 유동인구 데이터 분석 함수
+    """
+        유동인구 데이터 분석 함수
+
+        ---
+        # 내용
+            - 전체 데이터 뽑아오기 - fpopl_data1 과 fpopl_data2
+            - 주요 시간대 : 점심시간, 저녁시간 데이터 뽑아오기 - fpopl_data3 과 fpopl_data4 
+            - 나이대 : 20 - 30대 데이터 뽑아오기 - fpopl_data5
+            - 나이대 : 20대 - 40대 데이터 뽑아오기 - fpopl_data6 (현재 이 부분)
+            - 분석 내용을 사진으로 저장
+    """
+    def fpopl_data_analysis(self, *args, **kwargs):
+        # 그래프의 한글 깨짐 방지, 폰트 연결
         f_path = "c:/Windows/Fonts/malgun.ttf"
         font_name = fm.FontProperties(fname=f_path).get_name()
         plt.rc('font', family=font_name)
         plt.rc('axes', unicode_minus=False)
 
+        # 코로나 이전 유동인구, 이후 유동인구 데이터 뽑아오기
+        # 나이대 : 20대 - 40대 데이터 뽑아오기 - fpopl_data6
         bc_data = Fpopl_BC.objects.filter(age_range__in=[20, 30, 40])
         ac_data = Fpopl.objects.filter(age_range__in=[20, 30, 40])
 
+        # 전체 데이터 뽑아오기 - fpopl_data1 과 fpopl_data2
+        # bc_data = Fpopl_BC.objects.all()
+        # ac_data = Fpopl.objects.all()
+
+        # 주요 시간대 : 점심시간, 저녁시간 데이터 뽑아오기 - fpopl_data3 과 fpopl_data4
+        # bc_data = Fpopl_BC.objects.filter(per_time__in=["12", "18", "19", "20", "21", "22", "23"])
+        # ac_data = Fpopl.objects.filter(per_time__in=["12", "18", "19", "20", "21", "22", "23"])
+
+        # 나이대 : 20 - 30대 데이터 뽑아오기 - fpopl_data5
+        # bc_data = Fpopl_BC.objects.filter(age_range__in=[20, 30])
+        # ac_data = Fpopl.objects.filter(age_range__in=[20, 30])
+
+        # 비교를 위해 DataFrame으로 변환
         bc_df = pd.DataFrame(list(bc_data.values("date", "gugun", "popl")))
         ac_df = pd.DataFrame(list(ac_data.values("date", "gugun", "popl")))
-
+        # 전체 데이터를 한 곳에서 볼 수 있도록 합침
         total_df = pd.concat([bc_df, ac_df], axis=0, ignore_index=True)
-
+        # 하루의 유동인구로 표를 합침
         raw_1 = total_df.groupby(by=['date', 'gugun']).sum().reset_index()
-
+        # 월별 유동인구 표시를 위해 date 형식으로 변환
         raw_1["date"] = pd.to_datetime(raw_1["date"], format='%Y%m%d')
 
         # '연도', '월', '일' 컬럼 생성
@@ -617,33 +233,42 @@ class DataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
 
 class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    """
+        코로나 데이터 분석 함수
 
+        ---
+        # 내용
+            - 구군별, 월별 코로나 데이터 분석 : corona_data로 저장됨
+    """
     def corona_data_analysis(self, *args, **kwargs):
+        # 그래프의 한글 깨짐 방지, 폰트 연결
         f_path = "c:/Windows/Fonts/malgun.ttf"
         font_name = fm.FontProperties(fname=f_path).get_name()
         plt.rc('font', family=font_name)
         plt.rc('axes', unicode_minus=False)
-
+        # DB에서 Corona Data 불러오기
         corona_data = CoronaData.objects.all()
-
+        # 연번, 날짜, 구군에 대한 Dataframe 작성
         corona_df = pd.DataFrame(
             list(corona_data.values("serial_number", "date", "gugun")))
-
+        # 2020-01 2020-01 2021-03-07 의 포맷을  202001, 202103와 같은 포맷으로 변경.
         corona_df['date'] = [''.join(x.split('-')[0:2])
                              for x in corona_df.date]  # 2020-01 2020-01 2021-03-07 -> 202001, 202103
-
+        # 날짜와 구군을 그룹으로 하여 카운트를 센다.
         raw_1 = corona_df.groupby(
             by=['date', 'gugun']).count().reset_index()
 
-        # 그래프 그리기
+        # 그래프를 그리고 기타와 타시도로 적힌 구군의 정보를 포함하지 않는다.
         raw_1 = raw_1.set_index('gugun')
         raw_1 = raw_1.drop('기타', axis=0)
         raw_1 = raw_1.drop('타시도', axis=0)
 
+        # raw_1을 raw_2에 복사하여 평균을 위한 그래프를 새로 그릴 데이터를 raw_2로 지정한다.
         raw_2 = raw_1
         raw_2 = raw_2.groupby(by=['date']).sum().reset_index()
         raw_2["serial_number"] = raw_2["serial_number"]/25
 
+        # 꺾은선 그래프를 그리기 위한 함수
         fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(15, 15))
 
         for i, f in enumerate(raw_1.index.unique()):
@@ -661,102 +286,6 @@ class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             line21.set_title(f)
 
         fig.tight_layout()
+        # 결과값을 corona_data.png로 저장
         plt.savefig('corona_data.png')
         return Response(status=200)
-
-
-class RecommendPlace(viewsets.GenericViewSet, mixins.ListModelMixin, View):
-    serializer_class = SearchLogSerializer
-
-    @swagger_auto_schema(request_body=SearchLogBodySerializer)
-    def recommend(self, request):
-        data = request.data
-        gugun_list = Gugun.objects.all()
-        corona_weight = CoronaWeight.objects.all()
-        fpopl_weight = FpoplWeight.objects.all()
-        dist_weight = DistanceData.objects.filter(
-            signgu_nm=midpoint(request.data["searchList"])).values('dist_weights')
-
-        dist_weight = list(
-            list(dist_weight.values('dist_weights'))[0].values())
-        dist_weight = dist_weight[0]
-        # 구군 리스트를 가져와 디비에서 (25개 구)
-        # 이걸 포문을 돌려요
-        # for 문 안에서 구군이름으로 필터를 돌려서 점수들을 뽑은다음에
-        # 가중치 적용해서 점수를 새로 뽑아요 그리고 그걸 한 리스트에 넣어요
-        # 정렬해요
-        # 상위에서 3개 뽑아요
-        # 끝
-
-        new_point = []
-
-        for i in range(0, len(gugun_list)):
-            gugun_name = gugun_list[i].signgu_nm
-            corona_weight_point = list(corona_weight.filter(
-                signgu_nm=gugun_name).values("weight_point"))[0]['weight_point']
-            fpopl_weight_point = list(fpopl_weight.filter(
-                signgu_nm=gugun_name).values("weight_point"))[0]['weight_point']
-            dist_weight_point = [
-                x for x in dist_weight if x['signgu_nm'] == gugun_name][0]['weight_point']
-
-            sum_point = corona_weight_point + fpopl_weight_point + dist_weight_point
-
-            new_point.append({'signgu_nm': gugun_name, 'point': sum_point})
-
-        new_point.sort(key=lambda x: x["point"])
-
-        df = pd.DataFrame(data=new_point)
-
-        df_json = df.to_dict()
-
-        ltln_dic = {"signgu_nm": [], "lat": [], "lng": []}
-        total_dic = []
-        for i in new_point:
-            filter_list = gugun_list.filter(signgu_nm=i["signgu_nm"])
-
-            for j in filter_list.iterator():
-                lat = j.lat
-                lng = j.lng
-
-                ltln_dic["signgu_nm"].append(j.signgu_nm)
-                ltln_dic["lat"].append(j.lat)
-                ltln_dic["lng"].append(j.lng)
-
-            target_corona_data = CoronaData.objects.filter(
-                gugun=i["signgu_nm"]).exclude(discharge="퇴원")
-            # 월별로 정렬
-            df = pd.DataFrame(list(target_corona_data.values("gugun", "date")))
-            # 먼저 일별로 정리
-            df = df.groupby(by=["date"], as_index=False).count()
-            # 월별로 통합
-            df_2003 = df[df["date"].str.contains("2020-03")]
-            df_2004 = df[df["date"].str.contains("2020-04")]
-            df_2005 = df[df["date"].str.contains("2020-05")]
-            df_2006 = df[df["date"].str.contains("2020-06")]
-            df_2007 = df[df["date"].str.contains("2020-07")]
-            df_2008 = df[df["date"].str.contains("2020-08")]
-            df_2009 = df[df["date"].str.contains("2020-09")]
-            df_2010 = df[df["date"].str.contains("2020-10")]
-            df_2011 = df[df["date"].str.contains("2020-11")]
-            df_2012 = df[df["date"].str.contains("2020-12")]
-            df_2101 = df[df["date"].str.contains("2021-01")]
-            df_2102 = df[df["date"].str.contains("2021-02")]
-            df_2103 = df[df["date"].str.contains("2021-03")]
-            df_2104 = df[df["date"].str.contains("2021-04")]
-            corona_data = {'date': ["2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03", "2021-04"],
-                           'patients': [int(df_2003["gugun"].sum()), int(df_2004["gugun"].sum()), int(df_2005["gugun"].sum()), int(df_2006["gugun"].sum()),
-                                        int(df_2007["gugun"].sum()), int(df_2008["gugun"].sum()), int(
-                               df_2009["gugun"].sum()), int(df_2010["gugun"].sum()),
-                int(df_2011["gugun"].sum()), int(df_2012["gugun"].sum()), int(df_2101["gugun"].sum()), int(df_2102["gugun"].sum()), int(df_2103["gugun"].sum()), int(df_2104["gugun"].sum())]}
-            total_dic.append(corona_data)
-
-        tt = {i: total_dic[i] for i in range(len(total_dic))}
-        rt = {"target" : []}
-        for i in request.data["searchList"]:
-            rt["target"].append(i["juso"])
-
-        total_data = {**df_json, **tt}
-        total_data = {**total_data, **rt}
-        total_data = {**total_data, **ltln_dic}
-
-        return JsonResponse(total_data, status=200)
