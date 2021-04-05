@@ -1,8 +1,7 @@
 
 from django.urls import path, include
 from django.conf.urls import url
-from .views import UserViewSet, EmailViewSet, NickNameViewSet, Activate, LoginViewSet, LogoutViewSet
-# from . import views
+from .views import UserViewSet, EmailViewSet, NickNameViewSet, Activate, LoginViewSet, LogoutViewSet, SearchLogViewSet
 
 urlpatterns = [
     # get : User 전체 정보 조회, post : 회원가입 시 DB에 User 정보 추가.
@@ -31,5 +30,11 @@ urlpatterns = [
 
     # get : 해당 유저 로그아웃 처리.
     path('logout/<email>', LogoutViewSet.as_view(
-        {"get": "logout_check"}), name="Logout")
+        {"get": "logout_check"}), name="Logout"),
+
+    path('searchlog', SearchLogViewSet.as_view(
+         {"post": "saveSearchLog"}), name="saveSearchLog"),
+
+    path('searchlog/<email>', SearchLogViewSet.as_view(
+         {"get": "serveSearchLog"}), name="serveSearchLog")
 ]

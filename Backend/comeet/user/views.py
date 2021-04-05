@@ -1,3 +1,15 @@
+from django.core.cache import cache
+from django.utils.encoding import force_bytes, force_text
+from django.core.mail import EmailMessage
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.sites.shortcuts import get_current_site
+from django.shortcuts import redirect
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from comeet.settings import SECRET_KEY, REDIRECT_PAGE
+from .text import message
+from .token import user_activation_token
+from django.core import serializers
 import jwt
 import json
 import bcrypt
@@ -8,20 +20,9 @@ from rest_framework.response import Response
 from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views import View
-from user.models import User
-from .serializers import UserSerializer, UserBodySerializer
+from user.models import User, SearchLog
+from .serializers import UserSerializer, UserBodySerializer, SearchLogSerializer, SearchLogBodySerializer
 from drf_yasg.utils import swagger_auto_schema
-from .token import user_activation_token
-from .text import message
-from comeet.settings import SECRET_KEY, REDIRECT_PAGE
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
-from django.shortcuts import redirect
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.core.mail import EmailMessage
-from django.utils.encoding import force_bytes, force_text
-from django.core.cache import cache
 
 
 class UserViewSet(viewsets.GenericViewSet,
@@ -190,3 +191,34 @@ class LogoutViewSet(viewsets.GenericViewSet,
         cache.delete(self.kwargs['email'])  # redis에서 캐시 삭제
 
         return Response(True, status=status.HTTP_200_OK)
+
+
+class SearchLogViewSet(viewsets.GenericViewSet,
+                       mixins.ListModelMixin,
+                       View):
+    serializer_class = SearchLogSerializer
+
+    @swagger_auto_schema(request_body=SearchLogBodySerializer)
+    def saveSearchLog(self, request):
+
+        sl_serializer = SearchLogSerializer(data=request.data, partial=True)
+        if not sl_serializer.is_valid():
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+        sl_serializer.save()
+
+        # 10개가 넘으면 처리를 여기서 할거
+        searchLog = SearchLog.objects.filter(email=request.data['email'])
+        searchLog_list = list(searchLog)
+
+        if searchLog.count() > 10:
+            eraseCount = searchLog.count() - 10
+            for i in range(eraseCount):
+                searchLog[i].delete()
+
+        return Response(status=status.HTTP_200_OK)
+
+    def serveSearchLog(self, *args, **kwargs):
+        Search = SearchLog.objects.filter(email=self.kwargs['email'])
+        search_list = serializers.serialize('json', Search)
+
+        return HttpResponse(search_list, status=status.HTTP_200_OK)

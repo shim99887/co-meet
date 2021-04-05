@@ -1,4 +1,4 @@
-from django.db import models
+from djongo import models
 
 # Create your models here.
 
@@ -34,6 +34,17 @@ class Fpopl(models.Model):
     popl = models.IntegerField()
 
 
+class Fpopl_BC(models.Model):
+    _id = models.IntegerField(primary_key=True)
+    date = models.CharField(max_length=20)
+    per_time = models.CharField(max_length=20)
+    age_range = models.IntegerField()
+    sex = models.CharField(max_length=10)
+    city = models.CharField(max_length=10)
+    gugun = models.CharField(max_length=10)
+    popl = models.IntegerField()
+
+
 class Card(models.Model):
     _id = models.IntegerField(primary_key=True)
     receipt_dttm = models.CharField(max_length=20)
@@ -53,3 +64,28 @@ class CoronaData(models.Model):
     overseas = models.CharField(max_length=20)  # 해외 여부
     route = models.CharField(max_length=50)  # 확진 경로
     discharge = models.CharField(max_length=50, null=True)  # 퇴원 여부
+
+
+class DistWeight(models.Model):
+    signgu_nm = models.CharField(primary_key=True, max_length=20)
+    weight_point = models.FloatField()
+
+
+class CoronaWeight(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
+    signgu_nm = models.CharField(max_length=20)
+    weight_point = models.FloatField()
+
+
+class FpoplWeight(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
+    signgu_nm = models.CharField(max_length=20)
+    weight_point = models.FloatField()
+
+
+class DistanceData(models.Model):
+    _id = models.ObjectIdField(primary_key=True)
+    signgu_nm = models.CharField(max_length=20)
+    dist_weights = models.ArrayField(
+        model_container=DistWeight
+    )
