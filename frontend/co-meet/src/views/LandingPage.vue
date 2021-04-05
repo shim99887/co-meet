@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <Navbar @msg="getMsg"/>
+    <Navbar class="navbar1" @msg="getMsg"/>
     <video autoplay muted loop id="myVideo">
       <source src="../assets/sub2.mp4" type="video/mp4" />
     </video>
@@ -74,6 +74,7 @@ export default {
 body {
   margin: 0px;
 }
+
 .fade-enter-active{
   /* transition: opacity .1s; */
   animation: anim3 forwards 2s;
