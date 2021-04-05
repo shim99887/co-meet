@@ -18,7 +18,13 @@ import math
 
 
 class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    """ 
+        각 구의 거리를 계산하여 반환.
 
+        ---
+        # 내용
+            - 반환 데이터 : 각 구마다 다른 구 사이까지의 거리 반환
+    """
     def save_dist_list(self, *args, **kwargs):
 
         # 각 구의 리스트를 DB에서 조회
@@ -40,6 +46,13 @@ class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
 
 class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    """ 
+        각 구의 코로나 변화율 지수 저장.
+
+        ---
+        # 내용
+            - 반환 데이터 : 각 구의 코로나 변화율 지수를 리스트로 반환.
+    """
     def save_corona_weight(self, *args, **kwargs):
         # 2021년 3월 31일 기준
         recentdate = datetime(2021, 3, 31, 0, 0, 0)
@@ -161,6 +174,13 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
 
 class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    """ 
+        각 구의 유동인구 지수를 계산하여 반환.
+
+        ---
+        # 내용
+            - 반환 데이터 : 각 구마다 유동인구수 지수를 산출하여 리스트로 반환.
+    """
     def save_fpopl_weight(self, *args, **kwargs):
         today = datetime.today()
 
@@ -262,6 +282,18 @@ class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
 
 class RecommendPlace(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    """ 
+        DB에 저장되어있는 값을 불러온 후 가중치를 설정하여 유저에게 추천
+
+        ---
+        # 내용
+            - email : 사이트를 이용하는 User
+            - searchBody (여러개)
+                - juso : String, 검색한 주소
+                - lat : float, 검색한 주소의 위도
+                - lng : float, 검색한 주소의 경도
+            - 반환 데이터 : 각 구에 대한 월별 확진자, 해당 구의 이름, 검색에 이용한 장소, 각 구의 위도, 경도
+    """
     serializer_class = SearchLogSerializer
 
     @swagger_auto_schema(request_body=SearchLogBodySerializer)
