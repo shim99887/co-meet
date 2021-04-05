@@ -2,6 +2,7 @@
 <div class="recom-body">
   <Navbar class="navbar"/>
   <div class="reccom">
+    <right-nav v-if="$store.getters.getAccessToken" style="z-index:1;"/>
     <Address />
     <Graph />
     <!-- <Explain /> -->
@@ -14,12 +15,13 @@ import Graph from "../components/Graph.vue"
 import Address from "../components/Address.vue"
 // import Explain from "../components/Explain.vue"
 import Navbar from "../components/navbar.vue"
-
+import RightNav from "../components/RightNav.vue"
 export default {
   components: {
     Navbar,
     Address,
     Graph,
+    RightNav,
     // Explain,
   },
   computed: {

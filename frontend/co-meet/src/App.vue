@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-main>
-      <right-nav style="z-index:1;"/>
+      <right-nav v-if="$store.getters.getAccessToken" style="z-index:1;"/>
       <div class="text-center">
     <v-dialog
       v-model="loading"
