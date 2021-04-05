@@ -26,6 +26,7 @@ class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         for i in gugun_list.values("signgu_nm"):
             signgu_nm = i["signgu_nm"]
+            # 서울의 한 구에서 가까운 순으로 구를 정렬한 리스트 출력
             near_area = nearbyArea(signgu_nm)
             nm = []
 
@@ -40,32 +41,41 @@ class SaveDistWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
 class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     def save_corona_weight(self, *args, **kwargs):
-        today = datetime.today()
+        # 2021년 3월 31일 기준
         recentdate = datetime(2021, 3, 31, 0, 0, 0)
+        # 2021년 1월 1일부터 3월 31일까지 데이터를 기준으로 코로나를 산정하기 위해 며칠인 지 구한다.
         cal = recentdate - datetime(2021, recentdate.month - 2, 1, 0, 0, 0)
+        # 기준 날짜를 정한다.
         standard = recentdate - timedelta(cal.days)
+        # 코로나 데이터 중 2021년 데이터만 가져온다.
         corona = CoronaData.objects.filter(
             date__range=[standard.strftime('%Y-%m-%d'), recentdate.strftime('%Y-%m-%d')])
+        # 컬럼 중 date, gugun, 연번에 대한 정보가 가져온다.
         df = pd.DataFrame(
             list(corona.values('date', 'gugun', 'serial_number')))
 
         df['date'] = [''.join(x.split('-')[0:2])
-                      for x in df.date]  # 2020-01 2020-01 2021-03-07 -> 202001, 202103
+                      for x in df.date]  # 2020-01 2020-01 2021-03-07 의 포맷을  202001, 202103와 같은 포맷으로 변경.
+        # 구군과 날짜별로 코로나 인원 수를 센다.
         df = df.groupby(["gugun", "date"], as_index=False).count()
+        # 인덱스를 구군으로 설정 한 후 기타, 타시도로 분류된 정보를 삭제한다.
         df = df.set_index('gugun')
         df = df.drop(index='기타', axis=0)
         df = df.drop(index='타시도', axis=0)
+        # 타시도,기타 없앤후 인덱스 reset
         df = df.rename_axis('gugun').reset_index()
 
-        # 구 별로 월 별 코로나 평균
+        # 구 별로 월 별 코로나 평균(202101~202103)
         df_first = df[df["date"] == "202101"].groupby(by=["date"]).sum()
         df_second = df[df["date"] == "202102"].groupby(by=["date"]).sum()
         df_third = df[df["date"] == "202103"].groupby(by=["date"]).sum()
 
+        # 각 달 별 서울 총 데이터를 구의 개수(25)로 나누어 평균을 도출한다.
         first_avg = df_first.iloc[0]['serial_number'] / 25
         second_avg = df_second.iloc[0]['serial_number'] / 25
         third_avg = df_third.iloc[0]['serial_number'] / 25
 
+        # 구 별 총 개수와 평균의 비율을 각 컬럼에 저장한다.
         df_first = df[df["date"] == "202101"]
         df_first["serial_number"] = [
             x/first_avg for x in df_first.serial_number]
@@ -74,7 +84,8 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             x/second_avg for x in df_second.serial_number]
         df_third = df[df["date"] == "202103"]
         df_third["serial_number"] = [
-            x/third_avg for x in df_third.serial_number]
+            x / third_avg for x in df_third.serial_number]
+        # Dataframe 객체를 정렬한다.
         first_list = df_first.sort_values(by=['serial_number'], axis=0)
         second_list = df_second.sort_values(by=['serial_number'], axis=0)
         third_list = df_third.sort_values(by=['serial_number'], axis=0)
@@ -84,13 +95,16 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         list_2 = second_list['gugun'].to_list()
         list_3 = third_list['gugun'].to_list()
 
+        # 가중치
         weight_1 = {string: (i + 1) for i, string in enumerate(list_1)}
         weight_2 = {string: (i + 1) for i, string in enumerate(list_2)}
         weight_3 = {string: (i + 1) for i, string in enumerate(list_3)}
 
+        # 전체 코로나 비율을 Counter 객체를 통해 각 구의 count를 더한다.
         total_corona_rate = Counter(
             weight_1) + Counter(weight_2) + Counter(weight_3)
 
+        # 구군 정보를 DB에서 가져와서 리스트화
         gugun_list = list(Gugun.objects.values())
 
         # 기존 코로나 데이터 삭제
@@ -98,9 +112,12 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         for i in range(0, corona_weight_data.count()):
             corona_weight_data[0].delete()
 
+        # DB에 저장할 데이터 틀 생성
         data = {'gugun': [], 'before_corona_rate': [],
                 'after_corona_rate': [], 'serial_number': []}
         corona_df = pd.DataFrame(data)
+
+        # 서울의 구를 for문 돌면서 1~2월 확진자 변화율, 2~3월 확진자 변화율을 계산.
         for i in range(0, len(gugun_list)):
             temp_df = df[df['gugun'] == gugun_list[i]['signgu_nm']]
             cor1 = temp_df.iloc[0]['serial_number']
@@ -113,11 +130,14 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             temp_df = temp_df.groupby(["gugun"], as_index=False).mean()
             corona_df = corona_df.append(temp_df, ignore_index=False)
 
+        # 1~2월 코로나 확진자 변화율 정렬
         before_corona_list = corona_df.sort_values(
             by=['before_corona_rate'], axis=0)
+        # 2~3월 코로나 확진자 변화율 정렬
         after_corona_list = corona_df.sort_values(
             by=['after_corona_rate'], axis=0)
 
+        # 정렬된 Dataframe을 list화
         before_list = before_corona_list['gugun'].to_list()
         after_list = after_corona_list['gugun'].to_list()
 
@@ -126,14 +146,15 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         after_2 = {string: (i + 1) for i,
                    string in enumerate(after_list)}
 
+        # 서울 구의 코로나 확진자 + before1, after2를 합산.
         total_corona_rate = total_corona_rate + \
             Counter(before_1) + Counter(after_2)
 
-        # 구군 이름, 1~2월 변화량, 2~3월 변화량
+        # 구군 이름, 코로나 data로 도출해낸 점수
         for signgu_nm, point in total_corona_rate.items():
             coronaWeight = CoronaWeight(
                 signgu_nm=signgu_nm, weight_point=point)
-            # 계산을 해서 저장
+            # 점수 계산을 해서 DB에 저장
             coronaWeight.save()
 
         return HttpResponse(status=status.HTTP_200_OK)
@@ -366,7 +387,7 @@ def midpoint(loc):      # N명에 대해서 중앙지점을 찾아서 해당 구
     return area[0][0]
 
 
-def nearbyArea(loc):
+def nearbyArea(loc):    # N명에 대해서 중앙지점을 찾아서 해당 구에 가까운 리스트를 반환하는 함수.
     area = []
 
     target = Gugun.objects.filter(signgu_nm=loc)
@@ -381,17 +402,17 @@ def nearbyArea(loc):
 
     cnt = 0
 
-    for i in others.iterator():
+    for i in others.iterator():     # 받은 값의 lat, lng를 합하여 저장.
 
         dist = (float(i.lat) - target_lat) * (float(i.lat) - target_lat) + (
             float(i.lng) - target_lng)*(float(i.lng) - target_lng)
 
-        dist = int(math.sqrt(dist) * 1000)
+        dist = int(math.sqrt(dist) * 1000)  # 값을 최적화하기 위해 1000배율 조정.
 
         area[cnt].append(dist)
 
         cnt += 1
 
-    area.sort(key=lambda x: x[1])
+    area.sort(key=lambda x: x[1])       # 거리에 대해서 정렬.
 
     return area
