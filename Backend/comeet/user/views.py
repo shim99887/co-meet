@@ -28,7 +28,14 @@ from drf_yasg.utils import swagger_auto_schema
 class UserViewSet(viewsets.GenericViewSet,
                   mixins.ListModelMixin,
                   View):
+    """
+        User CRUD 관련 함수
 
+        ---
+        # 함수 설명
+            - user_list : user 객체의 리스트를 리턴
+            - add_User : 회원가입
+    """
     serializer_class = UserSerializer   # 이 클래스형 view 에서 사용할 시리얼라이저를 선언
 
     def get_queryset(self):
@@ -76,7 +83,14 @@ class UserViewSet(viewsets.GenericViewSet,
 class EmailViewSet(viewsets.GenericViewSet,
                    mixins.ListModelMixin,
                    View):
+    """
+        이메일 관련 함수
 
+        ---
+        # 함수 설명
+            - email_vaild_check : 이메일 중복 체크 결과를 리턴하는 함수
+            - delete_user : 해당 이메일에 해당하는 user 탈퇴
+    """
     serializer_class = UserSerializer
 
     def email_vaild_check(self, *args, **kwargs):
@@ -110,7 +124,12 @@ class EmailViewSet(viewsets.GenericViewSet,
 class NickNameViewSet(viewsets.GenericViewSet,
                       mixins.ListModelMixin,
                       View):
+    """
+        닉네임 중복 체크 함수
 
+        ---
+
+    """
     serializer_class = UserSerializer
 
     def nickname_vaild_check(self, *args, **kwargs):
@@ -131,6 +150,11 @@ def message(domain, uidb64, token):     # 보낼 메세지 내용 생성 함수.
 class Activate(viewsets.GenericViewSet,
                mixins.ListModelMixin,
                View):
+    """
+        이메일 인증 토큰 validation 함수
+
+        ---
+    """
     serializer_class = UserSerializer
 
     def get(self, request, uidb64, token):
@@ -158,7 +182,11 @@ class Activate(viewsets.GenericViewSet,
 class LoginViewSet(viewsets.GenericViewSet,
                    mixins.ListModelMixin,
                    View):
+    """
+        로그인 함수
 
+        ---
+    """
     @swagger_auto_schema(request_body=UserBodySerializer)
     def login_check(self, request):
 
@@ -185,6 +213,11 @@ class LoginViewSet(viewsets.GenericViewSet,
 class LogoutViewSet(viewsets.GenericViewSet,
                     mixins.ListModelMixin,
                     View):
+    """
+        로그아웃 함수
+
+        ---
+    """
 
     def logout_check(self, *args, **kwargs):
 
@@ -196,6 +229,14 @@ class LogoutViewSet(viewsets.GenericViewSet,
 class SearchLogViewSet(viewsets.GenericViewSet,
                        mixins.ListModelMixin,
                        View):
+    """
+        검색 로그 관련 함수
+
+        ---
+        # 함수 설명
+            - saveSearchLog : 검색 로그를 저장한다.
+            - serveSearchLog : 이메일에 해당하는 검색 로그를 조회한다.
+    """
     serializer_class = SearchLogSerializer
 
     @swagger_auto_schema(request_body=SearchLogBodySerializer)
