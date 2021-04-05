@@ -10,19 +10,13 @@
           <div v-if="wid > 1000" class="titles">
             <p>CO-MEET</p>
             <div v-if="wid > 1000" class="subtitles">
-              <p> 안전한 약속장소 추천</p>
-            </div>
-            <div v-else class="sub_mob_titles">
-              <sub> 안전한 약속장소 추천</sub>
+              <p id=comment> 안전한 약속장소 추천</p>
             </div>
           </div>
           <div v-else class="mob_titles" style="">
             <p>CO-MEET</p>
             <div v-if="wid > 1000" class="subtitles">
               <p> 안전한 약속장소 추천</p>
-            </div>
-            <div v-else class="sub_mob_titles">
-              <sub> 안전한 약속장소 추천</sub>
             </div>
           </div>
         </div>
@@ -142,7 +136,7 @@ body {
   position: relative;
   font-size: 3rem;
   margin-left: 0.1em;
-  color : #ffa38c;
+  color : #ffeae6;
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
   font-family: "Bahnschrift Condensed";
@@ -191,5 +185,8 @@ body {
   position: fixed;
   top: 0;
   left: 0;
+}
+#comment {
+  text-shadow: #352824;
 }
 </style>
