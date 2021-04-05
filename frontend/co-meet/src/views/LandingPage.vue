@@ -9,9 +9,15 @@
         <div>
           <div v-if="wid > 1000" class="titles">
             <p>CO-MEET</p>
+            <div class="subtitles">
+              <sub> asdfasdf</sub>
+            </div>
           </div>
           <div v-else class="mob_titles" style="">
             <p>CO-MEET</p>
+            <div class="sub_mob_titles">
+              <sub> asdfasdf</sub>
+            </div>
           </div>
         </div>
       </v-col>
@@ -120,6 +126,32 @@ body {
   bottom: -100%;
   position: absolute;
   font-size: 6rem;
+  color : #ffa38c;
+  text-shadow: 4px 4px 4px rgb(214, 107, 107);
+  z-index: 1;
+  font-family: "Bahnschrift Condensed";
+  z-index: 1;
+}
+.subtitles {
+  position: absolute;
+  font-size: 5rem;
+  /* color: #22223b;
+  opacity: 0.75;
+  text-shadow: 4px 4px 4px gray; */
+  color : #ffa38c;
+  text-shadow: 4px 4px 4px rgb(214, 107, 107);
+  z-index: 1;
+  font-family: "Bahnschrift Condensed";
+  margin-left: 50px;
+  margin-top: 150px;
+  bottom: -100%;
+  animation: anim 2s forwards 2s;
+}
+.sub_mob_titles {
+  animation: anim2 2s forwards 2s;
+  bottom: -100%;
+  position: absolute;
+  font-size: 3rem;
   color : #ffa38c;
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
