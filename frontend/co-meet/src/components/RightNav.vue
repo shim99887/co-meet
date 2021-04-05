@@ -35,7 +35,7 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-      <button @click="drawerMove" style="font-family:verdana;font-size:35px;position:fixed;right:0px;background:#fadde1;">x</button>
+      <button @click="drawerMove" style="font-family:verdana;font-size:35px;position:fixed;right:0px;top:50%;background:#fadde1;">x</button>
     </v-navigation-drawer>
   </div>
 </template>

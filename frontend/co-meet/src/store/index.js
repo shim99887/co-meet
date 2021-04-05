@@ -14,6 +14,7 @@ export default new Vuex.Store({
     gugunData: [],
     recomCity: [],
     mapToggle: false,
+    reRecom : false,
     accessToken: localStorage.getItem('accessToken'),
     userEmail: localStorage.getItem('email'),
     userName: localStorage.getItem('nickname'),
@@ -43,9 +44,15 @@ export default new Vuex.Store({
     get_mapToggle(state) {
       return state.mapToggle
     },
+    get_reRecom(state){
+      return state.reRecom;
+    },
     get_resultCity(state) {
       return state.recomCity
     },
+    get_onSearching(state) {
+      return state.onSearching
+    }
   },
   mutations: {
     LOGIN(state){
@@ -64,6 +71,12 @@ export default new Vuex.Store({
     MAPTOGGLE(state) {
       state.mapToggle = !state.mapToggle
     },
+    MAPCANCLE(state) {
+      state.mapToggle = false;
+      state.gugun= [];
+      state.gugunData= [];
+      state.recomCity= [];
+    },
     ON_SEARCHING(state) {
       state.onSearching = true
     },
@@ -76,6 +89,12 @@ export default new Vuex.Store({
     PUT_RESULT(state, location) {
       state.recomCity.push(location)
     },
+    ON_RERECOM(state){
+      state.reRecom = true;
+    },
+    OFF_RERECOM(state){
+      state.reRecom = false;
+    }
   },
   actions: {
     async GET_RECOM(context, city) {
@@ -97,6 +116,7 @@ export default new Vuex.Store({
         console.log(this.state.recomCity)
       } catch(err) {
         console.log(err)
+        context.commit("OFF_SEARCHING")
       }
     },
     async GET_CORONA_PER_CITY(context) {
@@ -115,9 +135,11 @@ export default new Vuex.Store({
         
       } catch (err) {
         console.log(err)
+        context.commit("OFF_SEARCHING")
       }
     },
     LOGIN(context, user){
+      context.commit("ON_SEARCHING")
       const params = new URLSearchParams();
       params.append('email', user.email);
       params.append('password', user.password);
@@ -128,8 +150,10 @@ export default new Vuex.Store({
         localStorage.setItem('nickname', response.data.nickname);
         localStorage.setItem('email', response.data.email);
         context.commit('LOGIN');
+        context.commit("OFF_SEARCHING")
       })
       .catch(() => {
+        context.commit("OFF_SEARCHING")
       })     
     },
     LOGOUT(context, email){
@@ -138,6 +162,7 @@ export default new Vuex.Store({
         console.log(response);
       })
       .catch(error => {
+        context.commit("OFF_SEARCHING")
         alert(error);
       })
 

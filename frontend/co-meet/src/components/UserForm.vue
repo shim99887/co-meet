@@ -76,23 +76,39 @@
             >
           </v-col>
         </v-row>
-        <v-text-field
-          type="password"
-          label="Password"
-          v-model="user.password"
-          :rules="pwdRules"
-        />
-        <v-text-field
-          type="password"
-          label="Password Confirm"
-          :rules="pwdChkRules"
-          v-model="pwdChk"
-        />
         <v-row align="center">
-          <v-col cols="1">
+          <v-col cols="10" style="padding:0px;">
+
+            <v-text-field
+              type="password"
+              label="Password"
+              v-model="user.password"
+              :rules="pwdRules"
+              style="padding:0px;"
+            />
+          </v-col>
+          <v-col cols="2">
+            <v-btn width="40px" style="visibility:hidden;"></v-btn>
+          </v-col>
+        </v-row>
+        <v-row align="center">
+          <v-col cols="10" style="padding:0px;">
+            <v-text-field
+              type="password"
+              label="Password Confirm"
+              :rules="pwdChkRules"
+              v-model="pwdChk"
+            />
+          </v-col>
+          <v-col cols="2">
+            <v-btn width="40px" style="visibility:hidden;"></v-btn> 
+          </v-col>
+        </v-row>
+        <v-row align="center">
+          <v-col cols="1" style="padding:0px;">
             <v-checkbox />
           </v-col>
-          <v-col cols="6" style="font-size:13px;">
+          <v-col cols="6" style="font-size:13px;padding:0px;">
             Terms and conditions
           </v-col>
         </v-row>
@@ -189,6 +205,7 @@ export default {
       }, 1500);
     },
     registComp() {
+      this.$store.commit("ON_SEARCHING")
       if (
         this.nameChecked &&
         this.emailChecked &&
@@ -205,6 +222,7 @@ export default {
                 "회원가입을 성공했습니다. 가입하신 아이디로 이메일을 발송했으니 인증 후 이용가능합니다.",
               timer: 3000,
             });
+            this.$store.commit("OFF_SEARCHING")
           })
           .catch((error) => {
             this.$fire({
@@ -221,6 +239,7 @@ export default {
             title: "닉네임 중복 미체크",
             timer: 3000,
           });
+          this.$store.commit("OFF_SEARCHING")
         }
         if (!this.emailChecked) {
           this.$fire({
@@ -228,6 +247,7 @@ export default {
             title: "이메일 중복 미체크",
             timer: 3000,
           });
+          this.$store.commit("OFF_SEARCHING")
         }
         if (!this.user.password) {
           this.$fire({
@@ -235,13 +255,15 @@ export default {
             title: "비밀번호를 입력해주세요",
             timer: 3000,
           });
+          this.$store.commit("OFF_SEARCHING")
         }
         if (this.user.password != this.pwdChk) {
           this.$fire({
             type: "error",
             title: "비밀번호가 일치하지 않습니다.",
             timer: 3000,
-          });
+          })
+          this.$store.commit("OFF_SEARCHING")
         }
       }
     },
@@ -306,6 +328,9 @@ export default {
   padding: 0;
   font-family: sans-serif;
 }
+.v-btn{
+  box-shadow: 0.5px 0.5px 0.5px;
+}
 
 .wrap {
   height: 100%;
@@ -323,6 +348,7 @@ export default {
   background: #fff;
   padding: 5px;
   overflow: hidden;
+  box-shadow: 3px 3px 3px;
 }
 .togglebtn {
   padding: 10px 30px;
