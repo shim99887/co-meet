@@ -1,18 +1,16 @@
+import jwt
+import json
+import bcrypt
+
 from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import render
 from django.http import HttpResponse, Http404, JsonResponse
-# from django.http.response import JsonResponse
 from django.views import View
 from user.models import User
 from .serializers import UserSerializer, UserBodySerializer
 from drf_yasg.utils import swagger_auto_schema
-
-
-import jwt
-import json
-import bcrypt
 from .token import user_activation_token
 from .text import message
 from comeet.settings import SECRET_KEY, REDIRECT_PAGE
@@ -42,33 +40,34 @@ class UserViewSet(viewsets.GenericViewSet,
 
     @swagger_auto_schema(request_body=UserBodySerializer)   # post에만 붙일 수 있음.
     def add_User(self, request):
-        # print(request.data['email'])
-        Users = User.objects.filter(email=request.data['email'])
-        # if Users.exists():
-        #     return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+        Users = User.objects.filter(
+            email=request.data['email'])    # 해당하는 이메일이 있는지 check
 
-        password = request.data['password'].encode('utf-8')
+        password = request.data['password'].encode('utf-8')     # pwd 암호화.
         password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())
         password_crypt = password_crypt.decode('utf-8')
 
         request.data['password'] = password_crypt
         User_serializer = UserSerializer(data=request.data, partial=True)
 
-        if not User_serializer.is_valid():
+        if not User_serializer.is_valid():  # request data가 User_serializer에 맞는 form인지 확인.
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
-        Users = User_serializer.save()
+        Users = User_serializer.save()  # DB에 회원정보 저장.
 
-        domain = "j4a203.p.ssafy.io"
+        # token발급 후 사용자의 email로 보낼 링크 및 메세지 작성
+        domain = "j4a203.p.ssafy.io"        # url중 host부분
+        # email을 url로 안전하게 전달하기 위한 작업.
         uidb64 = urlsafe_base64_encode(force_bytes(request.data['email']))
+        # User의 email token생성.
         token = user_activation_token.make_token(Users)
-        message_data = message(domain, uidb64, token)
+        message_data = message(domain, uidb64, token)   # email 인증 링크 생성.
 
-        mail_title = "이메일 인증을 완료해주세요"
+        mail_title = "이메일 인증을 완료해주세요"   # email 내용 생성.
         mail_to = request.data['email']
         email = EmailMessage(subject=mail_title,
                              body=message_data, to=[mail_to])
-        email.send()
+        email.send()        # email 발송
 
         return Response(UserSerializer(User).data, status=status.HTTP_201_CREATED)
 
@@ -81,23 +80,27 @@ class EmailViewSet(viewsets.GenericViewSet,
 
     def email_vaild_check(self, *args, **kwargs):
 
+        # 해당 email이 DB에 존재하는지 check
         Emails = User.objects.filter(email=self.kwargs['email'])
 
-        if Emails.exists():
+        if Emails.exists():     # 존재한다면 에러 status전달.
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
         return Response(True, status=status.HTTP_200_OK)
 
     def delete_user(self, *args, **kwargs):
 
+        # 삭제할 User의 email을 DB에서 조회.
         Emails = User.objects.filter(email=self.kwargs['email'])
 
-        if not Emails.exists():
+        if not Emails.exists():     # 삭제할 User의 email이 없다면 에러 status전달.
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
+        # 사용자가 작성한 form이 email form이 아니라면 에러 status 전달.
         if not "@" in self.kwargs['email']:
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
+        # DB에서 User의 email을 삭제.
         User.objects.filter(email=self.kwargs['email']).delete()
 
         return Response(True, status=status.HTTP_200_OK)
@@ -111,29 +114,16 @@ class NickNameViewSet(viewsets.GenericViewSet,
 
     def nickname_vaild_check(self, *args, **kwargs):
 
+        # 사용자가 작성한 닉네임이 있는지 확인.
         NickNames = User.objects.filter(nickname=self.kwargs['nickname'])
 
-        if NickNames.exists():
+        if NickNames.exists():      # DB에 해당 닉네임이 있다면 에러 status 전달.
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
         return Response(True, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(request_body=UserBodySerializer)
-    def change_nickname(self, request):
 
-        return Response(True, status=status.HTTP_200_OK)
-
-
-# def send_email(request):
-#     subject = "message"
-#     to = ["dhpassion@naver.com"]
-#     from_email = "comeetmanager@gmail.com"
-#     message = "메시지 테스트"
-#     EmailMessage(subject=subject, body=message,
-#                  to=to, from_email=from_email).send()
-
-
-def message(domain, uidb64, token):
+def message(domain, uidb64, token):     # 보낼 메세지 내용 생성 함수.
     return f"아래 링크를 클릭하면 회원가입 인증이 완료됩니다.\n\n회원가입 링크 : http://{domain}/user/activate/{uidb64}/{token}\n\n감사합니다."
 
 
@@ -144,14 +134,18 @@ class Activate(viewsets.GenericViewSet,
 
     def get(self, request, uidb64, token):
         try:
+            # url에 담긴 암호화된 email정보 복호화 과정.
             email = force_text(urlsafe_base64_decode(uidb64))
+            # 해당 email을 DB에서 조회
             user = User.objects.get(email=email)
+            # token이 맞다면 auth값을 false->true로 변경.
             if user_activation_token.check_token(user, token):
                 user.is_auth = True
                 user.save()
 
                 return redirect(REDIRECT_PAGE)
 
+            # token이 맞지 않다면 해당 에러 status전달.
             return JsonResponse({"message": "AUTH FAIL"}, status=400)
 
         except ValidationError:
@@ -167,15 +161,19 @@ class LoginViewSet(viewsets.GenericViewSet,
     @swagger_auto_schema(request_body=UserBodySerializer)
     def login_check(self, request):
 
+        # 해당 email을 DB에서 조회.
         Users = User.objects.filter(email=request.data['email'])
 
-        password = request.data['password'].encode('utf-8')
+        password = request.data['password'].encode(
+            'utf-8')  # 암호화된 pwd와 비교하기 위해 암호화 작업
 
+        # DB에 저장된 암호와 동일한지 판단.
         if bcrypt.checkpw(password, Users[0].password.encode('utf-8')):
 
-            token = jwt.encode(
+            token = jwt.encode(     # email을 기준으로 jwt token생성.
                 {'email': request.data['email']}, SECRET_KEY, algorithm="HS256")
 
+            # redis에 60분동안 token저장.
             cache.set(request.data['email'], token, 60*60)
 
             return Response({"email": Users[0].email, "nickname": Users[0].nickname, "token": token}, status=status.HTTP_200_OK)
@@ -189,6 +187,6 @@ class LogoutViewSet(viewsets.GenericViewSet,
 
     def logout_check(self, *args, **kwargs):
 
-        cache.delete(self.kwargs['email'])
+        cache.delete(self.kwargs['email'])  # redis에서 캐시 삭제
 
         return Response(True, status=status.HTTP_200_OK)
