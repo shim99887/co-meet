@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user.apps.UserConfig',
     'api.apps.ApiConfig',
+    'recomm.apps.RecommConfig',
     'corsheaders',
     'drf_yasg',  # Swagger
     'rest_framework',
@@ -155,7 +156,7 @@ REDIRECT_PAGE = 'https://j4a203.p.ssafy.io'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.fAttributeSimilarityValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
