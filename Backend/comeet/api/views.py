@@ -18,9 +18,22 @@ import io
 import urllib
 import base64
 from datetime import datetime, timedelta, date
+from drf_yasg.utils import swagger_auto_schema
 
 class CoronaSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    """
+        코로나 데이터를 레디스에 저장하는 API
 
+        ---
+        # 내용
+            - serial_number : 연번
+            - patient_number : 환자번호
+            - date : 날짜
+            - gugun : 군, 구
+            - overseas : 해외 이력
+            - route : 감염 경로
+            - discharge : 퇴원, 사망 여부
+    """
     def set_corona(self, *args, **kwargs):
         # MongoDB에서 코로나 데이터 받기, queryset 형태로 데이터 반환 
         corona_data = CoronaData.objects.all()
@@ -35,7 +48,19 @@ class CoronaSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         return JsonResponse({"message": "CORONA_SUCCESS"}, status=200)
 
 class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    """
+        유동인구 데이터를 레디스에 저장하는 API
 
+        ---
+        # 내용
+            - date : 날짜
+            - per_time : 1시간 단위의 시간
+            - age_range : 나이대
+            - sex : 성별
+            - city : 시
+            - gugun : 군, 구
+            - popl : 유동인구수
+    """
     def set_fpopl(self, *args, **kwargs):
         # MongoDB에서 유동인구 데이터 받기, queryset 형태로 데이터 반환 
         fpopl_data = Fpopl.objects.all()
@@ -51,6 +76,14 @@ class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
 class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     # 코로나 리스트 반환 
+    """
+        이전 달의 코로나 데이터를 전달하는 API
+
+        ---
+        # 내용
+            - serial_number : 연번(해당 달의 총 감염자 수)
+            - gugun : 군, 구
+    """
     def get_corona_list(self, *args, **kwargs):
         # 한 달전의 데이터를 전달하기 위해 날짜 설정
         today = date.today()
@@ -75,9 +108,21 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         corona_json = df.to_dict() # Json 데이터로 전달하기 위해 dictionary로 변환
 
         return JsonResponse(corona_json, safe=False)
-
 class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     # 유동인구 리스트 반환
+    """
+        2달 전의 유동인구 데이터를 반환하는 API (SKT 유동인구 데이터 기준)
+
+        ---
+        # 내용
+            - date : 날짜
+            - per_time : 1시간 단위의 시간
+            - age_range : 나이대
+            - sex : 성별
+            - city : 시
+            - gugun : 군, 구
+            - popl : 유동인구수
+    """
     def get_fpopl_list(self, *args, **kwargs):
         # 두 달전의 유동인구 데이터를 전달하기 위해 날짜 설정
         today = date.today()
@@ -100,6 +145,17 @@ class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
 class FpoplDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     # 유동인구 데이터 분석 함수
+    """
+        유동인구 데이터 분석 함수
+
+        ---
+        # 내용
+            - 전체 데이터 뽑아오기 - fpopl_data1 과 fpopl_data2
+            - 주요 시간대 : 점심시간, 저녁시간 데이터 뽑아오기 - fpopl_data3 과 fpopl_data4 
+            - 나이대 : 20 - 30대 데이터 뽑아오기 - fpopl_data5
+            - 나이대 : 20대 - 40대 데이터 뽑아오기 - fpopl_data6 (현재 이 부분)
+            - 분석 내용을 사진으로 저장
+    """
     def fpopl_data_analysis(self, *args, **kwargs):
         # 그래프의 한글 깨짐 방지, 폰트 연결
         f_path = "c:/Windows/Fonts/malgun.ttf"
@@ -169,7 +225,13 @@ class FpoplDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         return Response(status=200)
 
 class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
+    """
+        코로나 데이터 분석 함수
 
+        ---
+        # 내용
+            - 
+    """
     def corona_data_analysis(self, *args, **kwargs):
         f_path = "c:/Windows/Fonts/malgun.ttf"
         font_name = fm.FontProperties(fname=f_path).get_name()
