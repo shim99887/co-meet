@@ -71,23 +71,24 @@ export default {
 </script>
 
 <style scoped>
+
   :root {
     --navbar--text-color: #ffb6c1;
   }
   #navbar {
     z-index: 1;
-    position: absolute;
-    top: -100%;
-    left: 2%;
-    width: 93.5vw;
     display: flex;
     justify-content: space-between;
     padding: 0.6rem;
     margin-right: auto;
     margin-left: auto;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.5);
     border-radius: 5px;
     animation: anim4 2.0s forwards 1.0s;
+    position: absolute;
+    left: 9.5%;
+    width: 81%;
+    font-family: 'Gugi', cursive;
   }
   @keyframes anim4 {
   from {
@@ -155,6 +156,8 @@ export default {
     #navbar {
       flex-direction: column;
       background-color: rgba(0, 0, 0, 0.9);
+      width: 96%;
+      left: 2%;
     }
     .navbar__toggle {
       display: block !important;

@@ -1,4 +1,11 @@
 <template>
+  <div class="recom-body">
+    <div class="banner">
+      <h3>장소 추천 페이지</h3>
+      <br>
+      <p>서울시의 장소들을 입력하시면, 안전한 장소를 추천해드립니다. <br />
+      또한 현 지역의 대한 자료는 하단에 안내해드립니다.</p>
+    </div>
   <div class="address">
     <section class="location">
       <MglMap
@@ -31,37 +38,42 @@
           <h2 class="explain__title">
             약속장소에 적합한 장소를 추천해드립니다
           </h2>
-          <h4 class="explain__description">
+          <!-- <h4 class="explain__description">
             현재 위치 또는<br />직접 현재 위치를 입력하실 수 있습니다.<br />
             <b
               >한 가지의 방법을 선택하시면, 다른 한가지 방법은 사용하실 수
               없습니다.</b
             >
-          </h4>
+          </h4> -->
+          
         </div>
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
+        <section class="location__selection">
         <button
-          href="#"
           class="location__my-location text-bold"
           @click="findCurrentLocation"
         >
           내 현재 위치
         </button>
+          {{latitude}}
+          {{longitude}}
+          {{textContent}}
         <div class="text-center or-text">
-          <b>혹은</b>
+          <img src="../assets/map.gif" alt="map gif" class="map-gif">
         </div>
-        <div class="search-location">
           <div v-if="addrList.length > 0">
             <v-chip
-            color="pink"
+              color="#ffb6c1"
+              style="margin: 8px 12px;"
               close
               close-icon="mdi-close-outline"
               v-for="(addr, index) in addrList"
               :key="index"
               @click:close="temp(index)"
-              >{{ addr.juso }}</v-chip
-            >
+              >{{ addr }}
+            </v-chip>
           </div>
+        <div class="search-location">
           <v-dialog v-model="dialog" width="500">
             <template v-slot:activator="{ on, attrs }">
               <input
@@ -78,7 +90,8 @@
             </v-card>
           </v-dialog>
         </div>
-        <div class="terms">
+        </section>
+                <div class="terms">
           <v-dialog
             v-model="dialogTerms"
             fullscreen
@@ -86,13 +99,12 @@
             transition="dialog-bottom-transition"
           >
             <template v-slot:activator="{ on, attrs }">
-              <button
+              <a
                 v-bind="attrs"
                 v-on="on"
-                class="location__terms btn text-bold"
+                class="location__terms"
               >
-                개인 정보 이용 동의서
-              </button>
+                개인 정보 이용 동의서</a>
             </template>
             <v-card>
               <v-toolbar dark color="#ffb6c1">
@@ -153,15 +165,16 @@
             class="terms-checkbox"
             v-model="agreed"
           />
-          <label for="agree">동의</label>
+          <label for="agree" class="checkbox-label">동의</label>
         </div>
         <button href="#" class="btn terms__recom text-bold" @click="getRecom">
           약속 장소 추천 받기 !
         </button>
+
       </div>
     </section>
 
-    <section class="location-list">
+    <section class="location-list" v-if="gugun.length">
       <div class="list__header">
         약속 장소 리스트
       </div>
@@ -179,6 +192,7 @@
         </div> -->
     </section>
   </div>
+</div>
 </template>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js"></script>
@@ -188,6 +202,7 @@ import DaumPostcode from "vuejs-daum-postcode";
 import Mapbox from "mapbox-gl";
 import { MglMap, MglMarker, MglPopup } from "vue-mapbox";
 import axios from 'axios';
+import VueGeolocationApi from 'vue-geolocation-api'
 
 export default {
   components: {
@@ -208,7 +223,12 @@ export default {
       location: "",
       dialog: false,
       selectMethod: "",
+      //여기에 주소가 저장되서 이걸로 getRecom함수에 넣어야함. (03-31일 현재, location에 보낼 '구' 하나만 저장되어서 요청 보냄)
       addrList: [],
+
+      latitude: '',
+      longitude: '',
+      textContent: '',
     };
   },
 
@@ -255,35 +275,48 @@ export default {
     handleAddress: function(data) {
       this.location = data.jibunAddress;
       console.log(data);
-      var parseString = require('xml2js').parseString;
-      var key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
-      var jsonTemp = {};
-      var self = this;
-      axios.get('http://apis.vworld.kr/jibun2coord.do?q=' + data.jibunAddress + "&format=json&apiKey=" + key)
-      .then(response => {
-        parseString(response.data, function(err, result){
-          // console.log(result);
+      // var parseString = require('xml2js').parseString;
+      // var key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
+      // const jsonTemp = {};
+      // var self = this;
+      // axios.get('http://apis.vworld.kr/jibun2coord.do?q=' + data.jibunAddress + "&format=json&apiKey=" + key)
+      // .then(response => {
+      //   parseString(response.data, function(err, result){
+      //     // console.log(result);
 
-          // console.log(result.result.EPSG_4326_Y[0]);
-          // console.log(result.result.EPSG_4326_X[0]);
-          // console.log(result.result.JUSO[0]);
-          jsonTemp = {
-            juso: result.result.JUSO[0],
-            lat : result.result.EPSG_4326_X[0],
-            lng : result.result.EPSG_4326_Y[0]
-          };
-        self.addrList.push(jsonTemp);
-        })
-      })
-      .catch(error => { 
-        alert(error);
-      })
+      //     // console.log(result.result.EPSG_4326_Y[0]);
+      //     // console.log(result.result.EPSG_4326_X[0]);
+      //     // console.log(result.result.JUSO[0]);
+      //     jsonTemp = {
+      //       juso: result.result.JUSO[0],
+      //       lat : result.result.EPSG_4326_X[0],
+      //       lng : result.result.EPSG_4326_Y[0]
+      //     };
+      this.addrList.push(data.jibunAddress);
+
+      //   })
+      // })
+      // .catch(error => { 
+      //   alert(error);
+      // })
       console.log(this.addrList);
       this.dialog = false;
     },
     findCurrentLocation() {
       console.log("click cur location");
       this.selectMethod = "currentLocation";
+      if(!("geolocation" in navigator)) {
+        this.textContent = 'Geolocation is not available'
+        return
+      }
+      this.textContent = 'Locating...'
+      navigator.geolocation.getCurrentPosition(pos => {
+        this.latitude = pos.coords.latitude;
+        this.longitude = pos.coords.longitude;
+        this.textContent = 'Your location data is ' + this.latitude + ', ' + this.longitude
+        }, err => {
+        this.textContent = err.message;
+        })
     },
     findInputLocation() {
       console.log("click input location");
@@ -299,6 +332,9 @@ export default {
     },
     recomCity() {
       return this.$store.getters.get_result;
+    },
+    gugun() {
+      return this.$store.getters.get_gugun
     },
   },
   watch: {
@@ -322,37 +358,70 @@ export default {
 </script>
 
 <style>
-.explain__title,
-.explain__description,
-.search-location,
+.banner{
+  margin-top: 120px;
+  padding: 18px 22px;
+  background-image: linear-gradient( rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5) ), url("../assets/banner_map.webp");
+  color:#ffffff;
+  text-align: center;
+  border-radius: 2px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.explain {
+  font-family: 'Do Hyeon', sans-serif;
+  font-size: 24px;
+  border-left: 5px solid #e0958d;
+  padding-left: 12px;
+}
+.explain__description {
+  margin: 16px 0;
+}
+.map-gif {
+  display: block;
+  height: auto;
+  border-radius: 10px;
+  width: 18vw;
+}
 .terms {
   padding: 2%;
-  border-bottom: 2px solid #ffb6c1;
 }
 .text-bold {
   font-weight: 600;
 }
 .address {
-  margin-top: 100px;
+  
   display: flex;
   justify-content: space-between;
 }
 .location {
+  margin-top: 20px;
   padding: 10px 22px;
-  width: 55%;
+  width: 100%;
   border: 3px solid #ffb6c1;
   border-radius: 5px;
 }
 .location__terms {
   margin-right: 3%;
+  text-decoration: underline;
+  color: grey !important;
+}
+.location__selection {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-bottom: 46px;
+  margin-top: 32px
 }
 .location__my-location {
   display: block;
-  width: 60%;
-  border: 1px solid #41b6e6;
+  border: 2px solid #41b6e6;
+  padding: 8px 16px;
   border-radius: 5px;
-  margin: 10px auto;
-  padding: 10px 0;
+}
+.or-text {
+  display: inline-block;
 }
 .location__my-location:hover {
   background-color: #41b6e6;
@@ -360,8 +429,7 @@ export default {
   box-shadow: 0.5px 0.5px grey;
 }
 .search-location {
-  display: flex;
-  justify-content: space-evenly;
+  display: inline-block;
 }
 .location-text {
   background-color: gainsboro;
@@ -370,21 +438,61 @@ export default {
   margin-right: 1em;
 }
 .btn {
-  border: 1px solid #001871;
-  border-radius: 5px;
+  border: 2px solid #ffb6c1;
   padding: 8px 16px;
+  border-radius: 5px;
 }
 .btn:hover {
-  background-color: #001871;
-  color: #eeeeee;
+  background-color: #ffb6c1;
+  color: #fff;
   box-shadow: 0.5px 0.5px grey;
 }
 .terms {
   padding: 12px;
+  text-align: center;
 }
+input[type="checkbox"] {
+  display: none;
+}
+.checkbox-label {
+  position: relative;
+  margin-left: 28px;
+  font-size: 16px;
+}
+.checkbox-label:hover {
+  cursor: pointer;
+}
+.checkbox-label::before{
+  content: "";
+  background-image: url("../assets/check-circle.svg");
+  background-position: center;
+  background-size: contain;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  left: -26px;
+  top: -3px;
+
+  transform: scale(0) rotateZ(180deg);
+  transition: all 0.4s cubic-bezier(0.54, 0.01, 0, 1.49);
+}
+input[type="checkbox"]:checked + .checkbox-label::before {
+  transform: scale(1) rotateZ(0deg);
+}
+.checkbox-label::after{
+  content: "";
+  border: 2px solid #27ae60;
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  left: -25px;
+  top: -2px;
+  border-radius: 50%;
+}
+
 .terms__recom {
   display: block;
-  margin: 3% auto 0 auto;
+  margin: 1.5% auto 3% auto;
 }
 .terms__body {
   padding: 2rem;
@@ -400,6 +508,7 @@ export default {
   width: 40%;
   border: 3px solid #ec8a8a;
   border-radius: 5px;
+  margin-left: 1.5rem;
 }
 
 .list__header {
@@ -424,17 +533,30 @@ export default {
   font-size: 0.9em;
 }
 @media screen and (max-width: 48rem) {
+  .recom-body{
+    
+  }
   .address {
-    margin-top: 100px;
     display: flex;
     flex-direction: column;
   }
   .location {
     width: 100%;
     margin-bottom: 5%;
+    padding: 0;
+    margin-top: 5%;
+    border: 3px solid #ffb6c1;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+  }
+  .explain{
+    border-left: none;
+    padding-left: 0;
   }
   .location-list {
     width: 100%;
+    margin-left: 0
   }
 }
 </style>
