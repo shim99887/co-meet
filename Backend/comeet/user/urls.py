@@ -8,13 +8,9 @@ urlpatterns = [
     path('', UserViewSet.as_view(
         {"get": "list", "post": "add_User"}), name="User"),
 
-    # get : 중복된 email 확인
+    # get : 중복된 email 확인, delete : 회원 탈퇴 시 User 정보 추가.
     path('email/<email>', EmailViewSet.as_view(
-        {"get": "email_vaild_check"}), name="Email"),
-
-    # delete : 회원 탈퇴 시 User 정보 추가.
-    path('<email>', EmailViewSet.as_view(
-        {"delete": "delete_user"}), name="Email"),
+        {"get": "email_vaild_check", "delete": "delete_user"}), name="Email"),
 
     # get : 중복된 Nickname 확인
     path('nickname/<nickname>', NickNameViewSet.as_view(
@@ -32,9 +28,11 @@ urlpatterns = [
     path('logout/<email>', LogoutViewSet.as_view(
         {"get": "logout_check"}), name="Logout"),
 
+    # post : 유저가 검색한 로그 저장.
     path('searchlog', SearchLogViewSet.as_view(
          {"post": "saveSearchLog"}), name="saveSearchLog"),
 
+    # get : 유저가 검색한 로그 조회.
     path('searchlog/<email>', SearchLogViewSet.as_view(
          {"get": "serveSearchLog"}), name="serveSearchLog")
 ]
