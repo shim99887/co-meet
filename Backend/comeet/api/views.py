@@ -20,6 +20,7 @@ import base64
 from datetime import datetime, timedelta, date
 from drf_yasg.utils import swagger_auto_schema
 
+
 class CoronaSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     """
         코로나 데이터를 레디스에 저장하는 API
@@ -35,7 +36,7 @@ class CoronaSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             - discharge : 퇴원, 사망 여부
     """
     def set_corona(self, *args, **kwargs):
-        # MongoDB에서 코로나 데이터 받기, queryset 형태로 데이터 반환 
+        # MongoDB에서 코로나 데이터 받기, queryset 형태로 데이터 반환
         corona_data = CoronaData.objects.all()
 
         # 데이터가 존재하지 않을때 에러 처리
@@ -46,6 +47,7 @@ class CoronaSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         cache.set("corona_data", corona_data, 24 * 60 * 60)
 
         return JsonResponse({"message": "CORONA_SUCCESS"}, status=200)
+
 
 class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     """
@@ -62,7 +64,7 @@ class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             - popl : 유동인구수
     """
     def set_fpopl(self, *args, **kwargs):
-        # MongoDB에서 유동인구 데이터 받기, queryset 형태로 데이터 반환 
+        # MongoDB에서 유동인구 데이터 받기, queryset 형태로 데이터 반환
         fpopl_data = Fpopl.objects.all()
 
         # 데이터가 존재하지 않을때 에러 처리
@@ -73,6 +75,7 @@ class FpoplSet(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         cache.set("fpopl_data", fpopl_data, 24 * 60 * 60)
 
         return JsonResponse({'message': 'FPOPL_SUCCESS'}, status=200)
+
 
 class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     # 코로나 리스트 반환 
@@ -92,11 +95,12 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             previous_yymm = str(today.year - 1) + "-" + str(today.month + 11)
         elif today.month > 1 and today.month < 11:
             previous_yymm = str(today.year) + "-0" + str(today.month - 1)
-        else :
-           previous_yymm = str(today.year) + "-" + str(today.month - 1)
-        
+        else:
+            previous_yymm = str(today.year) + "-" + str(today.month - 1)
+
         # 코로나 데이터를 DB에서 검색
-        corona_queryset = CoronaData.objects.filter(date__contains=previous_yymm)
+        corona_queryset = CoronaData.objects.filter(
+            date__contains=previous_yymm)
 
         # 구군마다 전체 분포표(확진자 수 카운트)
         df = pd.DataFrame(
@@ -105,9 +109,10 @@ class CoronaList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         df = df.drop(index=[8, 26], axis=0)  # 기타, 타시도 삭제
 
-        corona_json = df.to_dict() # Json 데이터로 전달하기 위해 dictionary로 변환
+        corona_json = df.to_dict()  # Json 데이터로 전달하기 위해 dictionary로 변환
 
         return JsonResponse(corona_json, safe=False)
+
 class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     # 유동인구 리스트 반환
     """
@@ -131,17 +136,19 @@ class FpoplList(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             previous_yymm = str(today.year - 1) + str(today.month + 10)
         elif today.month > 2 and today.month < 12:
             previous_yymm = str(today.year) + "0" + str(today.month - 2)
-        else :
+        else:
             previous_yymm = str(today.year) + str(today.month - 2)
         # 유동인구 데이터를 DB에서 검색
         fpopl_queryset = Fpopl.objects.filter(date__contains=previous_yymm)
 
         # 구별, 날짜별 유동인구수 분포 DataFrame 생성
-        df = pd.DataFrame(list(fpopl_queryset.all().values("date", "gugun", "popl")))
-        
+        df = pd.DataFrame(
+            list(fpopl_queryset.all().values("date", "gugun", "popl")))
+
         # Json 데이터로 전달하기 위해 dictionary로 변환
         fpopl = df.to_dict()
         return JsonResponse(fpopl, safe=False)
+
 
 class FpoplDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     # 유동인구 데이터 분석 함수
@@ -162,7 +169,7 @@ class FpoplDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         font_name = fm.FontProperties(fname=f_path).get_name()
         plt.rc('font', family=font_name)
         plt.rc('axes', unicode_minus=False)
-        
+
         # 코로나 이전 유동인구, 이후 유동인구 데이터 뽑아오기
         # 나이대 : 20대 - 40대 데이터 뽑아오기 - fpopl_data6
         bc_data = Fpopl_BC.objects.filter(age_range__in=[20, 30, 40])
@@ -172,7 +179,7 @@ class FpoplDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         # bc_data = Fpopl_BC.objects.all()
         # ac_data = Fpopl.objects.all()
 
-        # 주요 시간대 : 점심시간, 저녁시간 데이터 뽑아오기 - fpopl_data3 과 fpopl_data4 
+        # 주요 시간대 : 점심시간, 저녁시간 데이터 뽑아오기 - fpopl_data3 과 fpopl_data4
         # bc_data = Fpopl_BC.objects.filter(per_time__in=["12", "18", "19", "20", "21", "22", "23"])
         # ac_data = Fpopl.objects.filter(per_time__in=["12", "18", "19", "20", "21", "22", "23"])
 
@@ -180,14 +187,14 @@ class FpoplDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         # bc_data = Fpopl_BC.objects.filter(age_range__in=[20, 30])
         # ac_data = Fpopl.objects.filter(age_range__in=[20, 30])
 
-        # 비교를 위해 DataFrame으로 변환 
+        # 비교를 위해 DataFrame으로 변환
         bc_df = pd.DataFrame(list(bc_data.values("date", "gugun", "popl")))
         ac_df = pd.DataFrame(list(ac_data.values("date", "gugun", "popl")))
         # 전체 데이터를 한 곳에서 볼 수 있도록 합침
         total_df = pd.concat([bc_df, ac_df], axis=0, ignore_index=True)
         # 하루의 유동인구로 표를 합침
         raw_1 = total_df.groupby(by=['date', 'gugun']).sum().reset_index()
-        # 월별 유동인구 표시를 위해 date 형식으로 변환 
+        # 월별 유동인구 표시를 위해 date 형식으로 변환
         raw_1["date"] = pd.to_datetime(raw_1["date"], format='%Y%m%d')
 
         # '연도', '월', '일' 컬럼 생성
@@ -202,7 +209,7 @@ class FpoplDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
 
         # 그래프 그리기
         raw_1 = raw_1.set_index('gugun')
-        
+
         fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(15, 15))
 
         for i, f in enumerate(raw_1.index.unique()):
@@ -224,40 +231,44 @@ class FpoplDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         plt.savefig('fpopl_data6.png')
         return Response(status=200)
 
+
 class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
     """
         코로나 데이터 분석 함수
 
         ---
         # 내용
-            - 
+            - 구군별, 월별 코로나 데이터 분석 : corona_data로 저장됨
     """
     def corona_data_analysis(self, *args, **kwargs):
+        # 그래프의 한글 깨짐 방지, 폰트 연결
         f_path = "c:/Windows/Fonts/malgun.ttf"
         font_name = fm.FontProperties(fname=f_path).get_name()
         plt.rc('font', family=font_name)
         plt.rc('axes', unicode_minus=False)
-
+        # DB에서 Corona Data 불러오기
         corona_data = CoronaData.objects.all()
-
+        # 연번, 날짜, 구군에 대한 Dataframe 작성
         corona_df = pd.DataFrame(
             list(corona_data.values("serial_number", "date", "gugun")))
-
+        # 2020-01 2020-01 2021-03-07 의 포맷을  202001, 202103와 같은 포맷으로 변경.
         corona_df['date'] = [''.join(x.split('-')[0:2])
                              for x in corona_df.date]  # 2020-01 2020-01 2021-03-07 -> 202001, 202103
-
+        # 날짜와 구군을 그룹으로 하여 카운트를 센다.
         raw_1 = corona_df.groupby(
             by=['date', 'gugun']).count().reset_index()
 
-        # 그래프 그리기
+        # 그래프를 그리고 기타와 타시도로 적힌 구군의 정보를 포함하지 않는다.
         raw_1 = raw_1.set_index('gugun')
         raw_1 = raw_1.drop('기타', axis=0)
         raw_1 = raw_1.drop('타시도', axis=0)
 
+        # raw_1을 raw_2에 복사하여 평균을 위한 그래프를 새로 그릴 데이터를 raw_2로 지정한다.
         raw_2 = raw_1
         raw_2 = raw_2.groupby(by=['date']).sum().reset_index()
         raw_2["serial_number"] = raw_2["serial_number"]/25
 
+        # 꺾은선 그래프를 그리기 위한 함수
         fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(15, 15))
 
         for i, f in enumerate(raw_1.index.unique()):
@@ -275,5 +286,6 @@ class CoronaDataAnalysis(viewsets.GenericViewSet, mixins.ListModelMixin, View):
             line21.set_title(f)
 
         fig.tight_layout()
+        # 결과값을 corona_data.png로 저장
         plt.savefig('corona_data.png')
         return Response(status=200)
