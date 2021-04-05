@@ -23,6 +23,7 @@ from django.views import View
 from user.models import User, SearchLog
 from .serializers import UserSerializer, UserBodySerializer, SearchLogSerializer, SearchLogBodySerializer
 from drf_yasg.utils import swagger_auto_schema
+import pandas as pd
 
 
 class UserViewSet(viewsets.GenericViewSet,
