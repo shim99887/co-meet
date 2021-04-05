@@ -18,6 +18,10 @@ export default new Vuex.Store({
     accessToken: localStorage.getItem('accessToken'),
     userEmail: localStorage.getItem('email'),
     userName: localStorage.getItem('nickname'),
+    targetCities: {
+      email: '123',
+      searchList: [],
+    },
   },
   getters:{
     getAccessToken(state){
@@ -94,26 +98,32 @@ export default new Vuex.Store({
     },
     OFF_RERECOM(state){
       state.reRecom = false;
-    }
+    },
+    PUT_TARGETCITIES(state, data){
+      state.targetCities.searchList.push(data)
+    },
   },
   actions: {
-    async GET_RECOM(context, city) {
+
+    async GET_RECOM(context) {
       try {
-        const res = await axios.post("https://j4a203.p.ssafy.io/api/recomm", {signgu_nm: city})
+        console.log(this.state.targetCities)
+        const res = await axios.post("https://j4a203.p.ssafy.io/recomm/recommend", this.state.targetCities)
         // 검색으로 넣은 구 
-        context.commit('PUT_CITY', city)
-        const data = res.data
-        const location = {
-          lat: data.recomm_lat,
-          lng: data.recomm_lng,
-          gu: data.signgu_nm,
-          date: data.date,
-          patients: data.patients
-        }
-        context.commit("PUT_RESULT", location)
-        context.commit("MAPTOGGLE")
-        console.log(`recomcity`)
-        console.log(this.state.recomCity)
+        console.log(res)
+        // context.commit('PUT_CITY', city)
+        // const data = res.data
+        // const location = {
+        //   lat: data.recomm_lat,
+        //   lng: data.recomm_lng,
+        //   gu: data.signgu_nm,
+        //   date: data.date,
+        //   patients: data.patients
+        // }
+        // context.commit("PUT_RESULT", location)
+        // context.commit("MAPTOGGLE")
+        // console.log(`recomcity`)
+        // console.log(this.state.recomCity)
       } catch(err) {
         console.log(err)
         context.commit("OFF_SEARCHING")
@@ -129,8 +139,8 @@ export default new Vuex.Store({
         for (let key in data.serial_number) {
           this.state.gugunData.push(data.serial_number[key])
         }
-        console.log(this.state.gugun)
-        console.log(this.state.gugunData)
+        console.log(`this.state.gugun : ${this.state.gugun}`)
+        console.log(`this.state.gugunData : ${this.state.gugunData}`)
         context.commit("OFF_SEARCHING")
         
       } catch (err) {

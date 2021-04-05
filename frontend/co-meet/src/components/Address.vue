@@ -4,7 +4,7 @@
       <h3>장소 추천 페이지</h3>
       <br>
       <p>서울시의 장소들을 입력하시면, 안전한 장소를 추천해드립니다. <br />
-      또한 현 지역의 대한 자료는 하단에 안내해드립니다.</p>
+      장소의 대한 자료는 하단에 안내해드립니다.</p>
     </div>
   <div class="address">
     <section class="location">
@@ -38,14 +38,6 @@
           <h2 class="explain__title">
             약속장소에 적합한 장소를 추천해드립니다
           </h2>
-          <!-- <h4 class="explain__description">
-            현재 위치 또는<br />직접 현재 위치를 입력하실 수 있습니다.<br />
-            <b
-              >한 가지의 방법을 선택하시면, 다른 한가지 방법은 사용하실 수
-              없습니다.</b
-            >
-          </h4> -->
-          
         </div>
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
         <section class="location__selection">
@@ -194,9 +186,9 @@
   </div>
 </div>
 </template>
+
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js"></script>
-
 <script>
 import DaumPostcode from "vuejs-daum-postcode";
 import Mapbox from "mapbox-gl";
@@ -220,15 +212,17 @@ export default {
       // mapToggle: false,
       agreed: false,
       dialogTerms: false,
-      location: "",
+      location: [],
       dialog: false,
       selectMethod: "",
       //여기에 주소가 저장되서 이걸로 getRecom함수에 넣어야함. (03-31일 현재, location에 보낼 '구' 하나만 저장되어서 요청 보냄)
       addrList: [],
-
+      //1등 후보 찍는 곳
       latitude: '',
       longitude: '',
       textContent: '',
+      //temp
+      sending: {},
     };
   },
 
@@ -240,14 +234,16 @@ export default {
     },
        getRecom () {
           if (this.agreed === true) {
-            // 구만 보내기
-            const filtering = this.location.split(' ')
-            console.log(filtering[1])
-            this.$store.commit('ON_SEARCHING')
+            // 주소를 카카오 api로 보내서 좌표로 만들기
+            this.addrList.forEach(item => {
+              this.putLatLng(item)
+            });
+            // this.$store.commit('ON_SEARCHING')
             // 장소 리스트
-            this.$store.dispatch("GET_RECOM", filtering[1])
+            this.$store.dispatch("GET_RECOM")
+
             // 지도
-            this.$store.dispatch("GET_CORONA_PER_CITY")
+            // this.$store.dispatch("GET_CORONA_PER_CITY")
           } else {
             alert("정보 이용에 동의해주세요")
           }
@@ -272,34 +268,67 @@ export default {
       this.coordinates.push([data[0].lng, data[0].lat]);
       console.log(this.coordinates);
     },
-    handleAddress: function(data) {
-      this.location = data.jibunAddress;
-      console.log(data);
-      // var parseString = require('xml2js').parseString;
-      // var key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
-      // const jsonTemp = {};
-      // var self = this;
-      // axios.get('http://apis.vworld.kr/jibun2coord.do?q=' + data.jibunAddress + "&format=json&apiKey=" + key)
+    putLatLng: function(data) {
+      var self = this;
+      const geocoder = new kakao.maps.services.Geocoder();
+      geocoder.addressSearch(data, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          const coord = new kakao.maps.LatLng(result[0].y, result[0].x);
+          const juso = data.split(' ')[1]
+          var inputData = {
+            juso: juso,
+            lat: coord.Ma,
+            lng: coord.La,
+          }
+          self.$store.commit('PUT_TARGETCITIES', inputData)
+        }
+      })
+      // console.log(this.abc)
+      // console.log(result)
+      // console.log(result)
+      // this.$store.commit('PUT_TARGETCITIES', this.abc)
+      // console.log(`result : ${result}`)
+      // console.log(this.sending)
+      // this.$store.commit('PUT_TARGETCITIES', this.sending)
+      // const parseString = require('xml2js').parseString;
+      // const key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
+      // axios.get(`http://apis.vworld.kr/jibun2coord.do?q=${data}&format=json&apiKey=${key}`)
       // .then(response => {
       //   parseString(response.data, function(err, result){
-      //     // console.log(result);
-
-      //     // console.log(result.result.EPSG_4326_Y[0]);
-      //     // console.log(result.result.EPSG_4326_X[0]);
-      //     // console.log(result.result.JUSO[0]);
-      //     jsonTemp = {
-      //       juso: result.result.JUSO[0],
-      //       lat : result.result.EPSG_4326_X[0],
-      //       lng : result.result.EPSG_4326_Y[0]
-      //     };
-      this.addrList.push(data.jibunAddress);
-
+      //     console.log(result);
       //   })
       // })
       // .catch(error => { 
-      //   alert(error);
+      //   console.log(error);
       // })
-      console.log(this.addrList);
+    },
+    handleAddress: function(data) {
+      // this.location = data.jibunAddress;
+      // console.log(data);
+      // const parseString = require('xml2js').parseString;
+      // const key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
+      // const jsonTemp = {};
+      // axios.get(`http://apis.vworld.kr/jibun2coord.do?q=${data}&format=json&apiKey=${key}`)
+      // .then(response => {
+        // parseString(response.data, function(err, result){
+          // console.log(result);
+
+          // console.log(result.result.EPSG_4326_Y[0]);
+          // console.log(result.result.EPSG_4326_X[0]);
+          // console.log(result.result.JUSO[0]);
+          // jsonTemp = {
+          //   juso: result.result.JUSO[0],
+          //   lat : result.result.EPSG_4326_X[0],
+          //   lng : result.result.EPSG_4326_Y[0]
+          // };
+      this.addrList.push(data.jibunAddress);
+
+        // })
+      // })
+      // .catch(error => { 
+        // console.log(error);
+      // })
+      // console.log(this.addrList);
       this.dialog = false;
     },
     findCurrentLocation() {
@@ -359,21 +388,26 @@ export default {
 
 <style>
 .banner{
-  margin-top: 120px;
+  margin-top: 110px;
   padding: 18px 22px;
   background-image: linear-gradient( rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5) ), url("../assets/banner_map.webp");
   color:#ffffff;
   text-align: center;
-  border-radius: 2px;
+  border-radius: 3px;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
+  word-break: keep-all;
+  white-space: normal;
+
 }
 .explain {
   font-family: 'Do Hyeon', sans-serif;
-  font-size: 24px;
+  font-size: 30px;
   border-left: 5px solid #e0958d;
   padding-left: 12px;
+  word-break: keep-all;
+  white-space: normal;
 }
 .explain__description {
   margin: 16px 0;
@@ -509,6 +543,8 @@ input[type="checkbox"]:checked + .checkbox-label::before {
   border: 3px solid #ec8a8a;
   border-radius: 5px;
   margin-left: 1.5rem;
+  margin-top: 20px;
+
 }
 
 .list__header {
@@ -556,7 +592,10 @@ input[type="checkbox"]:checked + .checkbox-label::before {
   }
   .location-list {
     width: 100%;
-    margin-left: 0
+    margin-left: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
 }
 </style>

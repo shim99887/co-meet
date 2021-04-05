@@ -92,8 +92,9 @@ export default {
         padding: 10px 18px;
         background-color: white;
         border-radius: 5px;
-        width: 30%;
+        width: 30vw;
         border: 2px solid #ffb6c1;
+
         &:hover {
           background-color: #ffb6c1;
           box-shadow: 0.5px 0.5px grey;
@@ -103,6 +104,15 @@ export default {
       .footer__description {
         color: lightslategray;
         margin-top: 0.4rem;
+      }
+    }
+  }
+  @media screen and (max-width: 48rem) {
+    .graph {
+      &__footer{
+        .graph-btn {
+          width: 61vw;
+        }
       }
     }
   }
