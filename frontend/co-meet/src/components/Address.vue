@@ -57,7 +57,7 @@
               v-for="(addr, index) in addrList"
               :key="index"
               @click:close="temp(index)"
-              >{{ addr.juso }}
+              >{{ addr}}
             </v-chip>
           </div>
         <div class="search-location">
