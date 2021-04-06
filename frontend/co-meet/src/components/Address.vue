@@ -4,7 +4,7 @@
       <h3>장소 추천 페이지</h3>
       <br>
       <p>서울시의 장소들을 입력하시면, 안전한 장소를 추천해드립니다. <br />
-      또한 현 지역의 대한 자료는 하단에 안내해드립니다.</p>
+      장소의 대한 자료는 하단에 안내해드립니다.</p>
     </div>
   <div class="address">
     <section class="location">
@@ -16,36 +16,23 @@
         @load="onMapLoaded"
       >
         <!-- 마커를 반복문을 돌면서 coordinate의 좌표를 넣는다. -->
-        <div class="" v-for="(item, idx) in coordinates" :key="idx">
-          <mglMarker :coordinates="coordinates[idx]" color="#ffb6c1">
+        
+        <div class="" v-for="(item, idx) in citiesCoordinates" :key="idx">
+          <mglMarker :coordinates="citiesCoordinates[idx]" color="#ffb6c1">
             <MglPopup>
-              <v-card>
-                <div>만날 장소 추천지: {{ recomCity[idx].gu }}</div>
-              </v-card>
+              <Vcard class="pa-0">
+                만날 장소 추천지: {{ cities[idx] }}
+              </Vcard>
             </MglPopup>
           </mglMarker>
         </div>
-        <!-- <mglMarker :coordinates="coordinates[1]" color="#ffb6c1" >
-            <MglPopup>
-              <v-card>
-                <div>Hello, This is second marker!</div>
-              </v-card>
-            </MglPopup>
-          </mglMarker> -->
+
       </MglMap>
       <div class="location__wrapper" v-show="!mapToggle">
         <div class="explain">
           <h2 class="explain__title">
             약속장소에 적합한 장소를 추천해드립니다
           </h2>
-          <!-- <h4 class="explain__description">
-            현재 위치 또는<br />직접 현재 위치를 입력하실 수 있습니다.<br />
-            <b
-              >한 가지의 방법을 선택하시면, 다른 한가지 방법은 사용하실 수
-              없습니다.</b
-            >
-          </h4> -->
-          
         </div>
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
         <section class="location__selection">
@@ -70,7 +57,7 @@
               v-for="(addr, index) in addrList"
               :key="index"
               @click:close="temp(index)"
-              >{{ addr }}
+              >{{ addr.juso }}
             </v-chip>
           </div>
         <div class="search-location">
@@ -174,33 +161,29 @@
       </div>
     </section>
 
-    <section class="location-list" v-if="gugun.length">
+    <section class="location-list" v-if="cities.length">
       <div class="list__header">
         약속 장소 리스트
       </div>
-      <div v-if="city.length">
-        <div class="list__contents" v-for="(item, idx) in recomCity" :key="idx">
-          <div class="contents__title">{{ recomCity[idx].gu }}</div>
+      <div v-if="cities.length">
+        <div class="list__contents" v-for="(item, idx) in cities" :key="idx">
+          <div class="contents__title">{{ item }}</div>
           <div class="contents__description">
-            서울시 {{ recomCity[idx].gu }}
+            서울시 {{ item }}
           </div>
         </div>
       </div>
-      <!-- <div class="list__contents" v-if="gugun.length">
-          <div class="contents__title">명동</div>
-          <div class="contents__description">서울시 중구 명동역</div>
-        </div> -->
     </section>
   </div>
 </div>
 </template>
+
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js"></script>
-
 <script>
 import DaumPostcode from "vuejs-daum-postcode";
 import Mapbox from "mapbox-gl";
-import { MglMap, MglMarker, MglPopup } from "vue-mapbox";
+import { MglMap, MglMarker, MglPopup, Vcard } from "vue-mapbox";
 import axios from 'axios';
 import VueGeolocationApi from 'vue-geolocation-api'
 
@@ -220,15 +203,18 @@ export default {
       // mapToggle: false,
       agreed: false,
       dialogTerms: false,
-      location: "",
+      location: [],
       dialog: false,
       selectMethod: "",
       //여기에 주소가 저장되서 이걸로 getRecom함수에 넣어야함. (03-31일 현재, location에 보낼 '구' 하나만 저장되어서 요청 보냄)
       addrList: [],
-
+      //1등 후보 찍는 곳
       latitude: '',
       longitude: '',
       textContent: '',
+      //temp
+      sending: {},
+      reset: false,
     };
   },
 
@@ -238,68 +224,57 @@ export default {
       // this.addrList.pop(index);
       this.$delete(this.addrList, index);
     },
-       getRecom () {
+      async getRecom () {
           if (this.agreed === true) {
-            // 구만 보내기
-            const filtering = this.location.split(' ')
-            console.log(filtering[1])
-            this.$store.commit('ON_SEARCHING')
+            this.$store.commit("ON_SEARCHING")
+            // 주소를 카카오 api로 보내서 좌표로 만들기
+              await this.addrList.forEach(item => {
+                this.putLatLng(item)
+              });
             // 장소 리스트
-            this.$store.dispatch("GET_RECOM", filtering[1])
-            // 지도
-            this.$store.dispatch("GET_CORONA_PER_CITY")
+            setTimeout(() => {
+              // 추천 장소 받기
+              this.$store.dispatch("GET_RECOM")
+              // 지난 달 구별 코로나
+              this.$store.dispatch("GET_CORONA_PER_CITY")
+            }, 500)
           } else {
-            alert("정보 이용에 동의해주세요")
+            // alert("정보 이용에 동의해주세요")
+            this.tempJson.email=this.$store.getters.getUserEmail;
+            this.tempJson.SearchList=this.addrList;
+            console.log(this.tempJson);
           }
        },
     async onMapLoaded(event) {
       // 도시 받은거 입력
-      const data = this.$store.getters.get_result;
-      // 순위들 마커 리스트에 넣고
-      // this.coordinates.push([data[0].lng, data[0].lat])
-      await this.putCoordinate(data);
+      const data = this.citiesCoordinates;
       const asyncActions = event.component.actions;
-      // 순위 보여주는 비동기 함수
+      // 1순위 보여주는 비동기 함수
       const newParams = await asyncActions.flyTo({
-        center: [data[0].lng, data[0].lat],
-        zoom: 11,
-        speed: 0.5,
+        center: data[0],
+        zoom: 12.5,
+        speed: 1,
       });
-
-      console.log(newParams);
     },
-    putCoordinate: function(data) {
-      this.coordinates.push([data[0].lng, data[0].lat]);
-      console.log(this.coordinates);
+    async putLatLng(data) {
+      var self = this;
+      const geocoder = new kakao.maps.services.Geocoder();
+      await geocoder.addressSearch(data, function(result, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          const coord = new kakao.maps.LatLng(result[0].y, result[0].x);
+          const juso = data.split(' ')[1]
+          var inputData = {
+            juso: juso,
+            lat: coord.Ma,
+            lng: coord.La,
+          }
+          self.$store.commit('PUT_TARGETCITIES', inputData)
+        }
+      })
+
     },
     handleAddress: function(data) {
-      this.location = data.jibunAddress;
-      console.log(data);
-      // var parseString = require('xml2js').parseString;
-      // var key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
-      // const jsonTemp = {};
-      // var self = this;
-      // axios.get('http://apis.vworld.kr/jibun2coord.do?q=' + data.jibunAddress + "&format=json&apiKey=" + key)
-      // .then(response => {
-      //   parseString(response.data, function(err, result){
-      //     // console.log(result);
-
-      //     // console.log(result.result.EPSG_4326_Y[0]);
-      //     // console.log(result.result.EPSG_4326_X[0]);
-      //     // console.log(result.result.JUSO[0]);
-      //     jsonTemp = {
-      //       juso: result.result.JUSO[0],
-      //       lat : result.result.EPSG_4326_X[0],
-      //       lng : result.result.EPSG_4326_Y[0]
-      //     };
       this.addrList.push(data.jibunAddress);
-
-      //   })
-      // })
-      // .catch(error => { 
-      //   alert(error);
-      // })
-      console.log(this.addrList);
       this.dialog = false;
     },
     findCurrentLocation() {
@@ -327,11 +302,20 @@ export default {
     mapToggle() {
       return this.$store.getters.get_mapToggle;
     },
-    city() {
+    cities() {
       return this.$store.getters.get_result;
     },
-    recomCity() {
-      return this.$store.getters.get_result;
+    citiesDate() {
+      return this.$store.getters.get_month;
+    },
+    citiesPatients() {
+      return this.$store.getters.get_patients
+    },
+    citiesCoordinates() {
+      return this.$store.getters.get_coordinates
+    },
+    targets() {
+      return this.$store.getters.get_targets
     },
     gugun() {
       return this.$store.getters.get_gugun
@@ -359,21 +343,25 @@ export default {
 
 <style>
 .banner{
-  margin-top: 120px;
+  margin-top: 110px;
   padding: 18px 22px;
   background-image: linear-gradient( rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5) ), url("../assets/banner_map.webp");
   color:#ffffff;
   text-align: center;
-  border-radius: 2px;
+  border-radius: 3px;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
+  word-break: keep-all;
+  white-space: normal;
 }
 .explain {
   font-family: 'Do Hyeon', sans-serif;
-  font-size: 24px;
+  font-size: 30px;
   border-left: 5px solid #e0958d;
   padding-left: 12px;
+  word-break: keep-all;
+  white-space: normal;
 }
 .explain__description {
   margin: 16px 0;
@@ -512,6 +500,8 @@ input[type="checkbox"]:checked + .checkbox-label::before {
   border-radius: 5px;
   margin-left: 1.5rem;
   background: #FCFCEF;
+  margin-top: 20px;
+
 }
 
 .list__header {
@@ -559,7 +549,10 @@ input[type="checkbox"]:checked + .checkbox-label::before {
   }
   .location-list {
     width: 100%;
-    margin-left: 0
+    margin-left: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
 }
 </style>

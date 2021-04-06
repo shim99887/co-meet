@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-main>
-      <right-nav v-if="$store.getters.getAccessToken" style="z-index:1;"/>
+      
       <div class="text-center">
     <v-dialog
       v-model="loading"
@@ -18,14 +18,12 @@
 </template>
 
 <script>
-import RightNav from "@/components/RightNav.vue";
 import Loading from "@/components/loading/LoadingModal.vue"
 
 export default {
   name: 'App',
 
   components: {
-    RightNav,
     Loading,
   },
   data: () => ({
