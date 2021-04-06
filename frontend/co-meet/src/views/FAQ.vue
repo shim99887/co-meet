@@ -33,8 +33,8 @@
         @click:row="(item, slot) => slot.expand(!slot.isExpanded)"
         :search="search"
       >
-        <template v-slot:expanded-item="{ headers }">
-          <td :colspan="headers.length">Peek-a-boo!</td>
+        <template v-slot:expanded-item="{ headers, item }">
+          <td :colspan="headers.length">{{item.내용}}</td>
         </template>
       </v-data-table>
     </v-card>
@@ -55,38 +55,7 @@ export default {
         { text: "구분", value: "구분" },
         { text: "제목", value: "제목" },
       ],
-      items: [
-        {
-          no: 1,
-          구분: "로그인",
-          제목: "로그인을 하기 위해서는 먼저 회원가입을 진행해주세요.",
-        },
-        {
-          no: 2,
-          구분: "회원가입",
-          제목: "회원가입 시 이메일 인증을 진행해야합니다.",
-        },
-        {
-          no: 3,
-          구분: "회원가입",
-          제목: "회원가입 시 이메일 인증을 진행해야합니다.",
-        },
-        {
-          no: 4,
-          구분: "회원가입",
-          제목: "빠끄",
-        },
-        {
-          no: 5,
-          구분: "회원가입",
-          제목: "회원가입 시 이메일 인증을 진행해야합니다.",
-        },
-        {
-          no: 6,
-          구분: "회원가입",
-          제목: "회원가입 시 이메일 인증을 진행해야합니다.",
-        },
-      ],
+      items: require("@/data/data.json"),
     };
   },
 };

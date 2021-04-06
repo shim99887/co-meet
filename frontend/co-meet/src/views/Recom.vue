@@ -16,6 +16,7 @@ import Address from "../components/Address.vue"
 // import Explain from "../components/Explain.vue"
 import Navbar from "../components/navbar.vue"
 import RightNav from "../components/RightNav.vue"
+
 export default {
   components: {
     Navbar,
@@ -28,6 +29,9 @@ export default {
     gugun() {
       return this.$state.getters.get_gugun
     },
+  },
+   mounted(){
+
   },
 }
 </script>

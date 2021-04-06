@@ -70,7 +70,7 @@
               v-for="(addr, index) in addrList"
               :key="index"
               @click:close="temp(index)"
-              >{{ addr }}
+              >{{ addr.juso }}
             </v-chip>
           </div>
         <div class="search-location">
@@ -225,7 +225,7 @@ export default {
       selectMethod: "",
       //여기에 주소가 저장되서 이걸로 getRecom함수에 넣어야함. (03-31일 현재, location에 보낼 '구' 하나만 저장되어서 요청 보냄)
       addrList: [],
-
+      tempJson:{},
       latitude: '',
       longitude: '',
       textContent: '',
@@ -249,7 +249,10 @@ export default {
             // 지도
             this.$store.dispatch("GET_CORONA_PER_CITY")
           } else {
-            alert("정보 이용에 동의해주세요")
+            // alert("정보 이용에 동의해주세요")
+            this.tempJson.email=this.$store.getters.getUserEmail;
+            this.tempJson.SearchList=this.addrList;
+            console.log(this.tempJson);
           }
        },
     async onMapLoaded(event) {
@@ -275,30 +278,30 @@ export default {
     handleAddress: function(data) {
       this.location = data.jibunAddress;
       console.log(data);
-      // var parseString = require('xml2js').parseString;
-      // var key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
-      // const jsonTemp = {};
-      // var self = this;
-      // axios.get('http://apis.vworld.kr/jibun2coord.do?q=' + data.jibunAddress + "&format=json&apiKey=" + key)
-      // .then(response => {
-      //   parseString(response.data, function(err, result){
-      //     // console.log(result);
+      var parseString = require('xml2js').parseString;
+      var key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
+      var jsonTemp = {};
+      var self = this;
+      axios.get('http://apis.vworld.kr/jibun2coord.do?q=' + data.jibunAddress + "&format=json&apiKey=" + key)
+      .then(response => {
+        parseString(response.data, function(err, result){
+          // console.log(result);
 
-      //     // console.log(result.result.EPSG_4326_Y[0]);
-      //     // console.log(result.result.EPSG_4326_X[0]);
-      //     // console.log(result.result.JUSO[0]);
-      //     jsonTemp = {
-      //       juso: result.result.JUSO[0],
-      //       lat : result.result.EPSG_4326_X[0],
-      //       lng : result.result.EPSG_4326_Y[0]
-      //     };
-      this.addrList.push(data.jibunAddress);
+          // console.log(result.result.EPSG_4326_Y[0]);
+          // console.log(result.result.EPSG_4326_X[0]);
+          // console.log(result.result.JUSO[0]);
+          jsonTemp = {
+            juso: result.result.JUSO[0],
+            lat : result.result.EPSG_4326_X[0],
+            lng : result.result.EPSG_4326_Y[0]
+          };
+      self.addrList.push(jsonTemp);
 
-      //   })
-      // })
-      // .catch(error => { 
-      //   alert(error);
-      // })
+        })
+      })
+      .catch(error => { 
+        alert(error);
+      })
       console.log(this.addrList);
       this.dialog = false;
     },
