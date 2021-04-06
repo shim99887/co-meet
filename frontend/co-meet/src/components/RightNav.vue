@@ -34,8 +34,7 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-      <v-img @click="drawerMove" style="position:fixed;right:0px;top:50%;pointer:cursor;" src="../assets/X_icon.png"/>
-      <!-- <button @click="drawerMove" styl e="font-family:verdana;font-size:35px;position:fixed;right:0px;top:50%;background:#fadde1;">x</button> -->
+      <v-img @click="drawerMove" width="30px" style="position:fixed;right:10px;top:50%;cursor:pointer;" src="../assets/X_icon.png"/>
     </v-navigation-drawer>
   </div>
 </template>
