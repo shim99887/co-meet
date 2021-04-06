@@ -1,15 +1,14 @@
 <template>
-  <div class="graph" v-if="gugun.length">
+  <div class="graph" v-if="cities.length">
       <section class="graph__header">
-        <h1 class="graph__title">추천한 장소에 대한 안내</h1>
+        <h1 class="graph__title">{{targets.join(', ')}}의 검색 결과 안내</h1>
         <h4 class="graph__description">추천 받으신 장소는 다양한 데이터를 통해 연산되어 제공합니다</h4>
       </section>
       <section class="graph__reason">
-        <h4>서울시 구별 확진자에 대한 데이터입니다.</h4>
+        <h4>지난달 서울시 구별 확진자에 대한 데이터입니다.</h4>
         <Barchart class="graph__chart" v-if="gugun.length"/>
-        <img src="@/assets/non_data.png" alt="non_data" class="graph__non-data" v-else>
         <h4>추천 받은 장소에 대한 확진자 데이터입니다.</h4>
-        <Linechart class="graph__chart" v-if="recomCity.length"/>
+        <Linechart class="graph__chart" v-if="cities.length"/>
       </section>
       <section class="graph__footer">
         <button class="graph-btn" @click="reRecom">새로운 장소 추천받기</button>
@@ -27,12 +26,36 @@ export default {
     Barchart,
     Linechart,
   },
+  data() {
+    return {
+      searchResult: [],
+    }
+  },
   computed: {
     gugun() {
       return this.$store.getters.get_gugun
     },
-    recomCity() {
-      return this.$store.getters.get_resultCity
+    cities() {
+      return this.$store.getters.get_result;
+    },
+    citiesDate() {
+      return this.$store.getters.get_month;
+    },
+    citiesPatients() {
+      return this.$store.getters.get_patients
+    },
+    citiesCoordinates() {
+      return this.$store.getters.get_coordinates
+    },
+    targets() {
+      this.$store.getters.get_targets.forEach((item) => {
+        if (item in this.searchResult) {
+          return
+        } else {
+          this.searchResult.push(item)
+        }
+      })
+        return this.searchResult
     },
   },
   methods:{

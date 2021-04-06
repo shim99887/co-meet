@@ -10,18 +10,28 @@ export default new Vuex.Store({
   state: {
     searchingCity: "",
     onSearching: false,
+    // 이전 달 구별 코로나
     gugun: [],
     gugunData: [],
+    // 장소들 추천 리스트
     recomCity: [],
+    recomCityMonth: [],
+    recomCityPatients: [],
+    coordinates: [],
+    targets: [],
+    // 상태 정의들
     mapToggle: false,
     reRecom : false,
+    // 로그인 상태 관리
     accessToken: localStorage.getItem('accessToken'),
     userEmail: localStorage.getItem('email'),
     userName: localStorage.getItem('nickname'),
+    // 요청 데이터 폼
     targetCities: {
       email: '123',
       searchList: [],
     },
+
   },
   getters:{
     getAccessToken(state){
@@ -42,9 +52,23 @@ export default new Vuex.Store({
     get_city(state) {
       return state.searchingCity
     },
+    // 결과 관련
     get_result(state) {
       return state.recomCity
     },
+    get_month(state) {
+      return state.recomCityMonth
+    },
+    get_patients(state) {
+      return state.recomCityPatients
+    },
+    get_coordinates(state) {
+      return state.coordinates
+    },
+    get_targets(state) {
+      return state.targets
+    },
+    //
     get_mapToggle(state) {
       return state.mapToggle
     },
@@ -76,10 +100,15 @@ export default new Vuex.Store({
       state.mapToggle = !state.mapToggle
     },
     MAPCANCLE(state) {
-      state.mapToggle = false;
-      state.gugun= [];
-      state.gugunData= [];
-      state.recomCity= [];
+      state.mapToggle = false
+      state.targetCities.searchList = []
+      state.recomCity = []
+      state.recomCityMonth = []
+      state.recomCityPatients = []
+      state.coordinates = []
+      state.targets = []
+      state.gugun= []
+      state.gugunData= []
     },
     ON_SEARCHING(state) {
       state.onSearching = true
@@ -107,27 +136,27 @@ export default new Vuex.Store({
 
     async GET_RECOM(context) {
       try {
+        
         console.log(this.state.targetCities)
         const res = await axios.post("https://j4a203.p.ssafy.io/recomm/recommend", this.state.targetCities)
-        // 검색으로 넣은 구 
         console.log(res)
-        // context.commit('PUT_CITY', city)
-        // const data = res.data
-        // const location = {
-        //   lat: data.recomm_lat,
-        //   lng: data.recomm_lng,
-        //   gu: data.signgu_nm,
-        //   date: data.date,
-        //   patients: data.patients
-        // }
-        // context.commit("PUT_RESULT", location)
-        // context.commit("MAPTOGGLE")
-        // console.log(`recomcity`)
-        // console.log(this.state.recomCity)
+        const data = res.data
+        for (let idx = 0; idx < 4; idx++) {
+          this.state.recomCityMonth.push(data[idx].date)
+          this.state.recomCityPatients.push(data[idx].patients)
+          this.state.coordinates.push([Number(data.lng[idx]), Number(data.lat[idx])])
+          this.state.recomCity.push(data.signgu_nm[idx])
+        }
+        data.target.forEach((item) => {
+          this.state.targets.push(item)
+        })
+        console.log(this.state.targets)
+        context.commit("OFF_SEARCHING")
       } catch(err) {
         console.log(err)
         context.commit("OFF_SEARCHING")
       }
+      context.commit("MAPTOGGLE")
     },
     async GET_CORONA_PER_CITY(context) {
       try {

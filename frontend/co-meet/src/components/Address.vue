@@ -16,22 +16,17 @@
         @load="onMapLoaded"
       >
         <!-- 마커를 반복문을 돌면서 coordinate의 좌표를 넣는다. -->
-        <div class="" v-for="(item, idx) in coordinates" :key="idx">
-          <mglMarker :coordinates="coordinates[idx]" color="#ffb6c1">
+        
+        <div class="" v-for="(item, idx) in citiesCoordinates" :key="idx">
+          <mglMarker :coordinates="citiesCoordinates[idx]" color="#ffb6c1">
             <MglPopup>
-              <v-card>
-                <div>만날 장소 추천지: {{ recomCity[idx].gu }}</div>
-              </v-card>
+              <Vcard class="pa-0">
+                만날 장소 추천지: {{ cities[idx] }}
+              </Vcard>
             </MglPopup>
           </mglMarker>
         </div>
-        <!-- <mglMarker :coordinates="coordinates[1]" color="#ffb6c1" >
-            <MglPopup>
-              <v-card>
-                <div>Hello, This is second marker!</div>
-              </v-card>
-            </MglPopup>
-          </mglMarker> -->
+
       </MglMap>
       <div class="location__wrapper" v-show="!mapToggle">
         <div class="explain">
@@ -166,22 +161,18 @@
       </div>
     </section>
 
-    <section class="location-list" v-if="gugun.length">
+    <section class="location-list" v-if="cities.length">
       <div class="list__header">
         약속 장소 리스트
       </div>
-      <div v-if="city.length">
-        <div class="list__contents" v-for="(item, idx) in recomCity" :key="idx">
-          <div class="contents__title">{{ recomCity[idx].gu }}</div>
+      <div v-if="cities.length">
+        <div class="list__contents" v-for="(item, idx) in cities" :key="idx">
+          <div class="contents__title">{{ item }}</div>
           <div class="contents__description">
-            서울시 {{ recomCity[idx].gu }}
+            서울시 {{ item }}
           </div>
         </div>
       </div>
-      <!-- <div class="list__contents" v-if="gugun.length">
-          <div class="contents__title">명동</div>
-          <div class="contents__description">서울시 중구 명동역</div>
-        </div> -->
     </section>
   </div>
 </div>
@@ -192,7 +183,7 @@
 <script>
 import DaumPostcode from "vuejs-daum-postcode";
 import Mapbox from "mapbox-gl";
-import { MglMap, MglMarker, MglPopup } from "vue-mapbox";
+import { MglMap, MglMarker, MglPopup, Vcard } from "vue-mapbox";
 import axios from 'axios';
 import VueGeolocationApi from 'vue-geolocation-api'
 
@@ -223,6 +214,7 @@ export default {
       textContent: '',
       //temp
       sending: {},
+      reset: false,
     };
   },
 
@@ -232,46 +224,39 @@ export default {
       // this.addrList.pop(index);
       this.$delete(this.addrList, index);
     },
-       getRecom () {
+      async getRecom () {
           if (this.agreed === true) {
+            this.$store.commit("ON_SEARCHING")
             // 주소를 카카오 api로 보내서 좌표로 만들기
-            this.addrList.forEach(item => {
-              this.putLatLng(item)
-            });
-            // this.$store.commit('ON_SEARCHING')
+              await this.addrList.forEach(item => {
+                this.putLatLng(item)
+              });
             // 장소 리스트
-            this.$store.dispatch("GET_RECOM")
-
-            // 지도
-            // this.$store.dispatch("GET_CORONA_PER_CITY")
+            setTimeout(() => {
+              // 추천 장소 받기
+              this.$store.dispatch("GET_RECOM")
+              // 지난 달 구별 코로나
+              this.$store.dispatch("GET_CORONA_PER_CITY")
+            }, 500)
           } else {
             alert("정보 이용에 동의해주세요")
           }
        },
     async onMapLoaded(event) {
       // 도시 받은거 입력
-      const data = this.$store.getters.get_result;
-      // 순위들 마커 리스트에 넣고
-      // this.coordinates.push([data[0].lng, data[0].lat])
-      await this.putCoordinate(data);
+      const data = this.citiesCoordinates;
       const asyncActions = event.component.actions;
-      // 순위 보여주는 비동기 함수
+      // 1순위 보여주는 비동기 함수
       const newParams = await asyncActions.flyTo({
-        center: [data[0].lng, data[0].lat],
-        zoom: 11,
-        speed: 0.5,
+        center: data[0],
+        zoom: 12.5,
+        speed: 1,
       });
-
-      console.log(newParams);
     },
-    putCoordinate: function(data) {
-      this.coordinates.push([data[0].lng, data[0].lat]);
-      console.log(this.coordinates);
-    },
-    putLatLng: function(data) {
+    async putLatLng(data) {
       var self = this;
       const geocoder = new kakao.maps.services.Geocoder();
-      geocoder.addressSearch(data, function(result, status) {
+      await geocoder.addressSearch(data, function(result, status) {
         if (status === kakao.maps.services.Status.OK) {
           const coord = new kakao.maps.LatLng(result[0].y, result[0].x);
           const juso = data.split(' ')[1]
@@ -283,52 +268,10 @@ export default {
           self.$store.commit('PUT_TARGETCITIES', inputData)
         }
       })
-      // console.log(this.abc)
-      // console.log(result)
-      // console.log(result)
-      // this.$store.commit('PUT_TARGETCITIES', this.abc)
-      // console.log(`result : ${result}`)
-      // console.log(this.sending)
-      // this.$store.commit('PUT_TARGETCITIES', this.sending)
-      // const parseString = require('xml2js').parseString;
-      // const key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
-      // axios.get(`http://apis.vworld.kr/jibun2coord.do?q=${data}&format=json&apiKey=${key}`)
-      // .then(response => {
-      //   parseString(response.data, function(err, result){
-      //     console.log(result);
-      //   })
-      // })
-      // .catch(error => { 
-      //   console.log(error);
-      // })
+
     },
     handleAddress: function(data) {
-      // this.location = data.jibunAddress;
-      // console.log(data);
-      // const parseString = require('xml2js').parseString;
-      // const key = "9F9E4000-1B83-3B87-916E-0954B13C446B";
-      // const jsonTemp = {};
-      // axios.get(`http://apis.vworld.kr/jibun2coord.do?q=${data}&format=json&apiKey=${key}`)
-      // .then(response => {
-        // parseString(response.data, function(err, result){
-          // console.log(result);
-
-          // console.log(result.result.EPSG_4326_Y[0]);
-          // console.log(result.result.EPSG_4326_X[0]);
-          // console.log(result.result.JUSO[0]);
-          // jsonTemp = {
-          //   juso: result.result.JUSO[0],
-          //   lat : result.result.EPSG_4326_X[0],
-          //   lng : result.result.EPSG_4326_Y[0]
-          // };
       this.addrList.push(data.jibunAddress);
-
-        // })
-      // })
-      // .catch(error => { 
-        // console.log(error);
-      // })
-      // console.log(this.addrList);
       this.dialog = false;
     },
     findCurrentLocation() {
@@ -356,11 +299,20 @@ export default {
     mapToggle() {
       return this.$store.getters.get_mapToggle;
     },
-    city() {
+    cities() {
       return this.$store.getters.get_result;
     },
-    recomCity() {
-      return this.$store.getters.get_result;
+    citiesDate() {
+      return this.$store.getters.get_month;
+    },
+    citiesPatients() {
+      return this.$store.getters.get_patients
+    },
+    citiesCoordinates() {
+      return this.$store.getters.get_coordinates
+    },
+    targets() {
+      return this.$store.getters.get_targets
     },
     gugun() {
       return this.$store.getters.get_gugun
@@ -399,7 +351,6 @@ export default {
   background-repeat: no-repeat;
   word-break: keep-all;
   white-space: normal;
-
 }
 .explain {
   font-family: 'Do Hyeon', sans-serif;
