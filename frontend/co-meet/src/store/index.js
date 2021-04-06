@@ -26,6 +26,7 @@ export default new Vuex.Store({
     accessToken: localStorage.getItem('accessToken'),
     userEmail: localStorage.getItem('email'),
     userName: localStorage.getItem('nickname'),
+    searchLog:[],
     // 요청 데이터 폼
     targetCities: {
       email: '123',
@@ -80,6 +81,9 @@ export default new Vuex.Store({
     },
     get_onSearching(state) {
       return state.onSearching
+    },
+    getSearchLog(state){
+      return state.searchLog;
     }
   },
   mutations: {
@@ -127,6 +131,12 @@ export default new Vuex.Store({
     },
     OFF_RERECOM(state){
       state.reRecom = false;
+    },
+    GET_SEARCH_LOG(state, log){
+      state.searchLog.push(log);
+    },
+    DELETE_SEARCH_LOG(state){
+      state.searchLog = [];
     },
     PUT_TARGETCITIES(state, data){
       state.targetCities.searchList.push(data)
@@ -206,7 +216,10 @@ export default new Vuex.Store({
       })
 
       context.commit('LOGOUT');
-      // location.href = "/";
+      location.href = "/";
     },
+    GET_SEARCH_LOG(context, log){
+      context.commit('GET_SEARCH_LOG', log);
+    }
   }
 })

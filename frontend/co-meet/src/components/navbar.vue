@@ -19,7 +19,7 @@
 
 
     <ul class="navbar__menus">
-      <router-link to="/recommendation" class="navbar__community__button">
+      <router-link v-if="$store.getters.getUserEmail" to="/recommendation" class="navbar__community__button">
         <li>지역 추천</li>
       </router-link>
       <router-link to="/faq" class="navbar__community__button">

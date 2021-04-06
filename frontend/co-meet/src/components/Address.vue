@@ -57,7 +57,7 @@
               v-for="(addr, index) in addrList"
               :key="index"
               @click:close="temp(index)"
-              >{{ addr }}
+              >{{ addr.juso }}
             </v-chip>
           </div>
         <div class="search-location">
@@ -239,7 +239,10 @@ export default {
               this.$store.dispatch("GET_CORONA_PER_CITY")
             }, 500)
           } else {
-            alert("정보 이용에 동의해주세요")
+            // alert("정보 이용에 동의해주세요")
+            this.tempJson.email=this.$store.getters.getUserEmail;
+            this.tempJson.SearchList=this.addrList;
+            console.log(this.tempJson);
           }
        },
     async onMapLoaded(event) {
