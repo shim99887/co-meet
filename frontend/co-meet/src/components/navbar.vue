@@ -84,7 +84,7 @@ export default {
     margin-left: auto;
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 5px;
-    animation: anim4 2.0s forwards 1.0s;
+    /* animation: anim4 2.0s forwards 1.0s; */
     position: absolute;
     left: 9.5%;
     width: 81%;
