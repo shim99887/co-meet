@@ -389,6 +389,7 @@ export default {
   width: 100%;
   border: 3px solid #ffb6c1;
   border-radius: 5px;
+  background: #FEFCFC;
 }
 .location__terms {
   margin-right: 3%;
@@ -493,10 +494,12 @@ input[type="checkbox"]:checked + .checkbox-label::before {
 
 /* 로케이션 리스트 ! */
 .location-list {
+  margin-top: 20px;
   width: 40%;
-  border: 3px solid #ec8a8a;
+  border: 3px solid #ffb6c1;
   border-radius: 5px;
   margin-left: 1.5rem;
+  background: #FCFCEF;
   margin-top: 20px;
 
 }

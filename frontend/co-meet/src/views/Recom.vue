@@ -1,13 +1,16 @@
 <template>
-<div class="recom-body">
-  <Navbar class="navbar"/>
-  <div class="reccom">
-    <right-nav v-if="$store.getters.getAccessToken" style="z-index:1;"/>
-    <Address />
-    <Graph />
-    <!-- <Explain /> -->
+  <div class="recom-body">
+    <Navbar class="navbar"/>
+    <video autoplay muted loop id="myVideo">
+        <source src="../assets/sub2.mp4" type="video/mp4" />
+    </video>    
+    <div class="reccom">
+        <right-nav v-if="$store.getters.getAccessToken" style="z-index:1;"/>
+        <Address />
+        <Graph />
+        <!-- <Explain /> -->
+    </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -40,6 +43,9 @@ export default {
 .recom-body{
   // background-color: #F7CAC9;
   .reccom {
+    position: absolute; 
+    top: 0; 
+    left: 9.5%;
     width: 80vw;
     margin: 0 auto 0 auto;
     .navbar {
@@ -54,4 +60,12 @@ export default {
     margin: 0 auto 0 auto;
   }
   }
+#myVideo {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
 </style>
