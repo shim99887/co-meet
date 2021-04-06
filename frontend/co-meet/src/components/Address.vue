@@ -57,7 +57,7 @@
               v-for="(addr, index) in addrList"
               :key="index"
               @click:close="temp(index)"
-              >{{ addr.juso }}
+              >{{ addr }}
             </v-chip>
           </div>
         <div class="search-location">
@@ -274,7 +274,11 @@ export default {
 
     },
     handleAddress: function(data) {
-      this.addrList.push(data.jibunAddress);
+      if(data.jibunAddress === "") {
+        this.addrList.push(data.autoJibunAddress);
+      } else {
+        this.addrList.push(data.jibunAddress);
+      }
       this.dialog = false;
     },
     findCurrentLocation() {
