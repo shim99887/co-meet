@@ -99,7 +99,7 @@ export default {
   margin-left: auto;
   background-color: rgba(0, 0, 0, 0.5);
   border-radius: 5px;
-  animation: anim4 2s forwards 1s;
+  /* animation: anim4 2s forwards 1s; */
   position: absolute;
   left: 9.5%;
   width: 81%;

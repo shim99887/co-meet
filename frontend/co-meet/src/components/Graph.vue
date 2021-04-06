@@ -2,18 +2,18 @@
   <div class="graph" v-if="gugun.length">
       <section class="graph__header">
         <h1 class="graph__title">추천한 장소에 대한 안내</h1>
-        <h4 class="graph__description">추천 받으신 장소는 다양한 데이터를 통해 연산되어 제공합니다</h4>
+        <h5 class="graph__description">추천 받으신 장소는 다양한 데이터를 통해 연산되어 제공합니다</h5>
       </section>
       <section class="graph__reason">
-        <h4>서울시 구별 확진자에 대한 데이터입니다.</h4>
+        <h5> <b style="color:#A3A3FF;">서울시 구별</b>에 대한 확진자 데이터입니다.</h5>
         <Barchart class="graph__chart" v-if="gugun.length"/>
         <img src="@/assets/non_data.png" alt="non_data" class="graph__non-data" v-else>
-        <h4>추천 받은 장소에 대한 확진자 데이터입니다.</h4>
+        <h5> <b style="color:#A3A3FF;">추천 받은 장소</b>에 대한 확진자 데이터입니다.</h5>
         <Linechart class="graph__chart" v-if="recomCity.length"/>
       </section>
       <section class="graph__footer">
-        <button class="graph-btn" @click="reRecom">새로운 장소 추천받기</button>
-        <h4 class="footer__description">장소를 재추천 받으시려면 버튼을 누르세요</h4>
+        <button class="graph-btn" @click="reRecom"> <b>새로운 장소 <br> 추천받기</b> </button>
+        <!-- <h4 class="footer__description">장소를 재추천 받으시려면 버튼을 누르세요</h4> -->
       </section>
   </div>
 </template>
@@ -51,11 +51,11 @@ export default {
   
   @mixin textLayout() {
     padding-bottom: 0.25em;
-    border-bottom: 2px solid $dark-blue;
+    // border-bottom: 2px solid $dark-blue;
   }
 
   @mixin borderLayout($color) {
-    border: 3px solid $color;
+    // border: 3px solid $color;
     border-radius: 5px;
     padding: 1rem;
   } 
@@ -63,9 +63,11 @@ export default {
   .graph {
     @include borderLayout(#41b6e6);
     margin-top: 1em;
+    background: #FCFCEF;
 
     &__title {
       @include textLayout();
+      border-bottom: 2px solid $dark-blue;
     }
 
     &__description {
@@ -82,7 +84,7 @@ export default {
     }
     &__footer {
       margin-top: 2em;
-      border-top: $inside-border;
+      // border-top: $inside-border;
       padding-top: 1em;
       display: flex;
       flex-direction: column;
