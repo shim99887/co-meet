@@ -42,4 +42,4 @@ class SearchBodySerializer(serializers.Serializer):
 
 class SearchLogBodySerializer(serializers.Serializer):
     email = serializers.CharField(help_text="이메일")
-    SearchList = SearchBodySerializer(many=True)
+    searchList = SearchBodySerializer(many=True)
