@@ -2,13 +2,13 @@
   <div class="graph" v-if="cities.length">
       <section class="graph__header">
 
-        <h1 class="graph__title">{{targets.join(', ')}}의 검색 결과 안내</h1>
+        <h1 class="graph__title"><span style="color: #36a2eb">{{targets}}</span>의 검색 결과 안내</h1>
         <h4 class="graph__description">추천 받으신 장소는 다양한 데이터를 통해 연산되어 제공합니다</h4>
       </section>
       <section class="graph__reason">
-        <h5><b style="color:#A3A3FF;">지난달 서울시 구별</b>에 대한 확진자 데이터입니다.</h5>
+        <h4><b style="color:#A3A3FF; padding-left: 1rem; border-left: 6px solid pink">지난달 서울시 구별</b>에 대한 확진자 데이터입니다.</h4>
         <Barchart class="graph__chart" v-if="gugun.length"/>
-        <h5><b style="color:#A3A3FF;">추천 받은 장소</b>에 대한 확진자 데이터입니다.</h5>
+        <h4><b style="color:#A3A3FF; padding-left: 1rem; border-left: 6px solid pink">추천 받은 장소</b>에 대한 확진자 데이터입니다.</h4>
         <Linechart class="graph__chart" v-if="cities.length"/>
       </section>
       <section class="graph__footer">
@@ -49,21 +49,18 @@ export default {
       return this.$store.getters.get_coordinates
     },
     targets() {
-      this.$store.getters.get_targets.forEach((item) => {
-        if (item in this.searchResult) {
-          return
-        } else {
-          this.searchResult.push(item)
-        }
-      })
-        return this.searchResult
+      return this.$store.getters.get_targets.join(', ')
     },
   },
   methods:{
     reRecom(){
       this.$store.commit('MAPCANCLE');
     }
-  }
+  },
+  destroyed() {
+    this.$store.commit("MAPCANCLE")
+    
+  },
 
 
 }
@@ -116,11 +113,11 @@ export default {
 
       .graph-btn {
         padding: 10px 18px;
-        background-color: white;
+        background-color: #fcfcef;
         border-radius: 5px;
         width: 30vw;
         border: 2px solid #ffb6c1;
-
+        box-shadow: 0.5px 0.5px grey;
         &:hover {
           background-color: #ffb6c1;
           box-shadow: 0.5px 0.5px grey;

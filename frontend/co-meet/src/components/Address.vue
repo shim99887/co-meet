@@ -36,22 +36,14 @@
         </div>
         <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
         <section class="location__selection">
-        <button
-          class="location__my-location text-bold"
-          @click="findCurrentLocation"
-        >
-          내 현재 위치
-        </button>
-          {{latitude}}
-          {{longitude}}
-          {{textContent}}
+
         <div class="text-center or-text">
           <img src="../assets/map.gif" alt="map gif" class="map-gif">
         </div>
-          <div v-if="addrList.length > 0">
+          <div class="chips" v-if="addrList.length > 0">
             <v-chip
               color="#ffb6c1"
-              style="margin: 8px 12px;"
+              style="margin: 8px 10px;"
               close
               close-icon="mdi-close-outline"
               v-for="(addr, index) in addrList"
@@ -65,7 +57,7 @@
             <template v-slot:activator="{ on, attrs }">
               <input
                 type="button"
-                class="btn text-bold"
+                class="btn text-bold mt-2"
                 v-bind="attrs"
                 v-on="on"
                 value="위치 입력"
@@ -120,8 +112,8 @@
                 ③ 동의거부관리<br />
                 - 귀하께서는 본 안내에 따른 개인정보 수집, 이용에 대하여 동의를
                 거부하실 권리가 있습니다. 다만,<br />
-                귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 장학생
-                선발 과정에 있어 불이익이 발생할 수<br />
+                귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 서비스
+                서비스 이용 과정에 있어 불이익이 발생할 수<br />
                 있음을 알려드립니다<br />
                 <br />
                 <b>Ⅱ. 고유식별정보 처리 동의서</b><br />
@@ -138,8 +130,8 @@
                 ③ 동의거부관리<br />
                 - 귀하께서는 본 안내에 따른 개인정보 수집, 이용에 대하여 동의를
                 거부하실 권리가 있습니다. 다만,<br />
-                귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 장학생
-                선발 과정에 있어 불이익이 발생할 수<br />
+                귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 서비스 이용
+                과정에 있어, 불편함이 발생할 수<br />
                 있음을 알려드립니다.<br />
               </v-container>
             </v-card>
@@ -225,7 +217,7 @@ export default {
       this.$delete(this.addrList, index);
     },
       async getRecom () {
-          if (this.agreed === true) {
+          if (this.agreed === true && this.addrList.length > 0) {
             this.$store.commit("ON_SEARCHING")
             // 주소를 카카오 api로 보내서 좌표로 만들기
               await this.addrList.forEach(item => {
@@ -239,10 +231,7 @@ export default {
               this.$store.dispatch("GET_CORONA_PER_CITY")
             }, 500)
           } else {
-            // alert("정보 이용에 동의해주세요")
-            this.tempJson.email=this.$store.getters.getUserEmail;
-            this.tempJson.SearchList=this.addrList;
-            console.log(this.tempJson);
+            alert("정보 이용에 동의해주세요")
           }
        },
     async onMapLoaded(event) {
@@ -370,11 +359,16 @@ export default {
 .explain__description {
   margin: 16px 0;
 }
+.chips {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+}
 .map-gif {
   display: block;
-  height: auto;
   border-radius: 10px;
   width: 18vw;
+  height: auto;
 }
 .terms {
   padding: 2%;
@@ -530,9 +524,6 @@ input[type="checkbox"]:checked + .checkbox-label::before {
   font-size: 0.9em;
 }
 @media screen and (max-width: 48rem) {
-  .recom-body{
-    
-  }
   .address {
     display: flex;
     flex-direction: column;
@@ -549,7 +540,21 @@ input[type="checkbox"]:checked + .checkbox-label::before {
   }
   .explain{
     border-left: none;
-    padding-left: 0;
+    padding: 0 8px;
+  }
+  .map-gif {
+    width: 45vw;
+  }
+  .location__selection {
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    margin: 10px 0;
+  }
+  .chips {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
   }
   .location-list {
     width: 100%;

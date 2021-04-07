@@ -5,7 +5,7 @@
         <source src="../assets/sub2.mp4" type="video/mp4" />
     </video>    
     <div class="reccom">
-        <right-nav v-if="$store.getters.getAccessToken" style="z-index:1;"/>
+        <right-nav v-if="$store.getters.getAccessToken" style="z-index:998 !important;"/>
         <Address />
         <Graph />
         <!-- <Explain /> -->
@@ -55,9 +55,9 @@ export default {
   }
 }
   @media screen and (max-width: 48rem) {
-    .reccom {
-    width: 93vw;
-    margin: 0 auto 0 auto;
+  .reccom {
+    width: 96vw;
+    margin: 0 auto;
   }
   }
 #myVideo {
