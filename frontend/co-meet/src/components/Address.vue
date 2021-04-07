@@ -8,140 +8,136 @@
         장소의 대한 자료는 하단에 안내해드립니다.
       </p>
     </div>
-    <div class="address">
-      <section class="location">
-        <MglMap
-          id="map"
-          :accessToken="accessToken"
-          :mapStyle.sync="mapStyle"
-          v-if="mapToggle"
-          @load="onMapLoaded"
-        >
-          <!-- 마커를 반복문을 돌면서 coordinate의 좌표를 넣는다. -->
+  <div class="address">
+    <section class="location">
+      <MglMap
+        id="map"
+        :accessToken="accessToken"
+        :mapStyle.sync="mapStyle"
+        v-if="mapToggle"
+        @load="onMapLoaded"
+      >
+        <!-- 마커를 반복문을 돌면서 coordinate의 좌표를 넣는다. -->
+        
+        <div class="" v-for="(item, idx) in citiesCoordinates" :key="idx">
+          <mglMarker :coordinates="citiesCoordinates[idx]" color="#ffb6c1">
+            <MglPopup>
+              <Vcard class="pa-0">
+                만날 장소 추천지: {{ cities[idx] }}
+              </Vcard>
+            </MglPopup>
+          </mglMarker>
+        </div>
 
-          <div class="" v-for="(item, idx) in citiesCoordinates" :key="idx">
-            <mglMarker :coordinates="citiesCoordinates[idx]" color="#ffb6c1">
-              <MglPopup>
-                <Vcard class="pa-0">
-                  만날 장소 추천지: {{ cities[idx] }}
-                </Vcard>
-              </MglPopup>
-            </mglMarker>
-          </div>
-        </MglMap>
-        <div class="location__wrapper" v-show="!mapToggle">
-          <div class="explain">
-            <h2 class="explain__title">
-              약속장소에 적합한 장소를 추천해드립니다
-            </h2>
-          </div>
-          <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
-          <section class="location__selection">
-            <button
-              class="location__my-location text-bold"
-              @click="findCurrentLocation"
-            >
-              내 현재 위치
-            </button>
-            {{ latitude }}
-            {{ longitude }}
-            {{ textContent }}
-            <div class="text-center or-text">
-              <img src="../assets/map.gif" alt="map gif" class="map-gif" />
-            </div>
-            <div v-if="addrList.length > 0">
-              <v-chip
-                color="#ffb6c1"
-                style="margin: 8px 12px;"
-                close
-                close-icon="mdi-close-outline"
-                v-for="(addr, index) in addrList"
-                :key="index"
-                @click:close="temp(index)"
-                >{{ addr }}
-              </v-chip>
-            </div>
-            <div class="search-location">
-              <v-dialog v-model="dialog" width="500">
-                <template v-slot:activator="{ on, attrs }">
-                  <input
-                    type="button"
-                    class="btn text-bold"
-                    v-bind="attrs"
-                    v-on="on"
-                    value="위치 입력"
-                    @click="findInputLocation"
-                  />
-                </template>
-                <v-card>
-                  <DaumPostcode :on-complete="handleAddress" />
-                </v-card>
-              </v-dialog>
-            </div>
-          </section>
-          <div class="terms">
-            <v-dialog
-              v-model="dialogTerms"
-              fullscreen
-              hide-overlay
-              transition="dialog-bottom-transition"
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <a v-bind="attrs" v-on="on" class="location__terms">
-                  개인 정보 이용 동의서</a
-                >
-              </template>
-              <v-card>
-                <v-toolbar dark color="#ffb6c1">
-                  <v-btn icon dark @click="dialogTerms = false">
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
-                  <v-toolbar-title>개인 정보 수집 이용 동의서</v-toolbar-title>
-                  <v-spacer></v-spacer>
-                </v-toolbar>
+      </MglMap>
+      <div class="location__wrapper" v-show="!mapToggle">
+        <div class="explain">
+          <h2 class="explain__title">
+            약속장소에 적합한 장소를 추천해드립니다
+          </h2>
+        </div>
+        <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
+        <section class="location__selection">
 
-                <v-container class="terms__body">
-                  <b>Ⅰ. 개인정보의 수집 및 이용 동의서 </b> <br />
-                  - 이용자가 제공한 모든 정보는 다음의 목적을 위해 활용하며,
-                  하기 목적 이외의 용도로는 사용되지 않습니다.<br />
-                  ① 개인정보 수집 항목 및 수집·이용 목적<br />
-                  가) 수집 항목 (필수항목)<br />
-                  - 주소, 전화번호(자택, 휴대전화), 이메일, 신청서에 기재된 정보
-                  또는 신청자가 제공한 정보<br />
-                  나) 수집 및 이용 목적<br />
-                  - 현재 위치 파악과 안전 지역 추천 진행<br />
-                  - 이용자의 위치 및 자격확인<br />
-                  - 회원 정보 자원관리<br />
-                  ② 개인정보 보유 및 이용기간<br />
-                  - 수집·이용 동의일로부터 개인정보의 수집·이용목적을 달성할
-                  때까지<br />
-                  ③ 동의거부관리<br />
-                  - 귀하께서는 본 안내에 따른 개인정보 수집, 이용에 대하여
-                  동의를 거부하실 권리가 있습니다. 다만,<br />
-                  귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 장학생
-                  선발 과정에 있어 불이익이 발생할 수<br />
-                  있음을 알려드립니다<br />
-                  <br />
-                  <b>Ⅱ. 고유식별정보 처리 동의서</b><br />
-                  ① 고유식별정보 수집 항목 및 수집·이용 목적<br />
-                  가) 수집 항목 (필수항목)<br />
-                  - 이메일<br />
-                  나) 수집 및 이용 목적<br />
-                  - 현재 위치 파악과 안전 지역 추천 진행<br />
-                  - 이용자의 위치 및 자격확인<br />
-                  - 회원 정보 자원관리<br />
-                  ② 개인정보 보유 및 이용기간<br />
-                  - 수집·이용 동의일로부터 개인정보의 수집·이용목적을 달성할
-                  때까지<br />
-                  ③ 동의거부관리<br />
-                  - 귀하께서는 본 안내에 따른 개인정보 수집, 이용에 대하여
-                  동의를 거부하실 권리가 있습니다. 다만,<br />
-                  귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 장학생
-                  선발 과정에 있어 불이익이 발생할 수<br />
-                  있음을 알려드립니다.<br />
-                </v-container>
-              </v-card>
-            </v-dialog>
+        <div class="text-center or-text">
+          <img src="../assets/map.gif" alt="map gif" class="map-gif">
+        </div>
+          <div class="chips" v-if="addrList.length > 0">
+            <v-chip
+              color="#ffb6c1"
+              style="margin: 8px 10px;"
+              close
+              close-icon="mdi-close-outline"
+              v-for="(addr, index) in addrList"
+              :key="index"
+              @click:close="temp(index)"
+              >{{ addr }}
+            </v-chip>
+          </div>
+        <div class="search-location">
+          <v-dialog v-model="dialog" width="500">
+            <template v-slot:activator="{ on, attrs }">
+              <input
+                type="button"
+                class="btn text-bold mt-2"
+                v-bind="attrs"
+                v-on="on"
+                value="위치 입력"
+                @click="findInputLocation"
+              />
+            </template>
+            <v-card>
+              <DaumPostcode :on-complete="handleAddress" />
+            </v-card>
+          </v-dialog>
+        </div>
+        </section>
+                <div class="terms">
+          <v-dialog
+            v-model="dialogTerms"
+            fullscreen
+            hide-overlay
+            transition="dialog-bottom-transition"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <a
+                v-bind="attrs"
+                v-on="on"
+                class="location__terms"
+              >
+                개인 정보 이용 동의서</a>
+            </template>
+            <v-card>
+              <v-toolbar dark color="#ffb6c1">
+                <v-btn icon dark @click="dialogTerms = false">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+                <v-toolbar-title>개인 정보 수집 이용 동의서</v-toolbar-title>
+                <v-spacer></v-spacer>
+              </v-toolbar>
+
+              <v-container class="terms__body">
+                <b>Ⅰ. 개인정보의 수집 및 이용 동의서 </b> <br />
+                - 이용자가 제공한 모든 정보는 다음의 목적을 위해 활용하며, 하기
+                목적 이외의 용도로는 사용되지 않습니다.<br />
+                ① 개인정보 수집 항목 및 수집·이용 목적<br />
+                가) 수집 항목 (필수항목)<br />
+                - 주소, 전화번호(자택, 휴대전화), 이메일, 신청서에 기재된 정보
+                또는 신청자가 제공한 정보<br />
+                나) 수집 및 이용 목적<br />
+                - 현재 위치 파악과 안전 지역 추천 진행<br />
+                - 이용자의 위치 및 자격확인<br />
+                - 회원 정보 자원관리<br />
+                ② 개인정보 보유 및 이용기간<br />
+                - 수집·이용 동의일로부터 개인정보의 수집·이용목적을 달성할
+                때까지<br />
+                ③ 동의거부관리<br />
+                - 귀하께서는 본 안내에 따른 개인정보 수집, 이용에 대하여 동의를
+                거부하실 권리가 있습니다. 다만,<br />
+                귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 서비스
+                서비스 이용 과정에 있어 불이익이 발생할 수<br />
+                있음을 알려드립니다<br />
+                <br />
+                <b>Ⅱ. 고유식별정보 처리 동의서</b><br />
+                ① 고유식별정보 수집 항목 및 수집·이용 목적<br />
+                가) 수집 항목 (필수항목)<br />
+                - 이메일<br />
+                나) 수집 및 이용 목적<br />
+                - 현재 위치 파악과 안전 지역 추천 진행<br />
+                - 이용자의 위치 및 자격확인<br />
+                - 회원 정보 자원관리<br />
+                ② 개인정보 보유 및 이용기간<br />
+                - 수집·이용 동의일로부터 개인정보의 수집·이용목적을 달성할
+                때까지<br />
+                ③ 동의거부관리<br />
+                - 귀하께서는 본 안내에 따른 개인정보 수집, 이용에 대하여 동의를
+                거부하실 권리가 있습니다. 다만,<br />
+                귀하가 개인정보의 수집/이용에 동의를 거부하시는 경우에 서비스 이용
+                과정에 있어, 불편함이 발생할 수<br />
+                있음을 알려드립니다.<br />
+              </v-container>
+            </v-card>
+          </v-dialog>
 
             <input
               id="agree"
@@ -221,21 +217,22 @@ export default {
       // this.addrList.pop(index);
       this.$delete(this.addrList, index);
     },
-    async getRecom() {
-      if (this.agreed === true) {
-        this.$store.commit("ON_SEARCHING");
-        // 주소를 카카오 api로 보내서 좌표로 만들기
-        await this.addrList.forEach((item) => {
-          this.putLatLng(item);
-        });
-        // 장소 리스트
-        setTimeout(() => {
-          // 추천 장소 받기
-          this.$store.dispatch("GET_RECOM");
-          // 지난 달 구별 코로나
-          this.$store.dispatch("GET_CORONA_PER_CITY");
-        }, 500);
-        var log = {};
+      async getRecom () {
+          if (this.agreed === true && this.addrList.length > 0) {
+            this.$store.commit("ON_SEARCHING")
+            // 주소를 카카오 api로 보내서 좌표로 만들기
+              await this.addrList.forEach(item => {
+                this.putLatLng(item)
+              });
+            // 장소 리스트
+            setTimeout(() => {
+              // 추천 장소 받기
+              this.$store.dispatch("GET_RECOM")
+              // 지난 달 구별 코로나
+              this.$store.dispatch("GET_CORONA_PER_CITY")
+            }, 500)
+
+                  var log = {};
         log.email = this.$store.getters.getUserEmail;
         const geocoder = new kakao.maps.services.Geocoder();
         var data = [];
@@ -270,13 +267,11 @@ export default {
             });
 
         }, 500)
-      } else {
-        // alert("정보 이용에 동의해주세요")
-        this.tempJson.email = this.$store.getters.getUserEmail;
-        this.tempJson.SearchList = this.addrList;
-        console.log(this.tempJson);
-      }
-    },
+
+          } else {
+            alert("정보 이용에 동의, 혹은 주소를 입력해주세요")
+          }
+       },
     async onMapLoaded(event) {
       // 도시 받은거 입력
       const data = this.citiesCoordinates;
@@ -305,7 +300,11 @@ export default {
       });
     },
     handleAddress: function(data) {
-      this.addrList.push(data.jibunAddress);
+      if(data.jibunAddress === "") {
+        this.addrList.push(data.autoJibunAddress);
+      } else {
+        this.addrList.push(data.jibunAddress);
+      }
       this.dialog = false;
     },
     findCurrentLocation() {
@@ -402,11 +401,16 @@ export default {
 .explain__description {
   margin: 16px 0;
 }
+.chips {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+}
 .map-gif {
   display: block;
-  height: auto;
   border-radius: 10px;
   width: 18vw;
+  height: auto;
 }
 .terms {
   padding: 2%;
@@ -424,6 +428,7 @@ export default {
   width: 100%;
   border: 3px solid #ffb6c1;
   border-radius: 5px;
+  background: #FEFCFC;
 }
 .location__terms {
   margin-right: 3%;
@@ -528,10 +533,12 @@ input[type="checkbox"]:checked + .checkbox-label::before {
 
 /* 로케이션 리스트 ! */
 .location-list {
+  margin-top: 20px;
   width: 40%;
-  border: 3px solid #ec8a8a;
+  border: 3px solid #ffb6c1;
   border-radius: 5px;
   margin-left: 1.5rem;
+  background: #FCFCEF;
   margin-top: 20px;
 }
 
@@ -557,8 +564,6 @@ input[type="checkbox"]:checked + .checkbox-label::before {
   font-size: 0.9em;
 }
 @media screen and (max-width: 48rem) {
-  .recom-body {
-  }
   .address {
     display: flex;
     flex-direction: column;
@@ -575,7 +580,21 @@ input[type="checkbox"]:checked + .checkbox-label::before {
   }
   .explain {
     border-left: none;
-    padding-left: 0;
+    padding: 0 8px;
+  }
+  .map-gif {
+    width: 45vw;
+  }
+  .location__selection {
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    margin: 10px 0;
+  }
+  .chips {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
   }
   .location-list {
     width: 100%;

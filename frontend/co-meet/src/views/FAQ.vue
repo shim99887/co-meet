@@ -1,7 +1,9 @@
 <template>
   <v-container>
     <navbar />
-
+    <video autoplay muted loop id="myVideo">
+        <source src="../assets/sub2.mp4" type="video/mp4" />
+    </video>
     <v-card
       style="margin-top: 80px;width:100%;"
       class="text-center"

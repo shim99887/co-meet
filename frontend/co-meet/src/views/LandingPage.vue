@@ -9,6 +9,9 @@
         <div>
           <div v-if="wid > 1000" class="titles">
             <p>CO-MEET</p>
+            <div v-if="wid > 1000" class="subtitles">
+              <p id=comment> 우리의 안전한 약속을 위해서</p>
+            </div>
           </div>
           <div v-else class="mob_titles" style="">
             <p>CO-MEET</p>
@@ -102,15 +105,15 @@ body {
 }
 .titles {
   position: absolute;
-  font-size: 10rem;
+  font-size: 8rem;
   /* color: #22223b;
   opacity: 0.75;
   text-shadow: 4px 4px 4px gray; */
-  color : #ffa38c;
+  color : #f8cccc;
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
   font-family: "Bahnschrift Condensed";
-  margin-left: 50px;
+  margin-left: 0.7em;
   margin-top: 150px;
   bottom: -100%;
   animation: anim 2s forwards 2s;
@@ -119,12 +122,24 @@ body {
   animation: anim2 2s forwards 2s;
   bottom: -100%;
   position: absolute;
-  font-size: 6rem;
-  color : #ffa38c;
+  width : 300px;
+  font-size: 5rem;
+  margin-top:80px;
+  margin-left: 0.7em;
+  color : #f8cccc;
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
   font-family: "Bahnschrift Condensed";
+}
+.subtitles {
+  position: relative;
+  font-size: 2rem;
+  margin-left: 0.3em;
+  color : #ffeae6;
+  text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
+  font-family: "Bahnschrift Condensed";
+  animation: anim 2s forwards 2s;
 }
 @keyframes anim {
   from {
@@ -157,5 +172,8 @@ body {
   position: fixed;
   top: 0;
   left: 0;
+}
+#comment {
+  text-shadow: #352824;
 }
 </style>
