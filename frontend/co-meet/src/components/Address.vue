@@ -243,31 +243,33 @@ export default {
           geocoder.addressSearch(element, function(result, status) {
             if (status === kakao.maps.services.Status.OK) {
               const coord = new kakao.maps.LatLng(result[0].y, result[0].x);
-              const juso = element.split(" ")[1];
               var inputData = {
-                juso: juso,
+                juso: element,
                 lat: coord.Ma,
                 lng: coord.La,
               };
-              console.log(inputData);
+              console.log("inputData: ", inputData);
               data.push(inputData);
             }
           });
         });
         log.searchList = data;
-        console.log(data);
+        console.log("data : ",data);
 
-        axios
-          .post(`${SERVER_URL}/user/searchlog`,   {
-            email:this.$store.getters.getUserEmail,
-            searchList:data,
-          })
-          .then((response) => {
-            console.log(response);
-          })
-          .catch((error) => {
-            alert(error);
-          });
+        setTimeout(() => {
+          axios
+            .post(`${SERVER_URL}/user/searchlog`,   {
+              email:this.$store.getters.getUserEmail,
+              searchList:data,
+            })
+            .then((response) => {
+              console.log(response);
+            })
+            .catch((error) => {
+              alert(error);
+            });
+
+        }, 500)
       } else {
         // alert("정보 이용에 동의해주세요")
         this.tempJson.email = this.$store.getters.getUserEmail;
