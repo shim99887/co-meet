@@ -42,13 +42,13 @@
         <div class="text-center or-text">
           <img src="../assets/map.gif" alt="map gif" class="map-gif">
         </div>
-          <div class="chips" v-if="addrList.length > 0">
+          <div class="chips" v-if="addrLists.length > 0">
             <v-chip
               color="#ffb6c1"
               style="margin: 8px 10px;"
               close
               close-icon="mdi-close-outline"
-              v-for="(addr, index) in addrList"
+              v-for="(addr, index) in addrLists"
               :key="index"
               @click:close="temp(index)"
               >{{ addr }}
@@ -213,15 +213,17 @@ export default {
 
   methods: {
     temp(index) {
-      console.log(index);
+      // console.log(index);
       // this.addrList.pop(index);
-      this.$delete(this.addrList, index);
+      // this.$delete(this.addrList, index);
+      this.$delete(this.addrLists, index);
+      // this.$store.commit('DELETE_ADDRLIST', index);
     },
       async getRecom () {
-          if (this.agreed === true && this.addrList.length > 0) {
+          if (this.agreed === true && this.addrLists.length > 0) {
             this.$store.commit("ON_SEARCHING")
             // 주소를 카카오 api로 보내서 좌표로 만들기
-              await this.addrList.forEach(item => {
+              await this.addrLists.forEach(item => {
                 this.putLatLng(item)
               });
             // 장소 리스트
@@ -232,8 +234,6 @@ export default {
               this.$store.dispatch("GET_CORONA_PER_CITY")
             }, 500)
 
-                  var log = {};
-        log.email = this.$store.getters.getUserEmail;
         const geocoder = new kakao.maps.services.Geocoder();
         var data = [];
         this.addrList.forEach((element) => {
@@ -245,14 +245,10 @@ export default {
                 lat: coord.Ma,
                 lng: coord.La,
               };
-              console.log("inputData: ", inputData);
               data.push(inputData);
             }
           });
         });
-        log.searchList = data;
-        console.log("data : ",data);
-
         setTimeout(() => {
           axios
             .post(`${SERVER_URL}/user/searchlog`,   {
@@ -265,9 +261,7 @@ export default {
             .catch((error) => {
               alert(error);
             });
-
         }, 500)
-
           } else {
             alert("정보 이용에 동의, 혹은 주소를 입력해주세요")
           }
@@ -301,9 +295,11 @@ export default {
     },
     handleAddress: function(data) {
       if(data.jibunAddress === "") {
-        this.addrList.push(data.autoJibunAddress);
+        this.$store.commit('PUT_ADDRLIST', data.autoJibunAddress);
+        // this.addrList.push(data.autoJibunAddress);
       } else {
-        this.addrList.push(data.jibunAddress);
+        this.$store.commit('PUT_ADDRLIST', data.jibunAddress);
+        // this.addrList.push(data.jibunAddress);
       }
       this.dialog = false;
     },
@@ -354,6 +350,9 @@ export default {
     gugun() {
       return this.$store.getters.get_gugun;
     },
+    addrLists(){
+      return this.$store.getters.getAddrList;
+    }
   },
   watch: {
     selectMethod: function() {
