@@ -23,6 +23,7 @@ from django.views import View
 from user.models import User, SearchLog
 from .serializers import UserSerializer, UserBodySerializer, SearchLogSerializer, SearchLogBodySerializer
 from drf_yasg.utils import swagger_auto_schema
+import pandas as pd
 
 
 class UserViewSet(viewsets.GenericViewSet,
@@ -260,6 +261,7 @@ class SearchLogViewSet(viewsets.GenericViewSet,
 
     def serveSearchLog(self, *args, **kwargs):
         Search = SearchLog.objects.filter(email=self.kwargs['email'])
-        search_list = serializers.serialize('json', Search)
+        search_df = pd.DataFrame(
+            data=list(Search.values('searchList'))).to_dict()
 
-        return HttpResponse(search_list, status=status.HTTP_200_OK)
+        return JsonResponse(search_df, status=status.HTTP_200_OK)
