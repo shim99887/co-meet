@@ -247,10 +247,15 @@ class SearchLogViewSet(viewsets.GenericViewSet,
         if not sl_serializer.is_valid():
             return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
         sl_serializer.save()
-
+        
         # 10개가 넘으면 처리를 여기서 할거
         searchLog = SearchLog.objects.filter(email=request.data['email'])
         searchLog_list = list(searchLog)
+
+        # 재검색의 경우 이전 로그를 삭제, 이미 들어간 검색목록을 제외하고 서치 
+        for i in range(searchLog.count() - 1):        
+            if sorted(searchLog[i].searchList, key=lambda x:x['juso'], reverse=False)  == sorted(request.data["searchList"], key=lambda x:x['juso'], reverse=False)  :
+                searchLog[i].delete()
 
         if searchLog.count() > 10:
             eraseCount = searchLog.count() - 10

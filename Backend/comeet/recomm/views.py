@@ -109,9 +109,9 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         list_3 = third_list['gugun'].to_list()
 
         # 가중치
-        weight_1 = {string: (i + 1) for i, string in enumerate(list_1)}
-        weight_2 = {string: (i + 1) for i, string in enumerate(list_2)}
-        weight_3 = {string: (i + 1) for i, string in enumerate(list_3)}
+        weight_1 = {string: (i + 1) * 1 for i, string in enumerate(list_1)}
+        weight_2 = {string: (i + 1) * 4 for i, string in enumerate(list_2)}
+        weight_3 = {string: (i + 1) * 5 for i, string in enumerate(list_3)}
 
         # 전체 코로나 비율을 Counter 객체를 통해 각 구의 count를 더한다.
         total_corona_rate = Counter(
@@ -154,9 +154,9 @@ class SaveCoronaWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         before_list = before_corona_list['gugun'].to_list()
         after_list = after_corona_list['gugun'].to_list()
 
-        before_1 = {string: (i + 1) for i,
+        before_1 = {string: (i + 1) * 1 for i,
                     string in enumerate(before_list)}
-        after_2 = {string: (i + 1) for i,
+        after_2 = {string: (i + 1) * 4 for i,
                    string in enumerate(after_list)}
 
         # 서울 구의 코로나 확진자 + before1, after2를 합산.
@@ -252,17 +252,17 @@ class SaveFpoplWeight(viewsets.GenericViewSet, mixins.ListModelMixin, View):
         # 해당 구의 유동인구 / 전체 유동인구 => 등수
         point_1 = relative_third.sort_values(by=['popl'], axis=0)
         list_1 = point_1['gugun'].to_list()
-        weight_1 = {string: (i + 1) * 6 for i, string in enumerate(list_1)}
+        weight_1 = {string: (i + 1) * 1 for i, string in enumerate(list_1)}
 
         # 첫번째 달에서 두번째 달 넘어가는 걸로 소트해서 등수(12 => 1)
         point_2 = fpop_rate.sort_values(by=['first_popl_rate'], axis=0)
         list_2 = point_2['gugun'].to_list()
-        weight_2 = {string: (i + 1) * 3 for i, string in enumerate(list_2)}
+        weight_2 = {string: (i + 1) * 1 for i, string in enumerate(list_2)}
 
         # 두번째 달 넘어가는 거에서 세번째 달 넘어가는 걸로 소트해서 등수(1 => 2)
         point_3 = fpop_rate.sort_values(by=['second_popl_rate'], axis=0)
         list_3 = point_3['gugun'].to_list()
-        weight_3 = {string: (i + 1) * 8 for i, string in enumerate(list_3)}
+        weight_3 = {string: (i + 1) * 5 for i, string in enumerate(list_3)}
 
         total_score = Counter(weight_1) + Counter(weight_2) + Counter(weight_3)
 
