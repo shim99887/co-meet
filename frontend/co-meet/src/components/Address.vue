@@ -2,11 +2,9 @@
   <div class="recom-body">
     <div class="banner">
       <h3>장소 추천 페이지</h3>
-      <br />
-      <p>
-        서울시의 장소들을 입력하시면, 안전한 장소를 추천해드립니다. <br />
-        장소의 대한 자료는 하단에 안내해드립니다.
-      </p>
+      <br>
+      <p>서울시의 장소들을 입력하시면, 안전한 장소를 추천해드립니다. <br />
+      장소의 대한 자료는 하단에 안내해드립니다.</p>
     </div>
   <div class="address">
     <section class="location">
@@ -18,13 +16,12 @@
         @load="onMapLoaded"
       >
         <!-- 마커를 반복문을 돌면서 coordinate의 좌표를 넣는다. -->
-        
         <div class="" v-for="(item, idx) in citiesCoordinates" :key="idx">
           <mglMarker :coordinates="citiesCoordinates[idx]" color="#ffb6c1">
             <MglPopup>
-              <Vcard class="pa-0">
-                만날 장소 추천지: {{ cities[idx] }}
-              </Vcard>
+              <v-card class="pa-0" elevation="0" @click="onMove(cities[idx])">
+                {{ cities[idx] }} 맛집 검색!
+              </v-card>
             </MglPopup>
           </mglMarker>
         </div>
@@ -36,19 +33,18 @@
             약속장소에 적합한 장소를 추천해드립니다
           </h2>
         </div>
-        <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
         <section class="location__selection">
 
         <div class="text-center or-text">
           <img src="../assets/map.gif" alt="map gif" class="map-gif">
         </div>
-          <div class="chips" v-if="addrLists.length > 0">
+          <div class="chips" v-if="addrList.length > 0">
             <v-chip
               color="#ffb6c1"
               style="margin: 8px 10px;"
               close
               close-icon="mdi-close-outline"
-              v-for="(addr, index) in addrLists"
+              v-for="(addr, index) in addrList"
               :key="index"
               @click:close="temp(index)"
               >{{ addr }}
@@ -63,7 +59,6 @@
                 v-bind="attrs"
                 v-on="on"
                 value="위치 입력"
-                @click="findInputLocation"
               />
             </template>
             <v-card>
@@ -139,34 +134,37 @@
             </v-card>
           </v-dialog>
 
-            <input
-              id="agree"
-              type="checkbox"
-              value="agreed"
-              class="terms-checkbox"
-              v-model="agreed"
-            />
-            <label for="agree" class="checkbox-label">동의</label>
-          </div>
-          <button href="#" class="btn terms__recom text-bold" @click="getRecom">
-            약속 장소 추천 받기 !
-          </button>
+          <input
+            id="agree"
+            type="checkbox"
+            value="agreed"
+            class="terms-checkbox"
+            v-model="agreed"
+          />
+          <label for="agree" class="checkbox-label">동의</label>
         </div>
-      </section>
+        <button href="#" class="btn terms__recom text-bold" @click="getRecom">
+          약속 장소 추천 받기 !
+        </button>
 
-      <section class="location-list" v-if="cities.length">
-        <div class="list__header">
-          약속 장소 리스트
-        </div>
-        <div v-if="cities.length">
-          <div class="list__contents" v-for="(item, idx) in cities" :key="idx">
-            <div class="contents__title">{{ item }}</div>
-            <div class="contents__description">서울시 {{ item }}</div>
+      </div>
+    </section>
+
+    <section class="location-list" v-if="cities.length">
+      <div class="list__header">
+        약속 장소 리스트
+      </div>
+      <div v-if="cities.length">
+        <div class="list__contents" v-for="(item, idx) in cities" :key="idx" @click="onFly(idx)">
+          <div class="contents__title" >{{ item }}</div>
+          <div class="contents__description">
+            서울시 {{ item }}
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   </div>
+</div>
 </template>
 
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
@@ -174,11 +172,9 @@
 <script>
 import DaumPostcode from "vuejs-daum-postcode";
 import Mapbox from "mapbox-gl";
-import { MglMap, MglMarker, MglPopup, Vcard } from "vue-mapbox";
-import axios from "axios";
-import VueGeolocationApi from "vue-geolocation-api";
-
-const SERVER_URL = process.env.VUE_APP_SERVER_URL;
+import { MglMap, MglMarker, MglPopup} from "vue-mapbox";
+import axios from 'axios';
+import VueGeolocationApi from 'vue-geolocation-api'
 
 export default {
   components: {
@@ -202,9 +198,9 @@ export default {
       //여기에 주소가 저장되서 이걸로 getRecom함수에 넣어야함. (03-31일 현재, location에 보낼 '구' 하나만 저장되어서 요청 보냄)
       addrList: [],
       //1등 후보 찍는 곳
-      latitude: "",
-      longitude: "",
-      textContent: "",
+      latitude: '',
+      longitude: '',
+      textContent: '',
       //temp
       sending: {},
       reset: false,
@@ -212,14 +208,20 @@ export default {
   },
 
   methods: {
-    temp(index) {
-      this.$delete(this.addrLists, index);
+    onMove(gu) {
+       window.open(`https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query=${gu}+맛집`);
+    },
+    onFly(idx) {
+      this.$store.commit("FLYTO", idx)
+    },
+    temp(index){
+      this.$delete(this.addrList, index);
     },
       async getRecom () {
-          if (this.agreed === true && this.addrLists.length > 0) {
+          if (this.agreed === true && this.addrList.length > 0) {
             this.$store.commit("ON_SEARCHING")
             // 주소를 카카오 api로 보내서 좌표로 만들기
-              await this.addrLists.forEach(item => {
+              await this.addrList.forEach(item => {
                 this.putLatLng(item)
               });
             // 장소 리스트
@@ -229,37 +231,8 @@ export default {
               // 지난 달 구별 코로나
               this.$store.dispatch("GET_CORONA_PER_CITY")
             }, 500)
-
-        const geocoder = new kakao.maps.services.Geocoder();
-        var data = [];
-        this.addrLists.forEach((element) => {
-          geocoder.addressSearch(element, function(result, status) {
-            if (status === kakao.maps.services.Status.OK) {
-              const coord = new kakao.maps.LatLng(result[0].y, result[0].x);
-              var inputData = {
-                juso: element,
-                lat: coord.Ma,
-                lng: coord.La,
-              };
-              data.push(inputData);
-            }
-          });
-        });
-        setTimeout(() => {
-          axios
-            .post(`${SERVER_URL}/user/searchlog`,   {
-              email:this.$store.getters.getUserEmail,
-              searchList:data,
-            })
-            .then(() => {
-              this.$store.commit("OFF_SEARCHING")
-            })
-            .catch((error) => {
-              alert(error);
-            });
-        }, 500)
           } else {
-            alert("정보 이용에 동의, 혹은 주소를 입력해주세요")
+            alert("정보 이용에 동의해주세요")
           }
        },
     async onMapLoaded(event) {
@@ -269,57 +242,35 @@ export default {
       // 1순위 보여주는 비동기 함수
       const newParams = await asyncActions.flyTo({
         center: data[0],
-        zoom: 12.5,
-        speed: 1,
+        zoom: 11,
+        speed: 0.7,
       });
     },
+
     async putLatLng(data) {
       var self = this;
       const geocoder = new kakao.maps.services.Geocoder();
       await geocoder.addressSearch(data, function(result, status) {
         if (status === kakao.maps.services.Status.OK) {
           const coord = new kakao.maps.LatLng(result[0].y, result[0].x);
-          const juso = data.split(" ")[1];
+          const juso = data.split(' ')[1]
           var inputData = {
             juso: juso,
             lat: coord.Ma,
             lng: coord.La,
-          };
-          self.$store.commit("PUT_TARGETCITIES", inputData);
+          }
+          self.$store.commit('PUT_TARGETCITIES', inputData)
         }
-      });
+      })
+
     },
     handleAddress: function(data) {
       if(data.jibunAddress === "") {
-        this.$store.commit('PUT_ADDRLIST', data.autoJibunAddress);
-        // this.addrList.push(data.autoJibunAddress);
+        this.addrList.push(data.autoJibunAddress);
       } else {
-        this.$store.commit('PUT_ADDRLIST', data.jibunAddress);
-        // this.addrList.push(data.jibunAddress);
+        this.addrList.push(data.jibunAddress);
       }
       this.dialog = false;
-    },
-    findCurrentLocation() {
-      this.selectMethod = "currentLocation";
-      if (!("geolocation" in navigator)) {
-        this.textContent = "Geolocation is not available";
-        return;
-      }
-      this.textContent = "Locating...";
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          this.latitude = pos.coords.latitude;
-          this.longitude = pos.coords.longitude;
-          this.textContent =
-            "Your location data is " + this.latitude + ", " + this.longitude;
-        },
-        (err) => {
-          this.textContent = err.message;
-        }
-      );
-    },
-    findInputLocation() {
-      this.selectMethod = "inputLocation";
     },
   },
   computed: {
@@ -333,34 +284,22 @@ export default {
       return this.$store.getters.get_month;
     },
     citiesPatients() {
-      return this.$store.getters.get_patients;
+      return this.$store.getters.get_patients
     },
     citiesCoordinates() {
-      return this.$store.getters.get_coordinates;
+      return this.$store.getters.get_coordinates
     },
     targets() {
-      return this.$store.getters.get_targets;
+      return this.$store.getters.get_targets
     },
     gugun() {
-      return this.$store.getters.get_gugun;
+      return this.$store.getters.get_gugun
     },
-    addrLists(){
-      return this.$store.getters.getAddrList;
-    }
+    nextCoord() {
+      return this.$store.getters.get_FlyTo
+    },
   },
   watch: {
-    selectMethod: function() {
-      const inputLocation = document.querySelector(".search-location");
-      const currentLocation = document.querySelector(".location__my-location");
-      const or = document.querySelector(".or-text");
-      if (this.selectMethod === "currentLocation") {
-        inputLocation.style.display = "none";
-        or.style.display = "none";
-      } else {
-        currentLocation.style.display = "none";
-        or.style.display = "none";
-      }
-    },
   },
   created() {
     this.mapbox = null;
@@ -369,12 +308,11 @@ export default {
 </script>
 
 <style>
-.banner {
+.banner{
   margin-top: 110px;
   padding: 18px 22px;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)),
-    url("../assets/banner_map.webp");
-  color: #ffffff;
+  background-image: linear-gradient( rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5) ), url("../assets/banner_map.webp");
+  color:#ffffff;
   text-align: center;
   border-radius: 3px;
   background-position: center;
@@ -384,7 +322,7 @@ export default {
   white-space: normal;
 }
 .explain {
-  font-family: "Do Hyeon", sans-serif;
+  font-family: 'Do Hyeon', sans-serif;
   font-size: 30px;
   border-left: 5px solid #e0958d;
   padding-left: 12px;
@@ -412,14 +350,13 @@ export default {
   font-weight: 600;
 }
 .address {
+  
   display: flex;
   justify-content: space-between;
 }
 .location {
-  margin-top: 20px;
   padding: 10px 22px;
   width: 100%;
-  border: 3px solid #ffb6c1;
   border-radius: 5px;
   background: #FEFCFC;
 }
@@ -433,7 +370,7 @@ export default {
   justify-content: space-evenly;
   align-items: center;
   margin-bottom: 46px;
-  margin-top: 32px;
+  margin-top: 32px
 }
 .location__my-location {
   display: block;
@@ -483,7 +420,7 @@ input[type="checkbox"] {
 .checkbox-label:hover {
   cursor: pointer;
 }
-.checkbox-label::before {
+.checkbox-label::before{
   content: "";
   background-image: url("../assets/check-circle.svg");
   background-position: center;
@@ -500,7 +437,7 @@ input[type="checkbox"] {
 input[type="checkbox"]:checked + .checkbox-label::before {
   transform: scale(1) rotateZ(0deg);
 }
-.checkbox-label::after {
+.checkbox-label::after{
   content: "";
   border: 2px solid #27ae60;
   width: 22px;
@@ -526,13 +463,12 @@ input[type="checkbox"]:checked + .checkbox-label::before {
 
 /* 로케이션 리스트 ! */
 .location-list {
-  margin-top: 20px;
   width: 40%;
   border: 3px solid #ffb6c1;
   border-radius: 5px;
   margin-left: 1.5rem;
   background: #FCFCEF;
-  margin-top: 20px;
+
 }
 
 .list__header {
@@ -571,7 +507,7 @@ input[type="checkbox"]:checked + .checkbox-label::before {
     border-right: none;
     border-radius: 0;
   }
-  .explain {
+  .explain{
     border-left: none;
     padding: 0 8px;
   }

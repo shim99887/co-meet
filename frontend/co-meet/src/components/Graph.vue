@@ -5,7 +5,7 @@
         <h1 class="graph__title"><span style="color: #36a2eb">{{targets}}</span>의 검색 결과 안내</h1>
         <h4 class="graph__description">추천 받으신 장소는 다양한 데이터를 통해 연산되어 제공합니다</h4>
       </section>
-      <section class="graph__reason">
+      <section class="graph__reason ">
         <h4><b style="color:#A3A3FF; padding-left: 1rem; border-left: 6px solid pink">지난달 서울시 구별</b>에 대한 확진자 데이터입니다.</h4>
         <Barchart class="graph__chart" v-if="gugun.length"/>
         <h4><b style="color:#A3A3FF; padding-left: 1rem; border-left: 6px solid pink">추천 받은 장소</b>에 대한 확진자 데이터입니다.</h4>
@@ -132,6 +132,7 @@ export default {
   }
   @media screen and (max-width: 48rem) {
     .graph {
+      border-radius: 0;
       &__footer{
         .graph-btn {
           width: 61vw;

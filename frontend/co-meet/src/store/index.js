@@ -19,7 +19,6 @@ export default new Vuex.Store({
     recomCityPatients: [],
     coordinates: [],
     targets: [],
-    addrList:[], 
     // 상태 정의들
     mapToggle: false,
     reRecom : false,
@@ -33,14 +32,11 @@ export default new Vuex.Store({
       email: '',
       searchList: [],
     },
-
+    nextCoord: [],
   },
   getters:{
     getAccessToken(state){
       return state.accessToken;
-    },
-    getAddrList(state){
-      return state.addrList;
     },
     getUserEmail(state){
       return state.userEmail;
@@ -96,6 +92,9 @@ export default new Vuex.Store({
     },
     getSearchLog(state){
       return state.searchLog;
+    },
+    get_FlyTo(state) {
+      return state.nextCoord
     },
   },
   mutations: {
@@ -153,18 +152,8 @@ export default new Vuex.Store({
     PUT_TARGETCITIES(state, data){
       state.targetCities.searchList.push(data)
     },
-    PUT_ADDRLIST(state, data){
-      state.addrList.push(data);
-    },
-    DELETE_ADDRLIST(state, index){
-      if(state.addrList.length > 1){
-        state.addrList = state.addrList.splice(index, 1);
-      }else{
-        state.addrList = [];
-      }
-    },
-    SET_ADDRLIST(state, data){
-      state.addrList = data;
+    FLYTO(state, idx) {
+      state.nextCoord = this.state.coordinates[idx]
     }
   },
   actions: {
@@ -175,9 +164,7 @@ export default new Vuex.Store({
         } else {
           this.state.targetCities.email = 123
         }
-        console.log(this.state.targetCities)
         const res = await axios.post("https://j4a203.p.ssafy.io/recomm/recommend", this.state.targetCities)
-        console.log(res)
         const data = res.data
         for (let idx = 0; idx < 4; idx++) {
           this.state.recomCityMonth.push(data[idx].date)
@@ -188,10 +175,8 @@ export default new Vuex.Store({
         data.target.forEach((item) => {
           this.state.targets.push(item)
         })
-        console.log(this.state.targets)
         context.commit("OFF_SEARCHING")
       } catch(err) {
-        console.log(err)
         context.commit("OFF_SEARCHING")
       }
       context.commit("MAPTOGGLE")
@@ -206,8 +191,6 @@ export default new Vuex.Store({
         for (let key in data.serial_number) {
           this.state.gugunData.push(data.serial_number[key])
         }
-        console.log(`this.state.gugun : ${this.state.gugun}`)
-        console.log(`this.state.gugunData : ${this.state.gugunData}`)
         context.commit("OFF_SEARCHING")
         
       } catch (err) {
@@ -235,8 +218,7 @@ export default new Vuex.Store({
     },
     LOGOUT(context, email){
       axios.get(`${SERVER_URL}/user/logout/` + email)
-      .then(response => {
-        console.log(response);
+      .then(() => {
       })
       .catch(error => {
         context.commit("OFF_SEARCHING")
