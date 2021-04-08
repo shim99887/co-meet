@@ -18,13 +18,12 @@
         @load="onMapLoaded"
       >
         <!-- 마커를 반복문을 돌면서 coordinate의 좌표를 넣는다. -->
-        
         <div class="" v-for="(item, idx) in citiesCoordinates" :key="idx">
           <mglMarker :coordinates="citiesCoordinates[idx]" color="#ffb6c1">
             <MglPopup>
-              <Vcard class="pa-0">
-                만날 장소 추천지: {{ cities[idx] }}
-              </Vcard>
+              <v-card class="pa-0" elevation="0" @click="onMove(cities[idx])">
+                {{ cities[idx] }} 맛집 검색!
+              </v-card>
             </MglPopup>
           </mglMarker>
         </div>
@@ -36,7 +35,6 @@
             약속장소에 적합한 장소를 추천해드립니다
           </h2>
         </div>
-        <!-- 둘중에 하나의 버튼을 누르면 나머지 하나는 사라짐 -->
         <section class="location__selection">
 
         <div class="text-center or-text">
@@ -63,7 +61,6 @@
                 v-bind="attrs"
                 v-on="on"
                 value="위치 입력"
-                @click="findInputLocation"
               />
             </template>
             <v-card>
@@ -153,15 +150,15 @@
           </button>
         </div>
       </section>
-
-      <section class="location-list" v-if="cities.length">
-        <div class="list__header">
-          약속 장소 리스트
-        </div>
-        <div v-if="cities.length">
-          <div class="list__contents" v-for="(item, idx) in cities" :key="idx">
-            <div class="contents__title">{{ item }}</div>
-            <div class="contents__description">서울시 {{ item }}</div>
+    <section class="location-list" v-if="cities.length">
+      <div class="list__header">
+        약속 장소 리스트
+      </div>
+      <div v-if="cities.length">
+        <div class="list__contents" v-for="(item, idx) in cities" :key="idx" @click="onFly(idx)">
+          <div class="contents__title" >{{ item }}</div>
+          <div class="contents__description">
+            서울시 {{ item }}
           </div>
         </div>
       </section>
@@ -174,7 +171,8 @@
 <script>
 import DaumPostcode from "vuejs-daum-postcode";
 import Mapbox from "mapbox-gl";
-import { MglMap, MglMarker, MglPopup, Vcard } from "vue-mapbox";
+
+import { MglMap, MglMarker, MglPopup } from "vue-mapbox";
 import axios from "axios";
 import VueGeolocationApi from "vue-geolocation-api";
 
@@ -212,7 +210,13 @@ export default {
   },
 
   methods: {
-    temp(index) {
+    onMove(gu) {
+       window.open(`https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query=${gu}+맛집`);
+    },
+    onFly(idx) {
+      this.$store.commit("FLYTO", idx)
+    },
+    temp(index){
       this.$delete(this.addrLists, index);
     },
       async getRecom () {
@@ -269,10 +273,11 @@ export default {
       // 1순위 보여주는 비동기 함수
       const newParams = await asyncActions.flyTo({
         center: data[0],
-        zoom: 12.5,
-        speed: 1,
+        zoom: 11,
+        speed: 0.7,
       });
     },
+
     async putLatLng(data) {
       var self = this;
       const geocoder = new kakao.maps.services.Geocoder();
@@ -299,28 +304,6 @@ export default {
       }
       this.dialog = false;
     },
-    findCurrentLocation() {
-      this.selectMethod = "currentLocation";
-      if (!("geolocation" in navigator)) {
-        this.textContent = "Geolocation is not available";
-        return;
-      }
-      this.textContent = "Locating...";
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          this.latitude = pos.coords.latitude;
-          this.longitude = pos.coords.longitude;
-          this.textContent =
-            "Your location data is " + this.latitude + ", " + this.longitude;
-        },
-        (err) => {
-          this.textContent = err.message;
-        }
-      );
-    },
-    findInputLocation() {
-      this.selectMethod = "inputLocation";
-    },
   },
   computed: {
     mapToggle() {
@@ -344,23 +327,14 @@ export default {
     gugun() {
       return this.$store.getters.get_gugun;
     },
+    nextCoord() {
+      return this.$store.getters.get_FlyTo
+    },
     addrLists(){
       return this.$store.getters.getAddrList;
     }
   },
   watch: {
-    selectMethod: function() {
-      const inputLocation = document.querySelector(".search-location");
-      const currentLocation = document.querySelector(".location__my-location");
-      const or = document.querySelector(".or-text");
-      if (this.selectMethod === "currentLocation") {
-        inputLocation.style.display = "none";
-        or.style.display = "none";
-      } else {
-        currentLocation.style.display = "none";
-        or.style.display = "none";
-      }
-    },
   },
   created() {
     this.mapbox = null;
@@ -416,10 +390,8 @@ export default {
   justify-content: space-between;
 }
 .location {
-  margin-top: 20px;
   padding: 10px 22px;
   width: 100%;
-  border: 3px solid #ffb6c1;
   border-radius: 5px;
   background: #FEFCFC;
 }
@@ -526,13 +498,11 @@ input[type="checkbox"]:checked + .checkbox-label::before {
 
 /* 로케이션 리스트 ! */
 .location-list {
-  margin-top: 20px;
   width: 40%;
   border: 3px solid #ffb6c1;
   border-radius: 5px;
   margin-left: 1.5rem;
   background: #FCFCEF;
-  margin-top: 20px;
 }
 
 .list__header {
