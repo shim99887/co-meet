@@ -2,8 +2,17 @@
 
 ![Landing page](Document/Page Screenshot/screenshot/landing_page.png)
 
-![Recommend page](Document/Page Screenshot/screenshot/recomm_page.png)
+![Landing page](Document/Page Screenshot/screenshot/landing_page.png)
 
+![Login_menu](Document/Page Screenshot/screenshot/Login_menu.png)
+
+![Login](Document/Page Screenshot/screenshot/Login.png)
+
+![search_page_map](Document/Page Screenshot/screenshot/search_page_map.png)
+
+![search_page_graph](Document/Page Screenshot/screenshot/search_page_graph.png)
+
+![FAQ_page](Document/Page Screenshot/screenshot/FAQ_page.png)
 
 
 

@@ -1,27 +1,5 @@
 from rest_framework import serializers
-from api.models import Code, Fpopl, Card, CoronaData, GugunLocate, Gugun
-
-
-class CodeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Code
-        fields = ('adstrd_code',
-                  'adstrd_nm',
-                  'brtc_nm',
-                  'signgu_nm')
-
-
-class CodeBodySerializer(serializers.Serializer):
-    signgu_nm = serializers.CharField(help_text="구군이름")
-
-
-class GugunLocateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = GugunLocate
-        fields = ('signgu_nm', 'lat', 'lng')
-
+from api.models import Fpopl, CoronaData, Gugun, Fpopl_BC
 
 class GugunSerializer(serializers.ModelSerializer):
 
@@ -43,18 +21,17 @@ class FpoplSerializer(serializers.ModelSerializer):
                   'popl')
 
 
-class CardSerializer(serializers.ModelSerializer):
+class Fpopl_BCSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Card
-        fields = ('receipt_dttm',
-                  'adstrd_code',
-                  'adstrd_nm',
-                  'mrhst_induty_cl_code',
-                  'mrhst_induty_cl_nm',
-                  'selng_cascnt',
-                  'salamt')
-
+        model = Fpopl_BC
+        fields = ('date',
+                  'per_time',
+                  'age_range',
+                  'sex',
+                  'city',
+                  'gugun',
+                  'popl')
 
 class CoronaDataSerializer(serializers.ModelSerializer):
 

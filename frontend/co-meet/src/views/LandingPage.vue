@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <Navbar @msg="getMsg"/>
+    <Navbar class="navbar1" @msg="getMsg"/>
     <video autoplay muted loop id="myVideo">
       <source src="../assets/sub2.mp4" type="video/mp4" />
     </video>
@@ -9,6 +9,10 @@
         <div>
           <div v-if="wid > 1000" class="titles">
             <p>CO-MEET</p>
+            <div v-if="wid > 1000" class="subtitles">
+              <p id=comment style="text-align: left"><b>코</b>로나 피해 다시 일상으로</p>
+              <p id=comment style="text-align: right"><b>밋</b>밋했던 하루를 활기차게</p>
+            </div>
           </div>
           <div v-else class="mob_titles" style="">
             <p>CO-MEET</p>
@@ -53,16 +57,13 @@ export default {
   },
   methods: {
     resizeEventHandler(event) {
-      // console.log(event);
       this.wid = event.target.innerWidth;
     },
     getMsg(msg){
       if(msg == 'login'){
-        console.log('1');
         this.login= !this.login;
         this.regist=false;
       }else{
-        console.log('2');
         this.regist = !this.regist;
         this.login = false;
       }
@@ -74,6 +75,7 @@ export default {
 body {
   margin: 0px;
 }
+
 .fade-enter-active{
   /* transition: opacity .1s; */
   animation: anim3 forwards 2s;
@@ -101,29 +103,42 @@ body {
 }
 .titles {
   position: absolute;
-  font-size: 10rem;
+  font-size: 8rem;
   /* color: #22223b;
   opacity: 0.75;
   text-shadow: 4px 4px 4px gray; */
-  color : #ffa38c;
+  color : #f8cccc;
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
   font-family: "Bahnschrift Condensed";
-  margin-left: 50px;
-  margin-top: 150px;
+  margin-left: 6vw;
+  margin-top: 50%;
   bottom: -100%;
-  animation: anim 2s forwards 2s;
+  animation: anim 2s forwards 0s;
 }
 .mob_titles {
-  animation: anim2 2s forwards 2s;
+  animation: anim2 2s forwards 0s;
   bottom: -100%;
   position: absolute;
-  font-size: 6rem;
-  color : #ffa38c;
+  width : 300px;
+  font-size: 5rem;
+  margin-top: 50%;
+  margin-left: 0.7em;
+  color : #f8cccc;
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
   font-family: "Bahnschrift Condensed";
+}
+.subtitles {
+  position: relative;
+  font-size: 1.5rem;
+  margin-left: 0.6em;
+  color: #8e0038;
+  opacity : 0.9;
+  text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
+  font-family: "Bahnschrift Condensed";
+  animation: anim 2s forwards 0s;
 }
 @keyframes anim {
   from {
@@ -138,7 +153,7 @@ body {
     bottom: -100%;
   }
   to {
-    bottom: 50%;
+    bottom:60%;
   }
 }
 @keyframes anim3 {
@@ -156,5 +171,8 @@ body {
   position: fixed;
   top: 0;
   left: 0;
+}
+#comment {
+  text-shadow: #352824;
 }
 </style>

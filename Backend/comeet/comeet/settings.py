@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user.apps.UserConfig',
     'api.apps.ApiConfig',
+    'recomm.apps.RecommConfig',
     'corsheaders',
     'drf_yasg',  # Swagger
     'rest_framework',
@@ -130,6 +131,7 @@ CACHES = {
         # "LOCATION": "redis://127.0.0.1:6379/1",
         "LOCATION": "redis://j4a203.p.ssafy.io:6379/1",
         "OPTIONS": {
+            "PASSWORD": "yb)&.2Ewyy+C?5&~T=,{<D,S!w",
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
@@ -154,7 +156,7 @@ REDIRECT_PAGE = 'https://j4a203.p.ssafy.io'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.fAttributeSimilarityValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',

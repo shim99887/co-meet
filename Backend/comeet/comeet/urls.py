@@ -24,6 +24,7 @@ from drf_yasg import openapi
 schema_url_patterns = [
     path('user/', include('user.urls')),
     path('api/', include('api.urls')),
+    path('recomm/', include('recomm.urls')),
 ]
 
 schema_view = get_schema_view(
@@ -32,7 +33,7 @@ schema_view = get_schema_view(
         default_version='v1',
         terms_of_service="https://www.google.com/policies/terms/",
     ),
-    url = "https://j4a203.p.ssafy.io/",
+    # url = "https://j4a203.p.ssafy.io/",
     public=True,
     permission_classes=(permissions.AllowAny,),
     patterns=schema_url_patterns,
@@ -42,6 +43,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('user.urls')),
     path('api/', include('api.urls')),
+    path('recomm/', include('recomm.urls')),
     url(r'^swagger(?P<format>\.json|\.yaml)$',
         schema_view.without_ui(cache_timeout=0), name='schema-json'),
     url(r'^swagger/$', schema_view.with_ui('swagger',
