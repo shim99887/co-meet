@@ -53,7 +53,16 @@ export default {
     }, {
       responsive: true, 
       maintainAspectRatio: false,
-    })
+      // scales: {
+      //   yAxes: [{
+      //     ticks: {
+      //       min: 0,
+      //       stepSize: 10,
+      //       max: 90,
+      //     }
+      //   }]
+      // },
+      })
 
   },
 }

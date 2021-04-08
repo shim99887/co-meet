@@ -116,10 +116,10 @@ body {
   margin-left: 0.7em;
   margin-top: 150px;
   bottom: -100%;
-  animation: anim 2s forwards 0s;
+  animation: anim 2s forwards 2s;
 }
 .mob_titles {
-  animation: anim2 1s forwards 0s;
+  animation: anim2 2s forwards 2s;
   bottom: -100%;
   position: absolute;
   width : 300px;
@@ -139,7 +139,7 @@ body {
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
   font-family: "Bahnschrift Condensed";
-  animation: anim 1s forwards 0s;
+  animation: anim 2s forwards 2s;
 }
 @keyframes anim {
   from {
