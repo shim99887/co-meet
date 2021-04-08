@@ -176,6 +176,8 @@ import { MglMap, MglMarker, MglPopup} from "vue-mapbox";
 import axios from 'axios';
 import VueGeolocationApi from 'vue-geolocation-api'
 
+const SERVER_URL = process.env.VUE_APP_SERVER_URL;
+
 export default {
   components: {
     DaumPostcode,
@@ -329,7 +331,6 @@ export default {
       return this.$store.getters.get_FlyTo
     },
     addrLists(){
-      console.log(this.$store.getters.getAddrList);
       return this.$store.getters.getAddrList
     }
   },
