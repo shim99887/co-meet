@@ -40,10 +40,8 @@ export default {
 </script>
 
 <style lang="scss">
-@import url('https://fonts.googleapis.com/css2?family=Sunflower:wght@300;500;700&display=swap');
 .recom-body{
   // background-color: #F7CAC9;
-  font-family: 'Sunflower', sans-serif;
   .reccom {
     position: absolute; 
     top: 0; 
