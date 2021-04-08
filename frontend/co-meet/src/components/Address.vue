@@ -344,8 +344,11 @@ export default {
 
 <style>
 .banner{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   margin-top: 110px;
-  padding: 18px 22px;
+  height: 200px;
   background-image: linear-gradient( rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5) ), url("../assets/banner_map.webp");
   color:#ffffff;
   text-align: center;

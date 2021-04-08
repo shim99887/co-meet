@@ -44,16 +44,17 @@ export default {
 .recom-body{
   // background-color: #F7CAC9;
   font-family: 'Sunflower', sans-serif;
+    .navbar {
+      margin-top: 12px;
+      z-index: 1;
+    }
   .reccom {
     position: absolute; 
     top: 0; 
     left: 9.5%;
     width: 80vw;
     margin: 0 auto 0 auto;
-    .navbar {
-      margin-top: 5vh;
-      z-index: 1;
-    }
+
   }
 }
   @media screen and (max-width: 48rem) {
