@@ -38,13 +38,13 @@
         <div class="text-center or-text">
           <img src="../assets/map.gif" alt="map gif" class="map-gif">
         </div>
-          <div class="chips" v-if="addrList.length > 0">
+          <div class="chips" v-if="addrLists.length > 0">
             <v-chip
               color="#ffb6c1"
               style="margin: 8px 10px;"
               close
               close-icon="mdi-close-outline"
-              v-for="(addr, index) in addrList"
+              v-for="(addr, index) in addrLists"
               :key="index"
               @click:close="temp(index)"
               >{{ addr }}
@@ -215,13 +215,13 @@ export default {
       this.$store.commit("FLYTO", idx)
     },
     temp(index){
-      this.$delete(this.addrList, index);
+      this.$delete(this.addrLists, index);
     },
       async getRecom () {
-          if (this.agreed === true && this.addrList.length > 0) {
+          if (this.agreed === true && this.addrLists.length > 0) {
             this.$store.commit("ON_SEARCHING")
             // 주소를 카카오 api로 보내서 좌표로 만들기
-              await this.addrList.forEach(item => {
+              await this.addrLists.forEach(item => {
                 this.putLatLng(item)
               });
             // 장소 리스트
@@ -231,10 +231,40 @@ export default {
               // 지난 달 구별 코로나
               this.$store.dispatch("GET_CORONA_PER_CITY")
             }, 500)
+
+               const geocoder = new kakao.maps.services.Geocoder();
+        var data = [];
+        this.addrLists.forEach((element) => {
+          geocoder.addressSearch(element, function(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+              const coord = new kakao.maps.LatLng(result[0].y, result[0].x);
+              var inputData = {
+                juso: element,
+                lat: coord.Ma,
+                lng: coord.La,
+              };
+              data.push(inputData);
+            }
+          });
+        });
+        setTimeout(() => {
+          axios
+            .post(`${SERVER_URL}/user/searchlog`,   {
+              email:this.$store.getters.getUserEmail,
+              searchList:data,
+            })
+            .then(() => {
+              this.$store.commit("OFF_SEARCHING")
+            })
+            .catch((error) => {
+              alert(error);
+            });
+        }, 500)
           } else {
-            alert("정보 이용에 동의해주세요")
+            alert("정보 이용에 동의, 혹은 주소를 입력해주세요")
           }
        },
+
     async onMapLoaded(event) {
       // 도시 받은거 입력
       const data = this.citiesCoordinates;
@@ -266,9 +296,9 @@ export default {
     },
     handleAddress: function(data) {
       if(data.jibunAddress === "") {
-        this.addrList.push(data.autoJibunAddress);
+        this.$store.commit('PUT_ADDRLIST', data.autoJibunAddress);
       } else {
-        this.addrList.push(data.jibunAddress);
+        this.$store.commit('PUT_ADDRLIST', data.jibunAddress);
       }
       this.dialog = false;
     },
@@ -298,6 +328,10 @@ export default {
     nextCoord() {
       return this.$store.getters.get_FlyTo
     },
+    addrLists(){
+      console.log(this.$store.getters.getAddrList);
+      return this.$store.getters.getAddrList
+    }
   },
   watch: {
   },
