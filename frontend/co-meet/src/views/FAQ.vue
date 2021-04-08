@@ -5,8 +5,7 @@
         <source src="../assets/sub2.mp4" type="video/mp4" />
     </video>
     <v-card
-      style="margin-top: 80px;width:100%;"
-      class="text-center"
+      class="text-center faq"
     >
     <div class="banner" style="height:250px;">
       
@@ -27,11 +26,11 @@
 
     </div>
       <v-data-table
+      class="text-lg"
         :headers="headers"
         :items="items"
         show-expand
         item-key="no"
-        style="font-family: 'Do Hyeon', sans-serif;"
         @click:row="(item, slot) => slot.expand(!slot.isExpanded)"
         :search="search"
       >
@@ -80,7 +79,8 @@ export default {
   background-size: cover;
   background-repeat: no-repeat;
 }
-td.text-start{
-      font-size: 1rem;
-}
+  .faq {
+    width: 80vw;
+    margin: 0 auto 0 auto;
+  }
 </style>

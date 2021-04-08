@@ -19,6 +19,7 @@ export default new Vuex.Store({
     recomCityPatients: [],
     coordinates: [],
     targets: [],
+    addrList:[], 
     // 상태 정의들
     mapToggle: false,
     reRecom : false,
@@ -37,6 +38,9 @@ export default new Vuex.Store({
   getters:{
     getAccessToken(state){
       return state.accessToken;
+    },
+    getAddrList(state){
+      return state.addrList;
     },
     getUserEmail(state){
       return state.userEmail;
@@ -154,6 +158,18 @@ export default new Vuex.Store({
     },
     FLYTO(state, idx) {
       state.nextCoord = this.state.coordinates[idx]
+    PUT_ADDRLIST(state, data){
+      state.addrList.push(data);
+    },
+    DELETE_ADDRLIST(state, index){
+      if(state.addrList.length > 1){
+        state.addrList = state.addrList.splice(index, 1);
+      }else{
+        state.addrList = [];
+      }
+    },
+    SET_ADDRLIST(state, data){
+      state.addrList = data;
     }
   },
   actions: {
