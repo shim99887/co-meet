@@ -213,11 +213,7 @@ export default {
 
   methods: {
     temp(index) {
-      // console.log(index);
-      // this.addrList.pop(index);
-      // this.$delete(this.addrList, index);
       this.$delete(this.addrLists, index);
-      // this.$store.commit('DELETE_ADDRLIST', index);
     },
       async getRecom () {
           if (this.agreed === true && this.addrLists.length > 0) {
@@ -236,7 +232,7 @@ export default {
 
         const geocoder = new kakao.maps.services.Geocoder();
         var data = [];
-        this.addrList.forEach((element) => {
+        this.addrLists.forEach((element) => {
           geocoder.addressSearch(element, function(result, status) {
             if (status === kakao.maps.services.Status.OK) {
               const coord = new kakao.maps.LatLng(result[0].y, result[0].x);
@@ -255,8 +251,8 @@ export default {
               email:this.$store.getters.getUserEmail,
               searchList:data,
             })
-            .then((response) => {
-              console.log(response);
+            .then(() => {
+              this.$store.commit("OFF_SEARCHING")
             })
             .catch((error) => {
               alert(error);
@@ -304,7 +300,6 @@ export default {
       this.dialog = false;
     },
     findCurrentLocation() {
-      console.log("click cur location");
       this.selectMethod = "currentLocation";
       if (!("geolocation" in navigator)) {
         this.textContent = "Geolocation is not available";
@@ -324,7 +319,6 @@ export default {
       );
     },
     findInputLocation() {
-      console.log("click input location");
       this.selectMethod = "inputLocation";
     },
   },

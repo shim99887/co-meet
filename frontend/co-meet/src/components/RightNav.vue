@@ -32,7 +32,7 @@
         <br />
         <v-list-item-content>
           <v-list-item-title v-for="(item, index) in logs" :key="index">
-            <v-btn class="listitem" @click="recentLogClick($event)" block tile outlined color="primary">{{
+            <v-btn width="100%" class="listitem" @click="recentLogClick($event)" block tile outlined color="primary" style="text-align:left;">{{
               item
             }}</v-btn>
           </v-list-item-title>
@@ -84,14 +84,9 @@ export default {
           }
         )
         .then((response) => {
-          console.log(response);
           this.$store.commit("DELETE_SEARCH_LOG");
           for (var key in response.data["searchList"]) {
-            // this.$store.commit(
-            //   "GET_SEARCH_LOG",
-            //   response.data["searchList"][key]
               self.items.push(response.data["searchList"][key]);
-              // self.logs.push()
           }
               self.items.forEach(item => {
                 var string = "";
@@ -101,6 +96,7 @@ export default {
                 string = string.substring(0,string.length-2);
                 this.logs.push(string);
               })
+          this.logs = this.logs.reverse();
         })
         .catch((error) => {
           alert(error);
@@ -108,6 +104,7 @@ export default {
         
     },
     recentLogClick(event){
+      this.$store.commit('MAPCANCLE');
       this.$store.commit('SET_ADDRLIST', event.target.innerText.split(' / '));
       this.drawer = false;
     }

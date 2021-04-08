@@ -5,8 +5,7 @@
         <source src="../assets/sub2.mp4" type="video/mp4" />
     </video>
     <v-card
-      style="margin-top: 80px;width:100%;"
-      class="text-center"
+      class="text-center faq"
     >
     <div class="banner" style="height:250px;">
       
@@ -80,4 +79,8 @@ export default {
   background-size: cover;
   background-repeat: no-repeat;
 }
+  .faq {
+    width: 80vw;
+    margin: 0 auto 0 auto;
+  }
 </style>
