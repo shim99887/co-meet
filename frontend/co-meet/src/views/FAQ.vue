@@ -5,11 +5,11 @@
         <source src="../assets/sub2.mp4" type="video/mp4" />
     </video>
     <v-card
-      style="margin-top: 80px;width:100%;"
-      class="text-center"
+      class="text-center faq"
     >
-    <div class="banner" style="height:250px;">
-      
+    <div class="banners"
+     style="height:200px;"
+     >
     </div>
     <div style="margin-top:20px;margin-bottom:20px;">
 
@@ -27,11 +27,11 @@
 
     </div>
       <v-data-table
+      class="text-lg"
         :headers="headers"
         :items="items"
         show-expand
         item-key="no"
-        style="font-family: 'Do Hyeon', sans-serif;"
         @click:row="(item, slot) => slot.expand(!slot.isExpanded)"
         :search="search"
       >
@@ -69,18 +69,21 @@ export default {
   width:100%;
   height: 100px;
 } */
-.banner{
-  margin-top: 120px;
+.banners{
   padding: 18px 22px;
   background-image: linear-gradient( rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5) ), url("../assets/faq.png");
   color:#ffffff;
   text-align: center;
   border-radius: 2px;
-  background-position: center;
+  background-position: center 40%;
   background-size: cover;
   background-repeat: no-repeat;
 }
-td.text-start{
-      font-size: 1rem;
-}
+  .faq {
+    position: absolute; 
+    top: 11.6%; 
+    left: 9.5%;
+    width: 80vw;
+    margin: 0 auto 0 auto;
+  }
 </style>

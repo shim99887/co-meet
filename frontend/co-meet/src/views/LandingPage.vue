@@ -10,7 +10,8 @@
           <div v-if="wid > 1000" class="titles">
             <p>CO-MEET</p>
             <div v-if="wid > 1000" class="subtitles">
-              <p id=comment> 우리의 안전한 약속을 위해서</p>
+              <p id=comment style="text-align: left"><b>코</b>로나 피해 다시 일상으로</p>
+              <p id=comment style="text-align: right"><b>밋</b>밋했던 하루를 활기차게</p>
             </div>
           </div>
           <div v-else class="mob_titles" style="">
@@ -56,16 +57,13 @@ export default {
   },
   methods: {
     resizeEventHandler(event) {
-      // console.log(event);
       this.wid = event.target.innerWidth;
     },
     getMsg(msg){
       if(msg == 'login'){
-        console.log('1');
         this.login= !this.login;
         this.regist=false;
       }else{
-        console.log('2');
         this.regist = !this.regist;
         this.login = false;
       }
@@ -113,18 +111,18 @@ body {
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
   font-family: "Bahnschrift Condensed";
-  margin-left: 0.7em;
-  margin-top: 150px;
+  margin-left: 6vw;
+  margin-top: 50%;
   bottom: -100%;
-  animation: anim 2s forwards 2s;
+  animation: anim 2s forwards 0s;
 }
 .mob_titles {
-  animation: anim2 2s forwards 2s;
+  animation: anim2 2s forwards 0s;
   bottom: -100%;
   position: absolute;
   width : 300px;
   font-size: 5rem;
-  margin-top:80px;
+  margin-top: 50%;
   margin-left: 0.7em;
   color : #f8cccc;
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
@@ -133,13 +131,14 @@ body {
 }
 .subtitles {
   position: relative;
-  font-size: 2rem;
-  margin-left: 0.3em;
-  color : #ffeae6;
+  font-size: 1.5rem;
+  margin-left: 0.6em;
+  color: #8e0038;
+  opacity : 0.9;
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
   font-family: "Bahnschrift Condensed";
-  animation: anim 2s forwards 2s;
+  animation: anim 2s forwards 0s;
 }
 @keyframes anim {
   from {

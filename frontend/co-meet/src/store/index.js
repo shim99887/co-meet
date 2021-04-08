@@ -19,6 +19,7 @@ export default new Vuex.Store({
     recomCityPatients: [],
     coordinates: [],
     targets: [],
+    addrList:[], 
     // 상태 정의들
     mapToggle: false,
     reRecom : false,
@@ -29,7 +30,7 @@ export default new Vuex.Store({
     searchLog:[],
     // 요청 데이터 폼
     targetCities: {
-      email: '123',
+      email: '',
       searchList: [],
     },
 
@@ -37,6 +38,9 @@ export default new Vuex.Store({
   getters:{
     getAccessToken(state){
       return state.accessToken;
+    },
+    getAddrList(state){
+      return state.addrList;
     },
     getUserEmail(state){
       return state.userEmail;
@@ -67,7 +71,15 @@ export default new Vuex.Store({
       return state.coordinates
     },
     get_targets(state) {
-      return state.targets
+      let searchResult = []
+      state.targets.forEach((item) => {
+        if (item in searchResult) {
+          return
+        } else {
+          searchResult.push(item)
+        }
+      })
+      return searchResult
     },
     //
     get_mapToggle(state) {
@@ -84,7 +96,7 @@ export default new Vuex.Store({
     },
     getSearchLog(state){
       return state.searchLog;
-    }
+    },
   },
   mutations: {
     LOGIN(state){
@@ -141,15 +153,29 @@ export default new Vuex.Store({
     PUT_TARGETCITIES(state, data){
       state.targetCities.searchList.push(data)
     },
+    PUT_ADDRLIST(state, data){
+      state.addrList.push(data);
+    },
+    DELETE_ADDRLIST(state, index){
+      if(state.addrList.length > 1){
+        state.addrList = state.addrList.splice(index, 1);
+      }else{
+        state.addrList = [];
+      }
+    },
+    SET_ADDRLIST(state, data){
+      state.addrList = data;
+    }
   },
   actions: {
-
     async GET_RECOM(context) {
       try {
-        
-        console.log(this.state.targetCities)
+        if (this.state.userEmail) {
+          this.state.targetCities.email = this.state.userEmail
+        } else {
+          this.state.targetCities.email = 123
+        }
         const res = await axios.post("https://j4a203.p.ssafy.io/recomm/recommend", this.state.targetCities)
-        console.log(res)
         const data = res.data
         for (let idx = 0; idx < 4; idx++) {
           this.state.recomCityMonth.push(data[idx].date)
@@ -160,10 +186,8 @@ export default new Vuex.Store({
         data.target.forEach((item) => {
           this.state.targets.push(item)
         })
-        console.log(this.state.targets)
         context.commit("OFF_SEARCHING")
       } catch(err) {
-        console.log(err)
         context.commit("OFF_SEARCHING")
       }
       context.commit("MAPTOGGLE")
@@ -178,12 +202,9 @@ export default new Vuex.Store({
         for (let key in data.serial_number) {
           this.state.gugunData.push(data.serial_number[key])
         }
-        console.log(`this.state.gugun : ${this.state.gugun}`)
-        console.log(`this.state.gugunData : ${this.state.gugunData}`)
         context.commit("OFF_SEARCHING")
         
       } catch (err) {
-        console.log(err)
         context.commit("OFF_SEARCHING")
       }
     },
@@ -207,8 +228,7 @@ export default new Vuex.Store({
     },
     LOGOUT(context, email){
       axios.get(`${SERVER_URL}/user/logout/` + email)
-      .then(response => {
-        console.log(response);
+      .then(() => {
       })
       .catch(error => {
         context.commit("OFF_SEARCHING")
