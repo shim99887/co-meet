@@ -111,8 +111,8 @@ body {
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
   z-index: 1;
   font-family: "Bahnschrift Condensed";
-  margin-left: 0.7em;
-  margin-top: 150px;
+  margin-left: 6vw;
+  margin-top: 50%;
   bottom: -100%;
   animation: anim 2s forwards 0s;
 }
@@ -122,7 +122,7 @@ body {
   position: absolute;
   width : 300px;
   font-size: 5rem;
-  margin-top:80px;
+  margin-top: 50%;
   margin-left: 0.7em;
   color : #f8cccc;
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
@@ -132,7 +132,7 @@ body {
 .subtitles {
   position: relative;
   font-size: 1.5rem;
-  margin-left: 0.3em;
+  margin-left: 0.6em;
   color: #8e0038;
   opacity : 0.9;
   text-shadow: 4px 4px 4px rgb(214, 107, 107);
