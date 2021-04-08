@@ -26,7 +26,6 @@ export default {
     Address,
     Graph,
     RightNav,
-    // Explain,
   },
   computed: {
     gugun() {
