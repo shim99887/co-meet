@@ -7,8 +7,9 @@
     <v-card
       class="text-center faq"
     >
-    <div class="banner" style="height:250px;">
-      
+    <div class="banners"
+     style="height:200px;"
+     >
     </div>
     <div style="margin-top:20px;margin-bottom:20px;">
 
@@ -68,18 +69,20 @@ export default {
   width:100%;
   height: 100px;
 } */
-.banner{
-  margin-top: 120px;
+.banners{
   padding: 18px 22px;
   background-image: linear-gradient( rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5) ), url("../assets/faq.png");
   color:#ffffff;
   text-align: center;
   border-radius: 2px;
-  background-position: center;
+  background-position: center 40%;
   background-size: cover;
   background-repeat: no-repeat;
 }
   .faq {
+    position: absolute; 
+    top: 11.6%; 
+    left: 9.5%;
     width: 80vw;
     margin: 0 auto 0 auto;
   }
