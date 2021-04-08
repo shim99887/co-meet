@@ -235,33 +235,36 @@ export default {
             }, 500)
 
                const geocoder = new kakao.maps.services.Geocoder();
-        var data = [];
-        this.addrLists.forEach((element) => {
-          geocoder.addressSearch(element, function(result, status) {
-            if (status === kakao.maps.services.Status.OK) {
-              const coord = new kakao.maps.LatLng(result[0].y, result[0].x);
-              var inputData = {
-                juso: element,
-                lat: coord.Ma,
-                lng: coord.La,
-              };
-              data.push(inputData);
-            }
-          });
-        });
-        setTimeout(() => {
-          axios
-            .post(`${SERVER_URL}/user/searchlog`,   {
-              email:this.$store.getters.getUserEmail,
-              searchList:data,
-            })
-            .then(() => {
-              this.$store.commit("OFF_SEARCHING")
-            })
-            .catch((error) => {
-              alert(error);
+          var data = [];
+          this.addrLists.forEach((element) => {
+            geocoder.addressSearch(element, function(result, status) {
+              if (status === kakao.maps.services.Status.OK) {
+                const coord = new kakao.maps.LatLng(result[0].y, result[0].x);
+                var inputData = {
+                  juso: element,
+                  lat: coord.Ma,
+                  lng: coord.La,
+                };
+                data.push(inputData);
+              }
             });
-        }, 500)
+          });
+            setTimeout(() => {
+              if (this.$store.getters.getUserEmail) {
+                axios
+                  .post(`${SERVER_URL}/user/searchlog`,   {
+                    email:this.$store.getters.getUserEmail,
+                    searchList:data,
+                  })
+                  .then(() => {
+                    this.$store.commit("OFF_SEARCHING")
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                    this.$store.commit("OFF_SEARCHING")
+                  });
+              }
+            }, 500)
           } else {
             alert("정보 이용에 동의, 혹은 주소를 입력해주세요")
           }
