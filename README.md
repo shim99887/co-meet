@@ -3,7 +3,8 @@
 
 
 > **Co-** (함께) + **Meet** (약속) = **CO-MEET**
-![milestone_forward](Document/Page Screenshot/screenshot/landing_page.png)
+![image](https://github.com/shim99887/co-meet/assets/31751611/b2b8e47e-b82b-4737-b03e-438a61a9c0cb)
+
 
 ## SWAGGER-UI
 
